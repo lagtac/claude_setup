@@ -1,0 +1,56 @@
+{
+    "$schema": "https://json.schemastore.org/claude-code-settings.json",
+    "permissions": {
+        "allow": [
+            "Bash(*)",
+            "WebFetch(*)",
+            "WebSearch",
+            "mcp__context7__get-library-docs",
+            "mcp__context7__resolve-library-id",
+            "mcp__filesystem__edit_file",
+            "mcp__filesystem__list_directory",
+            "mcp__filesystem__search_files",
+            "mcp__gitlab__create_issue",
+            "mcp__gitlab__create_note",
+            "mcp__gitlab__get_issue",
+            "mcp__gitlab__get_project",
+            "mcp__gitlab__list_issues",
+            "mcp__gitlab__list_labels",
+            "mcp__gitlab__list_projects",
+            "mcp__gitlab__search_repositories",
+            "mcp__gitlab__update_issue",
+            "mcp__ide__getDiagnostics",
+            "mcp__mcp-deepwiki__deepwiki_fetch",
+            "mcp__memory__add_observations",
+            "mcp__memory__create_entities",
+            "mcp__memory__create_relations",
+            "mcp__memory__delete_entities",
+            "mcp__memory__delete_observations",
+            "mcp__memory__open_nodes",
+            "mcp__memory__read_graph",
+            "mcp__memory__search_nodes",
+            "mcp__puppeteer__puppeteer_click",
+            "mcp__puppeteer__puppeteer_evaluate",
+            "mcp__puppeteer__puppeteer_fill",
+            "mcp__puppeteer__puppeteer_navigate",
+            "mcp__puppeteer__puppeteer_screenshot",
+            "mcp__sequential-thinking__sequentialthinking"
+        ],
+        "deny": [
+            "Bash(rm -rf *)",
+            "Bash(sudo su *)",
+            "Read(**/.env)",
+            "Read(**/.env.*)"
+        ]
+    },
+    "plansDirectory": "./docs/plans",
+    "autoMemoryEnabled": true,
+    "outputStyle": "default",
+    "enableAllProjectMcpServers": true,
+    "enabledMcpjsonServers": [
+        "context7",
+        "sequential-thinking"
+    ],
+    "hooks": {},
+    "includeCoAuthoredBy": true
+}
