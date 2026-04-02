@@ -63,25 +63,3 @@ The plugin only ships deny-list safety defaults. Add these to your project's `.c
 
 **Important:** `$planDirectory` must be set in your project settings (via `plansDirectory`) for the `/my:plan`, `/my:code-review`, and `/my:summarize` commands to write their output files.
 
-## When to Use Each Planning Tool
-
-### `/my:task` — Direct implementation with structured requirements gathering
-
-Use when you have a concrete, bounded coding task and want Claude to gather requirements before diving in.
-
-> "Fix the image upload validation" / "Add pagination to this table"
-
-### `/my:plan` — Architecture RFC via Opus subagent
-
-Use when the scope is uncertain or design decisions matter before writing code. The subagent explores the codebase, challenges assumptions, and writes a persistent plan to `$planDirectory/`.
-
-> "Plan how to integrate the ML results caching layer" / "Plan the notification system"
-
-### Decision rule
-
-| Situation | Tool |
-|---|---|
-| Small task, clear requirements | Nothing (or `/my:task`) |
-| Non-trivial feature, uncertain scope | `/my:plan` first, then implement |
-| Complex spec already written | `superpowers:writing-plans` then `superpowers:executing-plans` |
-| Bug or test failure | `superpowers:systematic-debugging` (auto-invoked) |

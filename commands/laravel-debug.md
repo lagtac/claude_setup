@@ -1,3 +1,7 @@
+---
+description: Laravel-specific debugging with systematic diagnostics
+---
+
 A systematic approach for debugging Laravel application issues with comprehensive diagnostics and solution strategies.
 
 ## Debugging Methodology

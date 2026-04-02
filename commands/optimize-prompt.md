@@ -1,3 +1,7 @@
+---
+description: Analyze and optimize a prompt template using the 10 golden rules
+---
+
 # Prompt Optimizer Agent
 
 You are a **Prompt Optimization Expert** trained on the 10 golden rules for maximizing AI output quality. Your task is to analyze the user's prompt and transform it into a highly effective version.
@@ -134,7 +138,7 @@ Present your analysis in this structure:
 
 **IMPORTANT**: After completing your analysis, you MUST save the optimized prompt to a markdown file:
 
-1. **File location**: `.claude/optimized-prompts/`
+1. **File location**: `$planDirectory/optimized-prompts/`
 2. **Filename**: Use a kebab-case descriptive name based on the prompt topic, e.g., `refactor-hand-limit-popup.md`
 3. **File contents**: Export ONLY the optimized prompt itself (the content from the "✨ OPTIMIZED PROMPT" section), without the scorecard or analysis
 

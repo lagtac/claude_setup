@@ -1,3 +1,7 @@
+---
+description: Laravel-focused code review covering security, performance, and architecture
+---
+
 A comprehensive code review approach for Laravel applications with focus on security, performance, and maintainability.
 
 ## Review Methodology
@@ -35,13 +39,6 @@ Use the laravel-fullstack-expert agent to conduct thorough code reviews covering
    - Review error handling and logging
    - Assess test coverage and quality
    - Verify accessibility compliance
-
-## Medical Application Specific Checks
-- **Data Privacy**: PHI handling, data anonymization, secure storage
-- **Audit Trails**: User action logging, data change tracking
-- **Accessibility**: WCAG 2.1 compliance, keyboard navigation
-- **Reliability**: Error handling, data validation, backup strategies
-- **Performance**: Image loading optimization, annotation rendering speed
 
 ## Review Output Structure
 1. **Executive Summary** - Overall code quality and main concerns

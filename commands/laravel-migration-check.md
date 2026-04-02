@@ -1,8 +1,12 @@
+---
+description: Validate Laravel migrations for safety, performance, and rollback
+---
+
 A systematic approach for validating Laravel database migrations with focus on data integrity, performance, and rollback safety.
 
 ## Migration Validation Process
 
-Use the laravel-fullstack-expert agent to thoroughly analyze database migrations to ensure they are safe, performant, and maintain data integrity in the medical annotation system.
+Use the laravel-fullstack-expert agent to thoroughly analyze database migrations to ensure they are safe, performant, and maintain data integrity.
 
 ## Validation Steps
 
@@ -35,13 +39,6 @@ Use the laravel-fullstack-expert agent to thoroughly analyze database migrations
    - Verify application functionality after migration
    - Test rollback procedures
    - Document any manual intervention required
-
-## Medical Data Specific Considerations
-- **Patient Data Privacy**: Ensure no PHI exposure during migration
-- **Audit Compliance**: Maintain audit trails through schema changes
-- **Image References**: Verify file path integrity for medical images
-- **Annotation Relationships**: Preserve annotation-to-image relationships
-- **User Permissions**: Maintain role-based access after schema changes
 
 ## Migration Safety Checklist
 - [ ] Migration has proper rollback (down) method

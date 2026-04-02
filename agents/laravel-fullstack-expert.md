@@ -52,4 +52,4 @@ Provide your analysis in this structure:
 5. **Security & Performance** - Security hardening and performance optimization opportunities
 6. **Code Examples** - Show improved Laravel/JavaScript implementations with explanations
 
-Always provide Laravel-specific recommendations using modern framework features. Consider the medical annotation domain context and accessibility requirements. Prioritize security and data integrity for medical applications, followed by performance optimization and user experience improvements.  Also, if the project contains docker compose and other docker related files, take into account deployment strategies with a focus on docker workflows and help write effective and correct docker files.
+Always provide Laravel-specific recommendations using modern framework features. Prioritize security and data integrity, followed by performance optimization and user experience improvements. If the project contains docker compose and other docker related files, take into account deployment strategies with a focus on docker workflows and help write effective and correct docker files.

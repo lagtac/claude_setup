@@ -1,3 +1,7 @@
+---
+description: Direct implementation with structured requirements gathering
+---
+
 # Problem-Solving Guidelines
 
 ## Approach

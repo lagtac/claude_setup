@@ -1,3 +1,7 @@
+---
+description: Structured commit workflow with conventional commits
+---
+
 # Commit instructions
 
 1. Check diffs
