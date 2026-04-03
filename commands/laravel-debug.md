@@ -6,7 +6,7 @@ A systematic approach for debugging Laravel application issues with comprehensiv
 
 ## Debugging Methodology
 
-Use the laravel-fullstack-expert agent and  sequential-thinking to methodically isolate and resolve Laravel issues. Focus on systematic diagnosis rather than guessing, and always verify the fix works properly.
+Use the laravel-fullstack-expert agent and sequential-thinking to methodically isolate and resolve Laravel issues. Focus on systematic diagnosis rather than guessing, and always verify the fix works properly.
 
 ## Diagnostic Process
 

@@ -1,5 +1,5 @@
 ---
-name: dev-report
+name: dev-reports
 description: >
   Use when the user asks to generate a developer report, weekly report, daily report,
   dev log, changelog, or activity summary from git history. Also when invoked via /dev-report.
@@ -27,7 +27,6 @@ Defaults: type=today, date=today, path=docs/reports/
 ### 1. Parse arguments and determine date range
 
 - **Today**: (default): Filename: `YYYY-MM-DD.md`. Range: single day
-- **Daily**: Filename: `YYYY-MM-DD.md`. Range: single day.
 - **Daily**: Filename: `YYYY-MM-DD.md`. Range: single day.
 - **Weekly**: ISO week. Filename: `YYYY-WNN.md`. Range: Monday–Sunday.
 
@@ -78,24 +77,13 @@ Read `docs/TODO.md` if it exists. Extract pending items — lines that do NOT st
 - Active past tense: "Fixed...", "Added...", "Refactored..."
 - Order by significance
 - Target: 3–8 bullets (weekly), 1–4 (daily)
+- **Thematic sub-headers**: When there are 5+ bullets spanning distinct themes, group them under `###` sub-headers (e.g., `### Exports`, `### Bug Fixes`, `### Infrastructure`). Use short, descriptive names. On light days (1–4 bullets), keep a flat list — sub-headers add noise when there's little to organize.
 
 ### 6. Write Summary
 
 One paragraph, 2–4 sentences. Synthesize the Changes into a narrative. Mention the most impactful work first. No filler words, no pleasantries.
 
-### 7. Build commit table
-
-Include ALL commits (even noise) in the table:
-
-```
-| Hash | Date | Message |
-|------|------|---------|
-| `abc1234` | Mar 14 | commit message here |
-```
-
-Date format: `Mon DD` (e.g., `Mar 14`, `Dec 03`).
-
-### 8. Assemble and write
+### 7. Assemble and write
 
 ```markdown
 # [Weekly|Daily] Report — YYYY-MM-DD to YYYY-MM-DD
@@ -106,15 +94,14 @@ Date format: `Mon DD` (e.g., `Mar 14`, `Dec 03`).
 [paragraph]
 
 ## Changes
+### [Theme 1]  ← only when 5+ bullets span distinct themes
+- [bullets]
+### [Theme 2]
 - [bullets]
 
 ## Pending TODOs
 - [pending items from docs/TODO.md, grouped by section]
 
-## Commits
-| Hash | Date | Message |
-|------|------|---------|
-| `hash` | Mon DD | message |
 ```
 
 Output path: `docs/reports/` (create if needed) or user-specified path.
