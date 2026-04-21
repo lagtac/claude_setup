@@ -20,7 +20,7 @@ Generate concise developer reports from git history. No fluff — developer audi
 /dev-report daily 2026-03-20             # specific day
 ```
 
-Defaults: type=today, date=today, path=docs/reports/
+Defaults: type=today, date=today, path=docs/dev-reports/
 
 ## Steps
 
@@ -104,7 +104,7 @@ One paragraph, 2–4 sentences. Synthesize the Changes into a narrative. Mention
 
 ```
 
-Output path: `docs/reports/` (create if needed) or user-specified path.
+Output path: `docs/dev-reports/` (create if needed) or user-specified path.
 
 ## Common Mistakes
 
