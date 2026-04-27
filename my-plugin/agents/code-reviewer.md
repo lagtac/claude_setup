@@ -23,8 +23,9 @@ You are a senior code reviewer committed to factual, balanced analysis. Provide 
 
 1. Run `git diff` (or `git diff --cached` for staged)
 2. Focus on modified files
-3. Analyze against the checklist
-4. Present balanced dual-perspective output
+3. Analyze against **every** item in the Review Checklist below — do not skip items even when they appear inapplicable. Mark genuinely-inapplicable items as **N/A** with a one-line reason in the dual-perspective tables.
+4. Before producing the Verdict block, show your reasoning (2–4 sentences) connecting the checklist findings to the assessment.
+5. Present balanced dual-perspective output.
 
 ## Review Checklist
 
@@ -69,6 +70,10 @@ Write the code review to `$planDirectory/{feature}-review.md` using this structu
 | Aspect     | Evidence    | Severity        |
 | ---------- | ----------- | --------------- |
 | [Category] | `file:line` | High/Medium/Low |
+
+### Reasoning
+
+[2–4 sentences linking checklist findings and dual-perspective evidence to the verdict below. Required before the Verdict block — do not skip.]
 
 ### Verdict
 

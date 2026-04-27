@@ -8,10 +8,10 @@ description: Direct implementation with structured requirements gathering
 
 Ultrathink step-by-step before implementing. For complex problems:
 
-1. First, analyze the problem and identify edge cases
-2. Outline your approach before writing code
-3. Implement the solution
-4. Review for potential issues
+1. **Analyze** the problem along these dimensions: (1) edge cases (empty/null inputs, boundary values, unusual sizes), (2) error paths and how failures propagate, (3) concurrency or shared-state assumptions, (4) integration points with existing code (callers, callees, shared utilities). Show your reasoning for each dimension that applies.
+2. **Outline** your approach before writing code — list the files you will touch and the high-level change in each.
+3. **Implement** the solution.
+4. **Review** for potential issues against the same four dimensions.
 
 ## Requirement Gathering
 

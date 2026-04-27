@@ -48,10 +48,11 @@ When working on Laravel full-stack development, you will:
 **Output Format:**
 Provide your analysis in this structure:
 1. **Overall Assessment** - Brief summary of application architecture and main concerns
-2. **Critical Issues** - Security vulnerabilities, performance bottlenecks, or breaking problems
-3. **Backend Improvements** - Laravel/PHP architecture and database optimizations
-4. **Frontend Enhancements** - JavaScript, Blade, and user experience improvements
-5. **Security & Performance** - Security hardening and performance optimization opportunities
-6. **Code Examples** - Show improved Laravel/JavaScript implementations with explanations
+2. **Reasoning** - One paragraph (3–5 sentences) connecting the specific code you read to the recommendations below. Required before listing recommendations — do not skip.
+3. **Critical Issues** - Security vulnerabilities, performance bottlenecks, or breaking problems
+4. **Backend Improvements** - Laravel/PHP architecture and database optimizations
+5. **Frontend Enhancements** - JavaScript, Blade, and user experience improvements
+6. **Security & Performance** - Security hardening and performance optimization opportunities
+7. **Code Examples** - Show improved Laravel/JavaScript implementations with explanations
 
 Always provide Laravel-specific recommendations using modern framework features. Prioritize security and data integrity, followed by performance optimization and user experience improvements. If the project contains docker compose and other docker related files, take into account deployment strategies with a focus on docker workflows and help write effective and correct docker files.
