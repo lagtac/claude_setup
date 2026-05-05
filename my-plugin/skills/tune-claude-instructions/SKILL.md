@@ -5,8 +5,9 @@ description: >
   AGENTS.md, agent definitions, command templates, skill files) for
   literal-instruction-following models like Opus 4.7+. Trigger on requests like
   "audit my CLAUDE.md for 4.7", "my agents got worse on the new model",
-  "make my prompts more specific", "tune my prompts", or invocation via
-  /tune-claude-instructions.
+  "make my prompts more specific", "tune my prompts", "audit my global setup",
+  or invocation via /tune-claude-instructions (optionally with --global).
+argument-hint: "[--global]"
 ---
 
 # Tune Claude Instructions
@@ -15,15 +16,35 @@ Audit and tune Claude instruction files for **literal-instruction-following** mo
 
 The fix is **specificity**: enumerate scope, request reasoning explicitly, specify output format. This skill applies that fix surgically — it grades each file, proposes targeted edits, and waits for your approval before writing.
 
-## What this skill is *not*
+Per-file grading is rubric-driven (see `references/grading-rubric.md` — the single source of truth, used by both grading paths) and parallelizes cleanly. With **6 or more files**, step 3 fans the work out to parallel Haiku subagents; with 1–5, the main session grades inline. Discovery, table assembly, fix proposals, and edits (steps 1, 4, 5, 6) always run on the main model.
 
-This skill audits **prompt-template specificity**. It does **not** audit general project context (build commands, architecture, gotchas) — that is the job of `claude-md-management:claude-md-improver`. The two are complementary: run this one when prompts feel thin or when migrating to a more literal model; run the other when onboarding a project to Claude Code.
+## Arguments
+
+`$ARGUMENTS` — parse for the `--global` flag.
+
+- **No flag (default)** — audit project files: the project's `CLAUDE.md` / `AGENTS.md`, agent definitions, command templates, and skill files under the current working directory.
+- **`--global`** — audit the user's global setup instead: `~/.claude/CLAUDE.md`, `~/.claude/agents/`, `~/.claude/commands/`, `~/.claude/skills/`. Treat the flag as the explicit consent that satisfies the global-audit anti-pattern, but still confirm before writing each edit because the blast radius covers every project on the machine.
+
+`--global` switches scope, it does not extend it. To audit both project and global in one session, run the skill twice.
+
+## Scope: directive content, wherever it lives
+
+This skill audits **directive content** — the parts of a file that tell Claude what to do, how to reason, what to output. Directive content includes:
+
+- Prompt templates (agents, commands, skills) — the obvious case.
+- Instruction-style passages embedded in `CLAUDE.md` / `AGENTS.md` / `.claude/docs/*.md` — e.g. *"Always use Form Requests, not inline validation"*, *"Follow Red-Green-Refactor"*, *"When the user asks X, do Y"*.
+
+It does **not** audit **pure context** — build-command tables, architecture diagrams, env-var lists, API references, file inventories. Pure context has no S/R/F surface; grade only the directive passages within a file, not the whole file by filename. A `CLAUDE.md` is rarely all-directive or all-context — separate the two as you read.
+
+Complementary skill: `claude-md-management:claude-md-improver` audits content **completeness** on a different rubric (commands current? architecture covered? gotchas captured?). Run that to fix gaps; run this to fix vagueness in directives that are already present. The two are orthogonal — neither replaces the other.
 
 ## Steps
 
 ### 1. Discover instruction files
 
-Glob the project for prompt-template files. Skip vendored and build directories.
+Branch on `$ARGUMENTS`:
+
+**Default (no `--global`)** — glob the project for prompt-template files. Skip vendored and build directories.
 
 ```bash
 # Project context
@@ -39,41 +60,44 @@ find . -type f \( \
   -not -path "*/node_modules/*" -not -path "*/vendor/*" -not -path "*/.git/*"
 ```
 
-Only audit `~/.claude/CLAUDE.md` if the user explicitly asks — global instructions affect every project, so changing them silently is high blast radius.
+**`--global`** — audit the user's global Claude setup under `~/.claude/`.
 
-### 2. Read each file in full
+```bash
+ls ~/.claude/CLAUDE.md 2>/dev/null
+find ~/.claude/agents   -maxdepth 2 -type f -name "*.md"      2>/dev/null
+find ~/.claude/commands -maxdepth 2 -type f -name "*.md"      2>/dev/null
+find ~/.claude/skills   -maxdepth 3 -type f -name "SKILL.md"  2>/dev/null
+```
 
-The audit is qualitative — there is no shortcut. Read the whole file before grading. Do not grade on filename or first paragraph alone; reasoning prompts and output formats often appear deeper down.
+Do **not** descend into `~/.claude/projects/` (per-project session/memory state) or `~/.claude/plugins/` (third-party plugins the user does not own). Audit only files the user authored.
 
-### 3. Grade each file on S / R / F
+### 2. Read and grade each file
 
-Three dimensions, each ✅ pass / ⚠️ partial / ❌ fail:
+Apply the rubric in `references/grading-rubric.md` to every discovered file. The rubric covers reading discipline, directive-vs-context separation, the S/R/F dimensions with examples, dispatcher handling, and the severity ladder. Both grading paths use the same rubric so results are comparable.
 
-- **S — Scope.** Does the file enumerate the dimensions, fields, or sections the output must cover?
-  - ✅ "Write a plan with Context, Files, Steps, Trade-offs, Risk, Testing, Open Questions"
-  - ⚠️ "Write a thorough plan covering the main concerns"
-  - ❌ "Write a plan"
+- **1–5 files**: grade inline. Read each file, apply the rubric, hold the results in memory keyed by path.
+- **6+ files**: fan out to parallel Haiku subagents — see step 3.
 
-- **R — Reasoning.** Does the file explicitly request step-by-step reasoning *before* conclusions? Power phrases that pass: "think step by step", "show your reasoning", "before drawing conclusions", "before listing recommendations". Implicit cues like "be thorough" or "be careful" do not pass — 4.7+ takes them at face value and skips ahead to the answer.
-  - ✅ "Think step by step. Show your reasoning at each diagnostic stage before drawing conclusions."
-  - ⚠️ "Analyze carefully"
-  - ❌ (no reasoning prompt at all)
+Either path produces the same `{path, s, r, f, severity, why}` shape, which feeds the step 4 audit table.
 
-- **F — Format.** Does the file specify the output structure?
-  - ✅ A literal markdown skeleton, JSON schema, or numbered template
-  - ⚠️ Section names listed but no template shown
-  - ❌ "Output the result"
+### 3. Dispatch (6+ files only)
 
-**Severity ladder:**
+Skip this step entirely when grading 5 or fewer files — spawn overhead exceeds the savings, and step 5 typically re-reads the source anyway when drafting fixes. The threshold exists because parallelism only pays off once there's enough work to amortise the overhead.
 
-| Grades | Severity | Action |
-|---|---|---|
-| All ✅ | **OK** | Skip. Don't pad working prompts. |
-| One ⚠️ or one ❌ on a thin file | **Low** | 1–3 line addition. |
-| Two ❌, or any ❌ on a workhorse agent/command | **Medium** | Targeted section edit. |
-| Three ❌ on a workhorse file | **CRITICAL** | Full rewrite likely. |
+Spawn one Agent call per file in a **single message** so they run concurrently. Use `subagent_type: "general-purpose"` and `model: "haiku"`.
 
-A "workhorse" file is one that runs on every invocation of an important workflow — planner, code-reviewer, commit, push. A one-line dispatcher that delegates to an agent is not a workhorse; grade its target instead.
+Each subagent gets this prompt — substitute `<RUBRIC_PATH>` for the absolute path to `references/grading-rubric.md` inside this skill's directory (resolve from the running SKILL.md's location), and `<PATH>` for the file being audited:
+
+```
+Read the grading rubric at <RUBRIC_PATH>, then audit the Claude instruction file at <PATH> using that rubric.
+
+Return ONE JSON object on a single line, no prose, no code fences:
+{"path": "<PATH>", "s": "✅"|"⚠️"|"❌"|"n/a", "r": "✅"|"⚠️"|"❌"|"n/a", "f": "✅"|"⚠️"|"❌"|"n/a", "severity": "OK"|"Low"|"Medium"|"CRITICAL", "why": "<one short sentence justifying the grades>", "problem_passages": ["<short quoted excerpt under 200 chars>", ...]}
+
+problem_passages: quote up to 3 short excerpts from the audited file that drove any ⚠️ or ❌ grade. The orchestrator uses these as hints when drafting fixes. Empty array `[]` for OK files.
+```
+
+Aggregate the returned JSON rows into a single in-memory list keyed by path before assembling the step 4 table. If any subagent returns malformed JSON or fails, grade that one file inline rather than retrying — one bad row shouldn't block the rest. The fix-proposal phase (step 5) may need to re-read files for accurate diffs; `problem_passages` is a hint, not a substitute for the source.
 
 ### 4. Output the audit table before any edits
 
@@ -89,6 +113,9 @@ Match this format. One row per file. Severity comes from the ladder in step 3.
 | `agents/code-reviewer.md` | ✅ | ⚠️ | ✅ | Medium | Reasoning prompt is implicit ("be thorough"); needs explicit "show reasoning before verdict" |
 | `commands/clean-gone-branches.md` | ✅ | n/a | ✅ | OK | Workflow command; reasoning not applicable |
 | `skills/dev-reports/SKILL.md` | ✅ | ✅ | ✅ | OK | — |
+| `.claude/docs/frontend.md` | ✅ | n/a | n/a | OK | Directives concrete (`pnpm`, semantic-class rule paired with rationale); no output prompts to grade |
+| `.claude/docs/conventions.md` | ⚠️ | n/a | n/a | Low | Two directives use "when appropriate" / "be concise"; rest concrete |
+| `CLAUDE.md` (dispatcher) | n/a | n/a | n/a | OK | Pure `<tag @path>` includes; grade the included files |
 ```
 
 Print the table first, then propose fixes. The user should be able to scan it and scope the change down ("only fix the CRITICAL ones for now").
@@ -136,9 +163,10 @@ If the user wants a durable record, offer to write the audit table plus applied-
 
 - **Don't pad already-strong files.** If S/R/F all pass, skip. Adding more constraints to a working prompt over-constrains and bloats tokens.
 - **Don't propose a shared preamble.** It's tempting to write one "4.7 specificity block" and prepend it everywhere. Don't — agents and commands have different jobs and over-shared boilerplate dilutes their actual instructions. Each file owns its standards.
-- **Don't grade dispatcher files.** A one-line command like `/plan` that just invokes the planner agent inherits its target's quality — grade the target, not the dispatcher.
+- **Don't grade dispatcher files.** A one-line command like `/plan` that just invokes the planner agent, or a `CLAUDE.md` that's only `<tag @path>` includes, has no S/R/F surface — grade the targets/included files, not the dispatcher.
+- **Don't dismiss `CLAUDE.md` / docs files by filename.** A context-heavy file with embedded directives ("Always X", "Never Y", "When X, do Y") has a real S/R/F surface in those passages even though the rest of the file is pure reference. Read for directive content before deciding `n/a`.
 - **Don't pile on MUSTs.** Capitalised commands feel forceful but read as noise. Explain *why* the model should do something — literal-following is also literal-understanding. A two-sentence rationale beats a one-word imperative.
-- **Don't audit `~/.claude/CLAUDE.md` without explicit consent.** Changing global instructions silently affects every project on the user's machine.
+- **Don't audit global files (`~/.claude/...`) without explicit consent.** Either the user asks directly or `--global` is passed. Even with consent, confirm before each write — global edits affect every project on the machine.
 - **Don't conflate "thin" with "broken".** A skill that's 30 lines but specific in all three dimensions is fine. Length is not the metric.
 
 ## Common Mistakes
