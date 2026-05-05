@@ -48,14 +48,18 @@ print(sun.strftime('%Y-%m-%d'))
 "
 ```
 
-### 2. Extract commits
+### 2. Extract source material
+
+**Weekly reports**: prefer existing daily reports as input. If every day in the Mon–Sun range either has a `YYYY-MM-DD.md` in the output directory or no commits, read those dailies and synthesize the weekly from them — the dailies have already done the commit-grouping work, so this is faster and produces a more coherent narrative. Fall back to `git log` for any uncovered days, then merge.
+
+**Daily reports** (and weekly fallback for uncovered days): extract commits from git.
 
 ```bash
 git log --all --no-merges --after="DAY_BEFORE_START" --before="DAY_AFTER_END" \
   --date=short --format="%h|%ad|%s"
 ```
 
-Boundaries are exclusive — offset by one day. If zero commits found, tell the user and stop.
+Boundaries are exclusive — offset by one day. If zero commits found (and no daily report exists for the range), tell the user and stop.
 
 ### 3. Check for milestones (optional)
 
