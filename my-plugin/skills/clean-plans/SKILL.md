@@ -10,7 +10,7 @@ description: >
 
 Organize plan/spec/review `.md` files: rename important project-specific documents to `{YYYY-MM-DD}-{feature}-{type}.md`, and offer to delete trivial or unrelated ones.
 
-**Resource note:** This task is simple file operations — use haiku model or dispatch a haiku subagent.
+The per-file classification in step 3 fans out to parallel Haiku subagents — independent rubric-driven extraction with no shared state. The main session handles discovery, approval, and execution.
 
 ## Steps
 
@@ -48,9 +48,9 @@ Examples:
 - `2026-03-10-batch-export-plan.md` -> SKIP (already dated)
 - `2026-03-10-auth-redesign-design.md` -> SKIP (already dated, specs dir)
 
-### 3. Read each candidate and triage
+### 3. Triage each candidate (dispatched in parallel)
 
-For each rename candidate, read its content and classify it into one of two buckets:
+Each candidate is triaged into one of two buckets, with metadata extraction for the rename bucket. The criteria below are the rubric — they apply identically whether you triage inline or via dispatch.
 
 #### RENAME — important, project-specific documents
 
@@ -74,6 +74,48 @@ Offer deletion for documents that match any of these criteria:
 - **Generic/boilerplate**: Documents with little substantive content or that duplicate information available elsewhere (README, CLAUDE.md, git history)
 
 When in doubt, lean toward RENAME — only suggest deletion when the document is clearly low-value.
+
+#### Dispatch
+
+Reading and classifying each file is independent work that benefits from cheaper-model parallelism. With **3 or more candidates**, fan out via the Agent tool — one call per file, all dispatched in a **single message** so they run concurrently. Use `subagent_type: "general-purpose"` and `model: "haiku"`. With 1–2 candidates, classify inline; spawn overhead exceeds the savings.
+
+Each subagent gets this self-contained prompt (substitute `<PATH>` for the candidate's path):
+
+```
+Classify the plan/spec/review file at <PATH>.
+
+Read the file in full, then return ONE JSON object on a single line, no prose, no code fences:
+{"path": "<PATH>", "decision": "RENAME"|"DELETE", "feature": "<kebab-case-2-to-4-words>"|null, "type": "plan"|"review"|"spec"|"design"|null, "reason": "<one short sentence>"}
+
+Decision rules:
+
+RENAME — important, project-specific documents describing meaningful feature work,
+architectural decisions, or domain-specific plans worth preserving. For RENAME,
+populate feature and type:
+- feature: 2-4 kebab-case words for the main topic (e.g. "batch-export")
+- type: one of plan/review/spec/design — infer from parent directory
+  (specs/ -> spec, plans/ -> plan), H1 heading ("# Plan: ..." -> plan),
+  content keywords (review, evaluation, specification), existing suffix
+  (*-design.md -> design); default to "plan" if ambiguous.
+
+DELETE — trivial or unrelated documents matching any of:
+- Chore/tooling meta-plans (configuring tools, skills, CI tweaks, linter setup —
+  not the project's own features)
+- Minor fixes (small bug fixes, typo corrections, config adjustments that don't
+  warrant a persistent plan)
+- Already completed one-off tasks with no ongoing reference value
+- Generic/boilerplate (little substantive content, or duplicates README,
+  CLAUDE.md, or git history)
+
+For DELETE, set feature and type to null. The reason field is required for both
+buckets — for DELETE explain which criterion it matched; for RENAME give a brief
+justification.
+
+When in doubt, lean RENAME — only choose DELETE when the document is clearly
+low-value.
+```
+
+Aggregate the returned JSON rows into a single in-memory list keyed by path before moving to step 4. If any subagent returns malformed JSON or fails, classify that one file inline rather than retrying — one bad row shouldn't block the rest.
 
 ### 4. Determine date
 
