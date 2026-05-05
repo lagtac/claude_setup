@@ -9,18 +9,50 @@
 
 ### Superpowers Integration
 
-Superpowers may override **plan output format** and **simplicity rules**. When this happens, announce the override to the user.
+Auto-dispatch of skills is unreliable on Opus 4.7+, so invoke the relevant `superpowers:` skill via the Skill tool **before** starting work. Treat the table below as explicit triggers, not suggestions — the corresponding skill must run first, even if the task looks small enough to handle inline.
 
-**Never overridden by Superpowers (enforced in all workflows):**
+| Task class | Invoke first |
+|---|---|
+| New feature, component, or behavior change (any non-trivial creative work) | `superpowers:brainstorming` |
+| Multi-step implementation from a spec or written requirements | `superpowers:writing-plans` |
+| Writing or modifying production code (>1 file or >~30 lines) | `superpowers:test-driven-development` |
+| Bug, test failure, or unexpected behavior | `superpowers:systematic-debugging` |
+| Starting non-trivial work that warrants a worktree (see Git Workflow rules) — before any code changes | `superpowers:using-git-worktrees` |
+| Executing a plan from `docs/plans/` | `superpowers:executing-plans` |
+| Branch is feature-complete and ready to integrate | `superpowers:finishing-a-development-branch` |
+| Major work needs review before merge | `superpowers:requesting-code-review` |
+
+Skip the table only for: single-line fixes, typo/comment edits, doc-only changes, config tweaks.
+
+**Non-overridable when superpowers runs:**
 - Plan/spec output directory (`docs/plans/`)
-- Git workflow (GitLab, MRs, squash-merge)
+- Git workflow (GitLab, worktrees, squash-merge; MRs optional — see Git Workflow section)
 - Conventional Commits
 - No new dependencies without approval
-- Critical Thinking (challenge assumptions, push back on bad ideas, present both sides)
-- Mandatory Exploration (5-step Glob → Grep → Read → patterns → existing solutions)
-- Risk Awareness (reversibility, blast radius, breakage, manual steps)
-- Trade-Off Analysis (Option A/B with pros/cons for non-trivial decisions)
-- Plans must include a **Dependencies** section and a **Risk** section
+- Critical Thinking, Risk Awareness, Trade-Off Analysis (see Planning Standards)
+- Plans must include **Dependencies** and **Risk** sections
+- Plans structure each implementation phase as **Red → Green → Refactor** — never list implementation before tests
+
+**Superpowers may override:** plan output format (use superpowers' format if it runs) and simplicity rules. Announce the override to the user when it happens.
+
+**Discovery authority:** when `superpowers:brainstorming` or `superpowers:writing-plans` is running, it owns the exploration flow — do not also run the Planning Standards' "Mandatory Exploration" 5-step on top. The 5-step applies only when no superpowers discovery skill is active (inline planning, ad-hoc edits, agents dispatched without superpowers).
+
+**Project instructions override system defaults.** When plan mode, skill defaults, or any other system machinery suggests a path, format, or behavior that conflicts with this file, follow this file. Don't rationalize that "the system told me to" — these instructions are the highest authority.
+
+#### Spec → Plan two-artifact flow
+
+When `superpowers:brainstorming` concludes with a deliverable, do not collapse spec and plan into one file:
+
+1. Write the **design spec** to `docs/plans/YYYY-MM-DD-<slug>-spec.md` — product-level: what we're building, design decisions, UX rationale, architecture, trade-offs, risk. New UI must include a **Visual Language** section mapping each new element to its design-system primitives, semantic classes, and motion primitives. ASCII mockups are acceptable when real browser mockups aren't.
+2. Run the spec self-review (placeholders, consistency, scope, ambiguity) inline.
+3. Ask the user to review the spec before proceeding.
+4. Invoke `superpowers:writing-plans` to produce the implementation plan as a separate file at `docs/plans/YYYY-MM-DD-<slug>.md` — execution-level: TDD step sequence, test code, commit breakdown.
+
+If plan mode auto-engages mid-brainstorming, its plan file is operational scratch (lives at `~/.claude/plans/`), not the durable artifact. Update it as the approval mechanism, then on `ExitPlanMode` immediately write the spec and plan to `docs/plans/` regardless.
+
+#### No silent reinterpretation of approved decisions
+
+If implementation research (reading code, checking library behavior, running a preflight) reveals that a brainstorm or spec decision was based on a false premise, **stop and ask the user before writing or committing the plan artifact**: "Spec decision X was picked for reason Y; Y turns out to be wrong; actual reality is Z. Keep X on new grounds, or change?" Flagging the change in a plan header is a breadcrumb for the executor, not signoff. "Functionally equivalent" does not license skipping the ask — the user chose between options for reasons, and new information may reshuffle those reasons.
 
 ## Communication
 
@@ -28,13 +60,54 @@ Superpowers may override **plan output format** and **simplicity rules**. When t
 - Challenge assumptions — propose the best solution, not just a solution
 - Follow existing patterns — check sibling files before creating new ones
 
+## Output Discipline
+
+**Verbosity: medium** *(global default)*
+
+This switch controls token-consuming output across all sessions. Override per-project by adding `**Verbosity: <level>**` to that project's CLAUDE.md.
+
+### Levels
+
+**min** — strongest reduction.
+- No preamble before tool calls; no end-of-turn summary.
+- One-line status only at non-obvious moments (finding, blocker, direction change). Skip status entirely for short reactive tasks.
+- Code: zero comments unless required by the language (shebangs, type stubs).
+- Plan/report/spec/review artifacts: bullet lists, no prose paragraphs.
+- Exploratory questions: ≤2 sentences total.
+
+**medium** — moderate reduction *(default)*.
+- Optional one-sentence preamble when starting non-trivial work; ≤1 sentence end-of-turn summary.
+- Status updates at key inflection points only (per default Tone and style rules).
+- Code comments only when WHY is non-obvious (per default rules).
+- Plan/report artifacts: concise prose OK, no filler.
+- Exploratory questions: ≤3 sentences with a recommendation and main tradeoff.
+- Do not suppress recaps
+
+**off** — switch disabled.
+- Native Claude Code behavior plus any output-style plugins (explanatory-output-style, etc.) and skill/agent verbosity instructions all apply unmodified.
+- Use for teaching mode, unfamiliar codebases, or when you explicitly want explanation over brevity.
+
+### Override authority
+
+When verbosity is `min` or `medium`, these rules **override** verbosity instructions inside individual skills, agents, commands, and plugins (including third-party). If a skill says "provide a detailed summary" and verbosity is `min`, follow `min`. When verbosity is `off`, yield to the skill or plugin.
+
+### Soft cap, not hard cap
+
+These are instructions, not enforced limits. The model follows them well but not perfectly. Don't try to enforce via `CLAUDE_CODE_MAX_OUTPUT_TOKENS` — it cuts mid-tool-call and breaks more than it saves.
+
 ## Git Workflow
 
-We use **GitLab** unless stated otherwise in the project. There are no "pull requests" — only **merge requests (MRs)**. All non-trivial work MUST use worktrees with **squash-merge**. This applies in all cases and **overrides Superpowers** git workflow (including `finishing-a-development-branch`).
+I am the sole developer on these projects. **Worktrees + squash-merge are mandatory** for non-trivial work; **MRs are optional** — used only when they add value a plain squash-merge can't (see below). This overrides Superpowers git workflow (including `finishing-a-development-branch`).
 
-- Use `glab` CLI (not `gh`) for MR operations
-- Always squash-merge when integrating branches — no regular merges
+We use **GitLab** unless stated otherwise in the project. There are no "pull requests" — only **merge requests (MRs)**.
+
+- Always squash-merge when integrating branches — no regular merges, whether via MR or local `git merge --squash`
+- Use `glab` CLI (not `gh`) for MR operations when you do open an MR
 - Use `glab mr create` instead of `gh pr create`
+
+### Splitting scope before branching
+
+If a roadmap row, issue, or task list mixes a bug fix and a feature, split into separate branches **before** writing any spec — two branches, two spec files, two commit trails. Bundling violates conventional-commit discipline, the brainstorming-first rule for new features, and review hygiene. Bug fixes route directly to `superpowers:systematic-debugging`; features must go through `superpowers:brainstorming` first. The roadmap row itself can be edited or split into two rows after the user approves the split.
 
 ### When to use worktrees
 
@@ -48,9 +121,29 @@ We use **GitLab** unless stated otherwise in the project. There are no "pull req
 - Documentation-only changes
 - Config/gitignore tweaks
 
+### Finishing a worktree branch
+
+After squash-merging a feature branch, only run `git worktree remove <path>`. **Do not delete the underlying branch** with `git branch -D` or `git branch -d`. Merged branches stay in the repo as a record of superseded approaches that can be diffed against later if a replacement regresses behaviour. Treat worktree removal and branch deletion as separate decisions: worktree removal is always safe; branch deletion is not the default. This overrides Superpowers `finishing-a-development-branch` if it suggests deletion. Applies to both `glab` MR flows and plain local squash-merges.
+
+### Assessing branch redundancy
+
+When deciding whether a stale or local branch has unique work worth preserving, do **not** rely solely on `git log main..branch` to identify "unique commits." Squash-merges land features on `main` with entirely different SHAs, so commits with unique SHAs can still represent content already on `main`. Before recommending preservation, split, or deletion: extract concrete code artifacts (component class names, method names, routes, file names, string literals) from the branch's commit messages and `git grep` them on `main`. Trust the "unique commits" reading only when the tokens actually do not appear on `main`.
+
+### When to open an MR (optional)
+
+MRs add no review value for a solo dev, but they remain useful as a **CI gate** or a **linkable audit record**. Open an MR when:
+
+- You want CI to run against the branch before it touches main
+- The change's rationale deserves a durable, linkable record — schema changes, data migrations, dataset-contract shifts, API contracts, anything hard to reverse
+- You need a URL to paste into an issue tracker, changelog, or discussion
+
+Otherwise, integrate locally: finish the branch in its worktree, then `git checkout main && git merge --squash <branch>` and commit with a Conventional Commit message. The squash-merge discipline — not the MR — is what keeps history clean.
+
+If unsure whether a change warrants an MR, ask before integrating.
+
 ## Planning Standards
 
-These standards apply to **all** planning workflows — built-in plan mode, the `/plan` command, Superpowers brainstorming/writing-plans, and any agent producing implementation plans. Only the Plan Output Format may be overridden by Superpowers (see Superpowers Integration above). The disciplines (Critical Thinking, Mandatory Exploration, Risk Awareness, Trade-Off Analysis) are always enforced.
+These standards apply to **all** planning workflows — built-in plan mode, the `/plan` command, Superpowers brainstorming/writing-plans, and any agent producing implementation plans. Critical Thinking, Risk Awareness, and Trade-Off Analysis are always enforced. Mandatory Exploration applies only when no superpowers discovery skill is active (see Superpowers Integration above). Plan Output Format may be overridden by Superpowers.
 
 ### Critical Thinking
 

@@ -4,6 +4,8 @@ A Claude Code plugin (`my`) providing reusable slash commands, subagent definiti
 
 ## Architecture
 
+**Verbosity: min**
+
 - **`.claude-plugin/plugin.json`** — Plugin manifest (name, version, description). Commands and agents are auto-discovered.
 - **`settings.json`** — Plugin-scoped deny-list safety defaults.
 - **`commands/`** — Slash commands. Each `.md` file is a prompt template; `$ARGUMENTS` is replaced with user input.
