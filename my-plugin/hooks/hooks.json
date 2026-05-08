@@ -1,14 +1,16 @@
 {
-  "PostToolUse": [
-    {
-      "matcher": "Bash",
-      "hooks": [
-        {
-          "type": "command",
-          "if": "Bash(git merge --squash *)",
-          "command": "cmd=$(jq -r '.tool_input.command // \"\"'); case \"$cmd\" in 'git merge --squash '*|'git merge --squash') printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"squash-merge detected. Invoke the my:roadmap-management skill — it owns the 🚧 → ✅ promotion and delegates the CHANGELOG half to my:changelog-management. Both edits land in the same integration commit.\"}}' ;; esac"
-        }
-      ]
-    }
-  ]
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git merge --squash *)",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); case \"$cmd\" in 'git merge --squash '*|'git merge --squash') printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"squash-merge detected. Invoke the my:roadmap-management skill — it owns the 🚧 → ✅ promotion and delegates the CHANGELOG half to my:changelog-management. Both edits land in the same integration commit.\"}}' ;; esac"
+          }
+        ]
+      }
+    ]
+  }
 }
