@@ -104,8 +104,14 @@ when extracting it into the substitution.)*
 > whether its code snippets compile. Mark genuinely-inapplicable dimensions as **N/A** with a
 > one-line reason in the dual-perspective tables — do not silently skip.
 >
-> 1. **Completeness.** The plan covers the whole stated goal: no missing steps, unhandled
->    cases, or undefined terms. A cold session could execute it without inventing requirements.
+> 1. **Completeness & snippet self-sufficiency.** The plan covers the whole stated goal: no
+>    missing steps, unhandled cases, or undefined terms. A cold session could execute it
+>    without inventing requirements. This explicitly includes the snippets: any snippet meant
+>    to be executed (copied into a file or run) must be runnable without the executor inventing
+>    imports, helpers, fixtures, or symbols the plan never establishes in an earlier step. A
+>    genuine omission — e.g. a snippet that references an import or helper the plan never
+>    defines — is a **completeness finding** (it forces the executor to guess), distinct from a
+>    *clearly-marked elision* (see dimension 6), which is fine.
 > 2. **Sequencing & atomicity.** Steps are ordered so dependencies land before dependents;
 >    each step is a coherent, single-purpose commit. Where the plan implements behaviour, it
 >    follows Red → Green → Refactor (tests before implementation), per the project's plan
@@ -122,9 +128,14 @@ when extracting it into the substitution.)*
 >    or false assumption is a finding citing `plan-section` ↔ `repo file:line` (or "(not found)").
 > 6. **Snippet logic.** Inspect embedded test/implementation snippets for **logic** errors only:
 >    off-by-ones, a test asserting the wrong thing, a snippet that cannot achieve its step's
->    stated goal, contradictory snippets across steps. **Explicitly out of scope:** missing
->    imports, undefined helpers shown as `…`/elisions, unresolved symbols, and formatting — plan
->    snippets are partial by design; do not flag them.
+>    stated goal, contradictory snippets across steps. **Out of scope:** snippets the plan
+>    *clearly marks as abbreviated* (`…`, "imports omitted", "sketch"), and pure formatting/style.
+>    Do **not** flag those, and do **not** run a lint/type/style pass — that is the built-in
+>    `/code-review`'s job on real code. Note the boundary with dimension 1: a *clearly-marked
+>    elision* is fine here, but a snippet presented as executable that omits an import/helper the
+>    plan never defines is a completeness finding under dimension 1 — because a cold executor
+>    would be forced to invent it. The test is "would the executor have to guess?", not "is a
+>    line missing".
 
 ### Explicit mode signal
 
@@ -218,8 +229,11 @@ Read/Grep/Glob/Bash/Write — sufficient for grounding.
 
 ## Risk
 
-- **False positives on partial snippets** — the central failure mode. Mitigated by the explicit
-  out-of-scope clause in the snippet-logic dimension (no missing-import/elision/format flags).
+- **False positives on partial snippets** — the central failure mode. Mitigated by the
+  "would the executor have to guess?" test: dimension 6 ignores clearly-marked elisions and
+  runs no lint/type/style pass, while dimension 1 flags genuine omissions (an undefined
+  import/helper the plan never establishes) as completeness gaps. The line is intent
+  (abbreviation) vs. defect (omission), not "is a line missing".
 - **Mode misfire** — a dirty tree silently doing alignment instead of plan-review. Mitigated by
   the printed nudge.
 - **Behaviour change is plugin-wide** — affects `my:code-review` in every project. Plan-review
