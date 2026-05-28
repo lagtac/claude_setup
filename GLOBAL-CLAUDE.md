@@ -177,6 +177,8 @@ If unsure whether a change warrants an MR, ask before integrating.
 
 These standards apply to **all** planning workflows — built-in plan mode, the `/plan` command, Superpowers brainstorming/writing-plans, and any agent producing implementation plans. Critical Thinking, Risk Awareness, and Trade-Off Analysis are always enforced. Mandatory Exploration applies only when no superpowers discovery skill is active (see Superpowers Integration above). Plan Output Format may be overridden by Superpowers.
 
+**Verify against ground truth, not the artifact.** Discovery — caller lists, filenames, parameters — must come from executing against the real system (search the repo, run the command), never from memory or from re-reading the plan.
+
 ### Critical Thinking
 
 - Challenge assumptions — don't rubber-stamp ideas
@@ -197,6 +199,14 @@ Before proposing any changes:
 
 Do not propose changes to code you haven't read. Do not assume file contents.
 
+### Reference Sweep
+
+When a plan removes, renames, or changes the signature of a symbol used across files (function, type, route/event name, config/DI key, field, file-naming scheme):
+
+- The "Files to Modify" list must be the **output of a repo-wide sweep**, not memory.
+- Run **both** a symbol-reference tool **and** a plain text search for the name token — references inside string literals (route/event names, config/DI keys, ORM eager-load paths, reflection, templates) are invisible to symbol tools.
+- Every hit is a row in "Files to Modify." Include cross-repo consumers.
+
 ### Simplicity Rules
 
 - No over-engineering: solve the stated problem, nothing more
@@ -216,9 +226,15 @@ For any non-trivial decision, present alternatives:
 ### Risk Awareness
 
 - Flag anything that's hard to reverse (schema changes, API contracts, data migrations)
-- Note the blast radius: how many files/modules are affected?
+- State the blast radius from the Reference Sweep output (actual caller list), not an estimate
 - Identify what could break and how to detect it
 - Call out if manual testing or deployment steps are needed
+
+### Test Standards
+
+- **End-to-end coverage.** A change to a public surface (route, relationship, serialized contract, CLI) needs at least one test exercising the real surface end-to-end — not only unit tests of the changed unit.
+- **No vacuous tests.** Each test must fail for the right reason before implementation. Assertions on generated artifacts must reference the real producing code, not an assumed pattern. Reject degenerate parameters, matches-nothing filters, and references to non-existent fixtures.
+- **Rehearse runbooks.** Operator scripts/runbooks must be dry-run against the real target before the plan is marked done.
 
 ### Plan Output Format
 
