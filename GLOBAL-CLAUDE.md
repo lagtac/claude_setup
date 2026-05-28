@@ -63,7 +63,8 @@ When multiple review surfaces apply, pick by trigger — don't improvise. The tw
 | Situation | Use |
 |---|---|
 | "Is this change sound?" / balanced for-and-against verdict / a durable review artifact | `my:code-review` (no args — working tree; or a `BASE..HEAD` range) |
-| Does the diff match a plan/spec? | `my:code-review <plan-path>.md` |
+| Does the diff match a plan/spec? (dirty tree) | `my:code-review <plan-path>.md` |
+| Review an implementation plan/spec before coding (clean tree) | `my:code-review <plan>.md` |
 | Find correctness/efficiency bugs in the diff | built-in `/code-review` (effort `low`→`max`) |
 | Apply the review's fixes to the working tree | built-in `/code-review --fix` (or `/simplify`) |
 | Deep multi-agent pre-merge sweep | built-in `/code-review ultra` |

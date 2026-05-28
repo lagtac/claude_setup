@@ -7,7 +7,8 @@ description: >
   a diff against a plan, before merging, or after finishing a task. Defaults to the working-tree
   diff; pass a `BASE..HEAD` range for a committed range, and a `docs/plans/*.md` path to enable
   plan-alignment. NOT a bug scanner — low-level bug-finding, `--fix`, and deep `ultra` review are
-  delegated to the built-in `/code-review`.
+  delegated to the built-in `/code-review`. Pointing it at a `.md` plan with a clean working tree
+  reviews the plan itself (grounded against the repo + snippet-logic check) instead of a diff.
 ---
 
 # Code Review
@@ -56,13 +57,84 @@ git ls-files --others --exclude-standard
 
 The third command lists untracked files; for each one, run `git diff --no-index /dev/null <path>` to produce canonical new-file diff output (`diff --git`, `new file mode`, `--- /dev/null`, `+++ b/<path>`, `@@`, content). Concatenate those onto the working-tree and staged diffs. Do **not** hand-construct the diff headers — `git diff --no-index` does this correctly and consistently.
 
-If the resulting payload is empty, stop with a message: `No changes to review.` (working-tree mode) or `Range <RANGE> is empty.` (range mode).
+If the resulting payload is empty and `PLAN_PATH` is unset, stop with a message: `No changes to review.` (working-tree mode) or `Range <RANGE> is empty.` (range mode). Otherwise, proceed to step 1a.
+
+### 1a. Detect review mode
+
+Let `PLAN_PATH` be from step 0 and `payload` be the captured diff. Set `MODE`:
+
+| `PLAN_PATH` | `payload` | `MODE` | Action |
+|---|---|---|---|
+| set | empty | `plan-review` | Subject is the plan document; ignore `RANGE` if it was set. |
+| set | non-empty | `diff-review` | Build the Plan Alignment block (step 2). **Print the nudge below to the user.** |
+| unset | empty | — | Stop: `No changes to review.` (or `Range <RANGE> is empty.` if `RANGE` was set). |
+| unset | non-empty | `diff-review` | Plain diff review. |
+
+Nudge (print to the user, not into the dispatch prompt), when `PLAN_PATH` is set and `payload` is non-empty:
+
+> `(Working tree is dirty, so I'm reviewing the diff against <PLAN_PATH>. Commit or stash to review the plan document itself.)`
 
 ### 2. Build the dispatch prompt
 
 Read `code-reviewer-prompt.md` from this skill's directory.
 
-If `DESCRIPTION` or `PLAN_PATH` is set, **build a plan-alignment block** as follows:
+Substitute, by `MODE`:
+
+- `{{MODE}}` → `plan-review` or `diff-review`.
+- `{{SUBJECT}}`:
+  - diff-review → ``The combined diff to review:`` followed by a fenced ```diff block with the payload.
+  - plan-review → ``The plan document to review (`<PLAN_PATH>`):`` followed by a fenced ```markdown block with the **full** contents of `PLAN_PATH`.
+- `{{CRITERIA}}`:
+  - diff-review → the **Diff criteria** block below.
+  - plan-review → the **Plan criteria** block below.
+- `{{PLAN_ALIGNMENT}}`:
+  - diff-review *with* a description/plan supplied → the existing `## Plan Alignment` block.
+  - otherwise (including all plan-review) → empty string.
+- `{{MODE_OUTPUT_SECTION}}`:
+  - diff-review with alignment → the **Plan Alignment output** block below.
+  - plan-review → the **Grounding output** block below.
+  - plain diff-review → empty string.
+- `{{PLAN_DIRECTORY}}` → `"$(git rev-parse --show-toplevel)/docs/plans"` (unchanged).
+- `{{REVIEW_SLUG}}`:
+  - diff-review → `<YYYY-MM-DD>-<branch-or-cwd>-review` (unchanged; replace `/` in branch with `-`).
+  - plan-review → `<plan-basename-without-.md>-plan-review` (e.g. `docs/plans/2026-05-28-foo.md` → `2026-05-28-foo-plan-review`).
+
+**Diff criteria** (`{{CRITERIA}}` for diff-review — this is the current text, preserved):
+
+> Assess the change against these soundness dimensions — **not** a line-level bug scan. Mark genuinely-inapplicable dimensions as **N/A** with a one-line reason in the dual-perspective tables — do not silently skip.
+>
+> 1. **Solves the stated problem.** The change accomplishes its intent (and the supplied plan, if any). Judge whether it does the right thing, not whether each line is bug-free.
+> 2. **Architecture & pattern fit.** Follows existing conventions, sits at the right abstraction level, respects layer boundaries; no new abstraction where three similar lines would do.
+> 3. **Soundness of approach.** Treats the root cause, not a symptom. No bandaid `try/catch`, no backwards-compatibility cruft (renamed-but-still-exported symbols, dual "migration" code paths), no fallback logic that silently masks a failure.
+> 4. **Risk & blast radius.** What is hard to reverse (schema, contract, data migration), what could break elsewhere, what needs manual verification or a deploy step.
+> 5. **Plan alignment.** When a `## Plan Alignment` block was supplied above, treat every deviation between the diff and the plan as a finding.
+>
+> **Out of scope — do not duplicate the built-in reviewer.** Low-level bug-finding (exposed secrets, injection, N+1 queries, input-validation gaps, style/lint, test-coverage line items) is the job of the built-in `/code-review` (which also offers `--fix` and `ultra`). Do not enumerate those here. Only surface such an item if it directly undermines one of the judgment dimensions above (e.g., a missing authorization check that makes the *approach* unsound) — and say which dimension it implicates.
+
+**Plan criteria** (`{{CRITERIA}}` for plan-review):
+
+> Assess the plan against these dimensions — judge whether it is **ready to implement**, not whether its code snippets compile. Mark genuinely-inapplicable dimensions as **N/A** with a one-line reason in the dual-perspective tables — do not silently skip.
+>
+> 1. **Completeness & snippet self-sufficiency.** The plan covers the whole stated goal: no missing steps, unhandled cases, or undefined terms. A cold session could execute it without inventing requirements. This explicitly includes the snippets: any snippet meant to be executed must be runnable without the executor inventing imports, helpers, fixtures, or symbols the plan never establishes in an earlier step. A genuine omission — e.g. a snippet that references an import or helper the plan never defines — is a **completeness finding** (it forces the executor to guess), distinct from a *clearly-marked elision* (see dimension 6), which is fine.
+> 2. **Sequencing & atomicity.** Steps are ordered so dependencies land before dependents; each step is a coherent, single-purpose commit. Where the plan implements behaviour, it follows Red → Green → Refactor (tests before implementation), per the project's plan standard.
+> 3. **Test-strategy adequacy.** The planned tests actually pin the intended behaviour, at the right level (unit / feature / integration), and would fail for the right reason before the implementation exists. Flag tests that assert nothing meaningful or mock the code under test.
+> 4. **Risk & reversibility.** Hard-to-reverse steps (schema changes, API/data contracts, migrations, deletions) are identified with a mitigation or rollback note; blast radius is named. Flag unflagged irreversible steps.
+> 5. **Grounding (verify against the repo).** Use Read / Grep / Glob to confirm the plan's claims: referenced files, symbols, routes, and commands exist; stated assumptions about current behaviour hold; proposed patterns match existing conventions. Every stale reference or false assumption is a finding citing `plan-section` ↔ `repo file:line` (or "(not found)").
+> 6. **Snippet logic.** Inspect embedded test/implementation snippets for **logic** errors only: off-by-ones, a test asserting the wrong thing, a snippet that cannot achieve its step's stated goal, contradictory snippets across steps. **Out of scope:** snippets the plan *clearly marks as abbreviated* (`…`, "imports omitted", "sketch"), and pure formatting/style. Do **not** flag those, and do **not** run a lint/type/style pass — that is the built-in `/code-review`'s job on real code. Note the boundary with dimension 1: a *clearly-marked elision* is fine here, but a snippet presented as executable that omits an import/helper the plan never defines is a completeness finding under dimension 1 — because a cold executor would be forced to invent it. The test is "would the executor have to guess?", not "is a line missing".
+
+**Plan Alignment output** (`{{MODE_OUTPUT_SECTION}}` for diff-review with alignment — current text):
+
+> ### Plan Alignment
+>
+> State whether the implementation matches the supplied description/plan, then enumerate any deviations as bullets — each referencing a `file:line` or "(missing)" with a one-line note. Surface deviations as findings in the Issues table using the standard severity / confidence labels.
+
+**Grounding output** (`{{MODE_OUTPUT_SECTION}}` for plan-review):
+
+> ### Grounding
+>
+> State whether the plan's references and assumptions hold against the repo. Enumerate each stale reference / false assumption as a bullet citing the plan location ↔ `repo file:line` (or "(not found)"). Surface material ones as findings in the Issues table. Omit if the plan made no checkable claims.
+
+For diff-review with a description or plan supplied, **build a plan-alignment block** as follows:
 
 ```markdown
 ## Plan Alignment
@@ -78,17 +150,13 @@ The plan/requirements:
 Apply a plan-alignment check in addition to the judgment dimensions: does the implementation match what was described? Are deviations justified or problematic? Is anything in the plan missing from the diff? Surface deviations as findings using the same severity / confidence labels.
 ```
 
-If neither `DESCRIPTION` nor `PLAN_PATH` is set, the plan-alignment block is the empty string.
+If neither `DESCRIPTION` nor `PLAN_PATH` is set (or `MODE` is `plan-review`), the plan-alignment block is the empty string.
 
 Compose the dispatch prompt by:
 1. Starting with the contents of `code-reviewer-prompt.md` (skip the header above the first `---`, take the body)
-2. Replacing `{{PLAN_ALIGNMENT}}` with the plan-alignment block from above (or empty string)
-3. Replacing `{{DIFF}}` with the combined diff from step 1
-4. Replacing `{{PLAN_DIRECTORY}}` with the **absolute** path to the project's `docs/plans/` directory, computed as `"$(git rev-parse --show-toplevel)/docs/plans"`. Subagents do not necessarily inherit the calling session's cwd — passing a relative path can land the review in the wrong project root (especially when working inside a git worktree).
-5. Replacing `{{REVIEW_SLUG}}` with `<YYYY-MM-DD>-<branch-or-cwd>-review` where:
-   - `<YYYY-MM-DD>` is today's date
-   - `<branch-or-cwd>` is the current branch name if it isn't `main`/`master`/`HEAD`, otherwise the basename of the project root
-   - Replace any `/` in the branch name with `-` so the slug stays a single filename (e.g., `feature/auth` → `feature-auth`). Slashes would land the file in an unintended subdirectory or fail the write.
+2. Replacing `{{MODE}}`, `{{SUBJECT}}`, `{{CRITERIA}}`, `{{PLAN_ALIGNMENT}}`, `{{MODE_OUTPUT_SECTION}}` per the substitution rules above
+3. Replacing `{{PLAN_DIRECTORY}}` with the **absolute** path to the project's `docs/plans/` directory, computed as `"$(git rev-parse --show-toplevel)/docs/plans"`. Subagents do not necessarily inherit the calling session's cwd — passing a relative path can land the review in the wrong project root (especially when working inside a git worktree).
+4. Replacing `{{REVIEW_SLUG}}` per the substitution rules above (diff-review: `<YYYY-MM-DD>-<branch-or-cwd>-review`; plan-review: `<plan-basename-without-.md>-plan-review`). For diff-review, `<branch-or-cwd>` is the current branch name if it isn't `main`/`master`/`HEAD`, otherwise the basename of the project root. Replace any `/` in the branch name with `-` so the slug stays a single filename.
 
 If `docs/plans/` does not exist, create it (`mkdir -p`) before dispatch — the agent only has `Write`, not directory-creation duties.
 
@@ -119,9 +187,23 @@ The agent writes its review to `docs/plans/{{REVIEW_SLUG}}.md`. After dispatch r
    Bash:  mkdir -p "$PLAN_DIRECTORY"
    Bash:  git branch --show-current
    → Substitute into REVIEW_SLUG (replace any `/` with `-`)
-   → Substitute DIFF, PLAN_DIRECTORY, REVIEW_SLUG; PLAN_ALIGNMENT = ""
+   → Substitute MODE, SUBJECT, CRITERIA, PLAN_DIRECTORY, REVIEW_SLUG; PLAN_ALIGNMENT = "", MODE_OUTPUT_SECTION = ""
 3. Agent: subagent_type="my:code-reviewer", description="Code review", prompt=<the composed text>
 4. Confirm <PLAN_DIRECTORY>/<REVIEW_SLUG>.md exists. Print pointer.
 ```
 
 The example is the canonical execution trace — follow it literally for the no-args case. Range mode swaps step 1 for `git diff $RANGE` + `git log $RANGE --oneline`. Plan-alignment mode adds the substitution for `PLAN_ALIGNMENT` (otherwise empty string).
+
+## Worked example: plan-review (clean tree)
+
+```
+0. Args: docs/plans/2026-05-28-foo.md → PLAN_PATH set; RANGE/DESCRIPTION empty.
+1. git diff / --staged / ls-files → payload EMPTY.
+1a. PLAN_PATH set + payload empty → MODE = plan-review.
+2. Read code-reviewer-prompt.md. Substitute:
+   MODE=plan-review; SUBJECT=```markdown <full plan text>```; CRITERIA=Plan criteria;
+   PLAN_ALIGNMENT=""; MODE_OUTPUT_SECTION=Grounding output;
+   REVIEW_SLUG=2026-05-28-foo-plan-review.
+3. Agent: subagent_type="my:code-reviewer", prompt=<composed text>.
+4. Confirm docs/plans/2026-05-28-foo-plan-review.md exists. Print pointer.
+```

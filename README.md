@@ -7,7 +7,7 @@ A Claude Code plugin providing personal commands and agents for development work
 | Command | Description |
 |---------|-------------|
 | `/my:plan` | Launch an Opus subagent to explore the codebase and write an implementation plan |
-| `/my:code-review` | Dual-perspective soundness verdict + plan-alignment, written to `docs/plans/` (bug-finding/fix delegated to built-in `/code-review`) |
+| `/my:code-review` | Dual-perspective soundness verdict + plan-alignment, written to `docs/plans/`; or, on a clean tree with a `.md` plan, reviews the plan itself (bug-finding/fix delegated to built-in `/code-review`) |
 | `/my:summarize` | Compare a plan/review against the actual git diff |
 | `/my:commit` | Structured commit workflow |
 | `/my:push` | Push with pre-push checks |
