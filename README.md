@@ -7,7 +7,7 @@ A Claude Code plugin providing personal commands and agents for development work
 | Command | Description |
 |---------|-------------|
 | `/my:plan` | Launch an Opus subagent to explore the codebase and write an implementation plan |
-| `/my:code-review` | Dual-perspective code review of uncommitted changes |
+| `/my:code-review` | Language-aware dual-perspective code review (working tree or `BASE..HEAD` range) |
 | `/my:summarize` | Compare a plan/review against the actual git diff |
 | `/my:commit` | Structured commit workflow |
 | `/my:push` | Push with pre-push checks |
@@ -16,7 +16,6 @@ A Claude Code plugin providing personal commands and agents for development work
 | `/my:clean-gone-branches` | Clean up local branches whose remote is gone |
 | `/my:laravel-debug` | Laravel-specific debugging |
 | `/my:laravel-migration-check` | Check Laravel migrations |
-| `/my:laravel-code-review` | Laravel-focused code review |
 
 ## Agents
 
