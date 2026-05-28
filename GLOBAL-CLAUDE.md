@@ -44,7 +44,9 @@ Skip the table only for: single-line fixes, typo/comment edits, doc-only changes
 When `superpowers:brainstorming` concludes with a deliverable, do not collapse spec and plan into one file:
 
 1. Write the **design spec** to `docs/plans/YYYY-MM-DD-<slug>-spec.md` — product-level: what we're building, design decisions, UX rationale, architecture, trade-offs, risk. New UI must include a **Visual Language** section mapping each new element to its design-system primitives, semantic classes, and motion primitives. ASCII mockups are acceptable when real browser mockups aren't.
-2. Run the spec self-review (placeholders, consistency, scope, ambiguity) inline.
+   - Specs are self-contained. A cold reader with no prior context must be able to write a fully-contained implementation plan from the spec alone.
+   - First section after the title is **"How to read this spec"**: enumerate all related documents (prior specs, plans, ROADMAP rows, CHANGELOG entries, source files, skills) with paths and one-line descriptions, in reading order.
+2. Run the spec self-review (placeholders, consistency, scope, ambiguity, self-containment) inline.
 3. Ask the user to review the spec before proceeding.
 4. Invoke `superpowers:writing-plans` to produce the implementation plan as a separate file at `docs/plans/YYYY-MM-DD-<slug>.md` — execution-level: TDD step sequence, test code, commit breakdown.
 
@@ -53,6 +55,35 @@ If plan mode auto-engages mid-brainstorming, its plan file is operational scratc
 #### No silent reinterpretation of approved decisions
 
 If implementation research (reading code, checking library behavior, running a preflight) reveals that a brainstorm or spec decision was based on a false premise, **stop and ask the user before writing or committing the plan artifact**: "Spec decision X was picked for reason Y; Y turns out to be wrong; actual reality is Z. Keep X on new grounds, or change?" Flagging the change in a plan header is a breadcrumb for the executor, not signoff. "Functionally equivalent" does not license skipping the ask — the user chose between options for reasons, and new information may reshuffle those reasons.
+
+#### Code Review Routing
+
+When multiple review surfaces apply, pick by trigger — don't improvise. The two diff reviewers are complementary, not interchangeable: `my:code-review` renders a **soundness judgment** (is this change sound? does it match the plan?); the built-in `/code-review` is the **bug-finder** (correctness/efficiency issues, and it can apply fixes).
+
+| Situation | Use |
+|---|---|
+| "Is this change sound?" / balanced for-and-against verdict / a durable review artifact | `my:code-review` (no args — working tree; or a `BASE..HEAD` range) |
+| Does the diff match a plan/spec? | `my:code-review <plan-path>.md` |
+| Find correctness/efficiency bugs in the diff | built-in `/code-review` (effort `low`→`max`) |
+| Apply the review's fixes to the working tree | built-in `/code-review --fix` (or `/simplify`) |
+| Deep multi-agent pre-merge sweep | built-in `/code-review ultra` |
+| Security-only sweep on pending changes | `/security-review` |
+| Reviewing an opened PR/MR | `/review` |
+
+**Before any review:** map changed symbols with `mcp__gkg__repo_map`, `mcp__gkg__get_references`, and `mcp__gkg__import_usage` first. Fall back to grep only when gkg can't answer the structural question. Reviewing line-by-line without caller/callee context is the failure mode.
+
+**Reviewer agent:** the `my:code-review` skill dispatches `my:code-reviewer` (Opus, anti-sycophancy, dual-perspective, severity-conditioned surfacing). Never invoke `feature-dev:code-reviewer` or `superpowers:requesting-code-review` — both are superseded.
+
+**Skill mechanics:**
+- `my:code-review` is a **judgment + plan-alignment** reviewer, not a bug scanner. It assesses fixed judgment dimensions (intent, architecture fit, soundness of approach, risk, plan-alignment) and writes a dual-perspective verdict to `docs/plans/<date>-<branch>-review.md`. It does **not** auto-detect language or run a per-language checklist, and it never edits code — route line-level bug-finding and auto-fix to the built-in `/code-review`.
+- The `range` arg is the axis between working-tree and committed-range modes. No range means working tree (`git diff` + staged + untracked); a `BASE..HEAD` literal or two SHAs means that committed range.
+- Plan-alignment: pass a `.md` path to a plan/spec and the reviewer also checks whether the diff implements it. Pass free prose to describe what was built (used as additional alignment context).
+
+**Disambiguation rules:**
+- Want a *verdict/judgment* or *plan-alignment* → `my:code-review`. Want *bugs found* or *fixes applied* → built-in `/code-review` (`--fix` / `ultra`). When you want both, run `my:code-review` for the verdict, then `/code-review --fix` to patch.
+- "Security review" requested explicitly → `/security-review`.
+- An open PR/MR exists and the user wants it reviewed → `/review` (operates on the PR), not `my:code-review` (operates on the local diff or committed range).
+- Both uncommitted and committed work present → run `my:code-review` twice: once with no args (working tree), then with a range arg. Don't combine into one invocation.
 
 ## Communication
 
