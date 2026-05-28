@@ -2,7 +2,6 @@
 
 This file is the prompt template the `my:code-review` skill sends to the `my:code-reviewer` subagent. The skill substitutes the placeholders before dispatch:
 
-- `{{LANGUAGE_FILE}}` — the contents of `language/<resolved>.md`
 - `{{PLAN_ALIGNMENT}}` — a `## Plan Alignment` block when a description or plan was supplied; empty string otherwise
 - `{{DIFF}}` — the combined diff payload (working tree or `BASE..HEAD`)
 - `{{PLAN_DIRECTORY}}` — the absolute directory the review file should land in
@@ -32,11 +31,17 @@ You may use `Read` / `Grep` to investigate a finding's context (e.g., chase a ca
 
 {{PLAN_ALIGNMENT}}
 
-## Checklist
+## Judgment Dimensions
 
-Apply the language-specific items below. Mark items genuinely-inapplicable as **N/A** with a one-line reason in the dual-perspective tables — do not silently skip.
+Assess the change against these soundness dimensions — **not** a line-level bug scan. Mark genuinely-inapplicable dimensions as **N/A** with a one-line reason in the dual-perspective tables — do not silently skip.
 
-{{LANGUAGE_FILE}}
+1. **Solves the stated problem.** The change accomplishes its intent (and the supplied plan, if any). Judge whether it does the right thing, not whether each line is bug-free.
+2. **Architecture & pattern fit.** Follows existing conventions, sits at the right abstraction level, respects layer boundaries; no new abstraction where three similar lines would do.
+3. **Soundness of approach.** Treats the root cause, not a symptom. No bandaid `try/catch`, no backwards-compatibility cruft (renamed-but-still-exported symbols, dual "migration" code paths), no fallback logic that silently masks a failure.
+4. **Risk & blast radius.** What is hard to reverse (schema, contract, data migration), what could break elsewhere, what needs manual verification or a deploy step.
+5. **Plan alignment.** When a `## Plan Alignment` block was supplied above, treat every deviation between the diff and the plan as a finding.
+
+**Out of scope — do not duplicate the built-in reviewer.** Low-level bug-finding (exposed secrets, injection, N+1 queries, input-validation gaps, style/lint, test-coverage line items) is the job of the built-in `/code-review` (which also offers `--fix` and `ultra`). Do not enumerate those here. Only surface such an item if it directly undermines one of the judgment dimensions above (e.g., a missing authorization check that makes the *approach* unsound) — and say which dimension it implicates.
 
 ## Severity-Conditioned Surfacing
 
@@ -98,7 +103,7 @@ Write the review to `{{PLAN_DIRECTORY}}/{{REVIEW_SLUG}}.md` with this structure:
 
 ### Reasoning
 
-[2–4 sentences linking the checklist findings and dual-perspective evidence to the verdict below. Required before the Verdict block — do not skip.]
+[2–4 sentences linking the judgment-dimension findings and dual-perspective evidence to the verdict below. Required before the Verdict block — do not skip.]
 
 ### Verdict
 
