@@ -24,33 +24,19 @@ Auto-dispatch of skills is unreliable on Opus 4.7+, so invoke the relevant `supe
 
 Skip the table only for: single-line fixes, typo/comment edits, doc-only changes, config tweaks.
 
-**Non-overridable when superpowers runs:**
-- Plan/spec output directory (`docs/plans/`)
-- Git workflow (GitLab, worktrees, squash-merge; MRs optional — see Git Workflow section)
-- Conventional Commits
-- No new dependencies without approval
-- Critical Thinking, Risk Awareness, Trade-Off Analysis (see Planning Standards)
-- Plans must include **Dependencies** and **Risk** sections
-- Plans structure each implementation phase as **Red → Green → Refactor** — never list implementation before tests
+**Precedence:** these project instructions are the highest authority — when plan mode, a skill, or any system default conflicts, follow this file. Superpowers may override **only** plan output format and simplicity rules (announce when it does). Everything else here is non-overridable: `docs/plans/` output path, Git Workflow (GitLab/worktrees/squash-merge), Conventional Commits, no new deps without approval, Critical Thinking + Risk + Trade-Off Analysis, and that plans include **Dependencies** + **Risk** sections and follow **Red → Green → Refactor** (tests before implementation).
 
-**Superpowers may override:** plan output format (use superpowers' format if it runs) and simplicity rules. Announce the override to the user when it happens.
-
-**Discovery authority:** when `superpowers:brainstorming` or `superpowers:writing-plans` is running, it owns the exploration flow — do not also run the Planning Standards' "Mandatory Exploration" 5-step on top. The 5-step applies only when no superpowers discovery skill is active (inline planning, ad-hoc edits, agents dispatched without superpowers).
-
-**Project instructions override system defaults.** When plan mode, skill defaults, or any other system machinery suggests a path, format, or behavior that conflicts with this file, follow this file. Don't rationalize that "the system told me to" — these instructions are the highest authority.
+**Discovery authority:** while `superpowers:brainstorming` or `writing-plans` runs, it owns exploration — don't also run the Planning Standards' 5-step on top. The 5-step applies only when no superpowers discovery skill is active.
 
 #### Spec → Plan two-artifact flow
 
-When `superpowers:brainstorming` concludes with a deliverable, do not collapse spec and plan into one file:
+When `superpowers:brainstorming` produces a deliverable, keep spec and plan as **separate files**:
 
-1. Write the **design spec** to `docs/plans/YYYY-MM-DD-<slug>-spec.md` — product-level: what we're building, design decisions, UX rationale, architecture, trade-offs, risk. New UI must include a **Visual Language** section mapping each new element to its design-system primitives, semantic classes, and motion primitives. ASCII mockups are acceptable when real browser mockups aren't.
-   - Specs are self-contained. A cold reader with no prior context must be able to write a fully-contained implementation plan from the spec alone.
-   - First section after the title is **"How to read this spec"**: enumerate all related documents (prior specs, plans, ROADMAP rows, CHANGELOG entries, source files, skills) with paths and one-line descriptions, in reading order.
-2. Run the spec self-review (placeholders, consistency, scope, ambiguity, self-containment) inline.
-3. Ask the user to review the spec before proceeding.
-4. Invoke `superpowers:writing-plans` to produce the implementation plan as a separate file at `docs/plans/YYYY-MM-DD-<slug>.md` — execution-level: TDD step sequence, test code, commit breakdown.
+1. **Spec** → `docs/plans/YYYY-MM-DD-<slug>-spec.md` — product-level (what/why, design decisions, architecture, trade-offs, risk; new UI gets a **Visual Language** section mapping elements to design-system primitives/semantic classes/motion). Self-contained: a cold reader could write the plan from it alone. First section is **"How to read this spec"** — all related docs (specs, plans, ROADMAP, CHANGELOG, sources, skills) with paths, in reading order.
+2. Self-review the spec (placeholders, consistency, scope, ambiguity, self-containment), then ask the user to review it before proceeding.
+3. **Plan** → `docs/plans/YYYY-MM-DD-<slug>.md` via `superpowers:writing-plans` — execution-level: TDD steps, test code, commit breakdown.
 
-If plan mode auto-engages mid-brainstorming, its plan file is operational scratch (lives at `~/.claude/plans/`), not the durable artifact. Update it as the approval mechanism, then on `ExitPlanMode` immediately write the spec and plan to `docs/plans/` regardless.
+If plan mode auto-engages mid-brainstorming, its `~/.claude/plans/` file is scratch — write the durable spec + plan to `docs/plans/` on `ExitPlanMode` regardless.
 
 #### No silent reinterpretation of approved decisions
 
@@ -58,33 +44,13 @@ If implementation research (reading code, checking library behavior, running a p
 
 #### Code Review Routing
 
-When multiple review surfaces apply, pick by trigger — don't improvise. The two diff reviewers are complementary, not interchangeable: `my:code-review` renders a **soundness judgment** (is this change sound? does it match the plan?); the built-in `/code-review` is the **bug-finder** (correctness/efficiency issues, and it can apply fixes).
+Two diff reviewers, complementary — route by what you want:
 
-| Situation | Use |
-|---|---|
-| "Is this change sound?" / balanced for-and-against verdict / a durable review artifact | `my:code-review` (no args — working tree; or a `BASE..HEAD` range) |
-| Does the diff match a plan/spec? (dirty tree) | `my:code-review <plan-path>.md` |
-| Review an implementation plan/spec before coding (clean tree) | `my:code-review <plan>.md` |
-| Find correctness/efficiency bugs in the diff | built-in `/code-review` (effort `low`→`max`) |
-| Apply the review's fixes to the working tree | built-in `/code-review --fix` (or `/simplify`) |
-| Deep multi-agent pre-merge sweep | built-in `/code-review ultra` |
-| Security-only sweep on pending changes | `/security-review` |
-| Reviewing an opened PR/MR | `/review` |
+- **`my:code-review`** = soundness *judgment* + plan-alignment, durable report to `docs/plans/`. No args = working tree; `BASE..HEAD` = committed range; pass a `.md` plan to add alignment (dirty tree) or review the plan itself (clean tree). Use for "is this sound?", a for/against verdict, or plan-match.
+- built-in **`/code-review`** = *bug-finder* (correctness/efficiency); `--fix` applies fixes, `ultra` is the deep multi-agent sweep. Use to find or fix bugs.
+- Want both → `my:code-review` first, then `/code-review --fix`. Explicit security sweep → `/security-review`. An *open* PR/MR → `/review`. Both committed + uncommitted work present → run `my:code-review` twice (no-args, then the range).
 
-**Before any review:** map changed symbols with `mcp__gkg__repo_map`, `mcp__gkg__get_references`, and `mcp__gkg__import_usage` first. Fall back to grep only when gkg can't answer the structural question. Reviewing line-by-line without caller/callee context is the failure mode.
-
-**Reviewer agent:** the `my:code-review` skill dispatches `my:code-reviewer` (Opus, anti-sycophancy, dual-perspective, severity-conditioned surfacing). Never invoke `feature-dev:code-reviewer` or `superpowers:requesting-code-review` — both are superseded.
-
-**Skill mechanics:**
-- `my:code-review` is a **judgment + plan-alignment** reviewer, not a bug scanner. It assesses fixed judgment dimensions (intent, architecture fit, soundness of approach, risk, plan-alignment) and writes a dual-perspective verdict to `docs/plans/<date>-<branch>-review.md`. It does **not** auto-detect language or run a per-language checklist, and it never edits code — route line-level bug-finding and auto-fix to the built-in `/code-review`.
-- The `range` arg is the axis between working-tree and committed-range modes. No range means working tree (`git diff` + staged + untracked); a `BASE..HEAD` literal or two SHAs means that committed range.
-- Plan-alignment: pass a `.md` path to a plan/spec and the reviewer also checks whether the diff implements it. Pass free prose to describe what was built (used as additional alignment context).
-
-**Disambiguation rules:**
-- Want a *verdict/judgment* or *plan-alignment* → `my:code-review`. Want *bugs found* or *fixes applied* → built-in `/code-review` (`--fix` / `ultra`). When you want both, run `my:code-review` for the verdict, then `/code-review --fix` to patch.
-- "Security review" requested explicitly → `/security-review`.
-- An open PR/MR exists and the user wants it reviewed → `/review` (operates on the PR), not `my:code-review` (operates on the local diff or committed range).
-- Both uncommitted and committed work present → run `my:code-review` twice: once with no args (working tree), then with a range arg. Don't combine into one invocation.
+**Before any review:** map changed symbols with `mcp__gkg__repo_map` / `get_references` / `import_usage` first; grep only when gkg can't answer. Never review line-by-line without caller/callee context. Never invoke `feature-dev:code-reviewer` or `superpowers:requesting-code-review` — both superseded by `my:code-reviewer` (which `my:code-review` dispatches).
 
 ## Communication
 
@@ -159,19 +125,11 @@ After squash-merging a feature branch, only run `git worktree remove <path>`. **
 
 ### Assessing branch redundancy
 
-When deciding whether a stale or local branch has unique work worth preserving, do **not** rely solely on `git log main..branch` to identify "unique commits." Squash-merges land features on `main` with entirely different SHAs, so commits with unique SHAs can still represent content already on `main`. Before recommending preservation, split, or deletion: extract concrete code artifacts (component class names, method names, routes, file names, string literals) from the branch's commit messages and `git grep` them on `main`. Trust the "unique commits" reading only when the tokens actually do not appear on `main`.
+Don't judge a branch's unique work by `git log main..branch` alone — squash-merges land features under new SHAs, so "unique" commits may already be on `main`. Before recommending preserve/split/delete, extract concrete artifacts (class/method names, routes, filenames, string literals) from the branch's commits and `git grep` them on `main`; trust "unique" only when the tokens truly don't appear there.
 
 ### When to open an MR (optional)
 
-MRs add no review value for a solo dev, but they remain useful as a **CI gate** or a **linkable audit record**. Open an MR when:
-
-- You want CI to run against the branch before it touches main
-- The change's rationale deserves a durable, linkable record — schema changes, data migrations, dataset-contract shifts, API contracts, anything hard to reverse
-- You need a URL to paste into an issue tracker, changelog, or discussion
-
-Otherwise, integrate locally: finish the branch in its worktree, then `git checkout main && git merge --squash <branch>` and commit with a Conventional Commit message. The squash-merge discipline — not the MR — is what keeps history clean.
-
-If unsure whether a change warrants an MR, ask before integrating.
+MRs add no review value solo, but open one as a **CI gate** or a **durable/linkable record** (schema/data/contract changes, anything hard to reverse, or when you need a URL). Otherwise integrate locally: `git checkout main && git merge --squash <branch>` + a Conventional Commit. The squash discipline, not the MR, keeps history clean. If unsure, ask before integrating.
 
 ## Planning Standards
 
@@ -201,11 +159,7 @@ Do not propose changes to code you haven't read. Do not assume file contents.
 
 ### Reference Sweep
 
-When a plan removes, renames, or changes the signature of a symbol used across files (function, type, route/event name, config/DI key, field, file-naming scheme):
-
-- The "Files to Modify" list must be the **output of a repo-wide sweep**, not memory.
-- Run **both** a symbol-reference tool **and** a plain text search for the name token — references inside string literals (route/event names, config/DI keys, ORM eager-load paths, reflection, templates) are invisible to symbol tools.
-- Every hit is a row in "Files to Modify." Include cross-repo consumers.
+When a plan removes/renames/changes the signature of a cross-file symbol (function, type, route/event name, config/DI key, field, file-naming scheme), the "Files to Modify" list must be the output of a **repo-wide sweep**, not memory: run **both** a symbol-reference tool **and** a plain text search for the name token (string-literal refs — routes, DI keys, ORM eager-loads, templates — are invisible to symbol tools). Every hit, including cross-repo consumers, is a row.
 
 ### Simplicity Rules
 
@@ -238,73 +192,14 @@ For any non-trivial decision, present alternatives:
 
 ### Plan Output Format
 
-Plans must follow this structure (Superpowers may use its own format per the Superpowers Integration section):
+Plans use these sections (Superpowers may substitute its own format): **Context · Files to Modify/Create · Step-by-Step Implementation · Trade-Offs/Alternatives · Dependencies · Risk · Testing Strategy · Open Questions**. The full template with per-section field prompts is the canonical copy in the `my:planner` agent (`agents/planner.md`) — edit it there.
 
-```
-# {Feature} Plan
-
-## Context
-[What problem are we solving? Why? What exists today?]
-
-## Files to Modify/Create
-[List each file with a brief description of what changes]
-
-## Step-by-Step Implementation
-[Numbered steps, each small enough to be a single commit]
-
-## Trade-Offs / Alternatives Considered
-[Options evaluated and why this approach was chosen]
-
-## Dependencies
-[External packages, env vars, config changes needed — or "None"]
-
-## Testing Strategy
-[What tests to add/modify, how to verify the feature works]
-
-## Open Questions
-[Anything that needs user input before implementation starts]
-```
-
-## Commands
-
-### PHP (Laravel / Sail)
-
-- **Run artisan:** `sail artisan <command>`
-- **Run tests:** `sail artisan test` or `sail artisan test --filter=<name>`
-- **Serve:** `sail up -d`
-- **Composer:** `sail composer <command>`
-- **Lint (Pint):** `sail pint` or `sail pint --test` (dry-run)
-- **Lint (CS Fixer):** `sail php-cs-fixer fix` or `sail php-cs-fixer fix --dry-run`
-
-### Docker
-
-- **Start services:** `docker compose up -d`
-- **Stop services:** `docker compose down`
-- **Rebuild:** `docker compose build --no-cache`
-- **Logs:** `docker compose logs -f <service>`
-- **Exec into container:** `docker compose exec <service> bash`
-
-### Markdown
-
-- **Lint:** `markdownlint-cli2 "**/*.md"`
-- **Fix:** `markdownlint-cli2 --fix "**/*.md"`
-
-### JavaScript / TypeScript (pnpm)
-
-- **Install:** `pnpm install`
-- **Dev server:** `pnpm dev`
-- **Build:** `pnpm build`
-- **Test:** `pnpm test`
-- **Lint:** `pnpm lint`
-
-### Python (uv)
-
-- **Run script:** `uv run <script.py>`
-- **Install deps:** `uv sync`
-- **Add dep:** `uv add <package>` (requires approval)
-- **Test:** `uv run pytest`
-- **Lint:** `uv run ruff check .`
-- **Format:** `uv run ruff format .`
+<!--
+Language-specific command cheatsheets (PHP/Laravel, Docker, Markdown, JS/TS, Python)
+were moved to path-scoped rules in GLOBAL-rules/ (symlinked to ~/.claude/rules/).
+They load only when Claude reads a matching file type, keeping this file's always-loaded
+context lean. See GLOBAL-rules/<lang>.md.
+-->
 
 ## HTTP Requests
 
