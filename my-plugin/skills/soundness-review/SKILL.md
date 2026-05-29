@@ -1,5 +1,5 @@
 ---
-name: code-review
+name: soundness-review
 description: >
   Dual-perspective soundness judgment with anti-sycophancy framing and severity-conditioned
   surfacing, plus optional plan/spec alignment — written as a durable report to docs/plans/.
@@ -181,7 +181,7 @@ The agent writes its review to `docs/plans/{{REVIEW_SLUG}}.md`. After dispatch r
    Bash:  git ls-files --others --exclude-standard
    → For each untracked file: git diff --no-index /dev/null <path>
    → Concatenate into DIFF
-2. Read:  my-plugin/skills/code-review/code-reviewer-prompt.md (skip the header above the first `---`, take the body)
+2. Read:  my-plugin/skills/soundness-review/code-reviewer-prompt.md (skip the header above the first `---`, take the body)
    Bash:  git rev-parse --show-toplevel
    → PLAN_DIRECTORY = "<that path>/docs/plans"
    Bash:  mkdir -p "$PLAN_DIRECTORY"

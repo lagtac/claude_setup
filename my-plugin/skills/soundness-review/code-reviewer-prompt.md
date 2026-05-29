@@ -1,6 +1,6 @@
 # Code Reviewer Dispatch Prompt
 
-This file is the prompt template the `my:code-review` skill sends to the `my:code-reviewer` subagent. The skill substitutes the placeholders before dispatch:
+This file is the prompt template the `my:soundness-review` skill sends to the `my:code-reviewer` subagent. The skill substitutes the placeholders before dispatch:
 
 - `{{MODE}}` — `plan-review` or `diff-review`
 - `{{SUBJECT}}` — the subject body (a diff, or a plan document's full text)

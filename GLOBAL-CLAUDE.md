@@ -46,11 +46,11 @@ If implementation research (reading code, checking library behavior, running a p
 
 Two diff reviewers, complementary — route by what you want:
 
-- **`my:code-review`** = soundness *judgment* + plan-alignment, durable report to `docs/plans/`. No args = working tree; `BASE..HEAD` = committed range; pass a `.md` plan to add alignment (dirty tree) or review the plan itself (clean tree). Use for "is this sound?", a for/against verdict, or plan-match.
+- **`my:soundness-review`** = soundness *judgment* + plan-alignment, durable report to `docs/plans/`. No args = working tree; `BASE..HEAD` = committed range; pass a `.md` plan to add alignment (dirty tree) or review the plan itself (clean tree). Use for "is this sound?", a for/against verdict, or plan-match.
 - built-in **`/code-review`** = *bug-finder* (correctness/efficiency); `--fix` applies fixes, `ultra` is the deep multi-agent sweep. Use to find or fix bugs.
-- Want both → `my:code-review` first, then `/code-review --fix`. Explicit security sweep → `/security-review`. An *open* PR/MR → `/review`. Both committed + uncommitted work present → run `my:code-review` twice (no-args, then the range).
+- Want both → `my:soundness-review` first, then `/code-review --fix`. Explicit security sweep → `/security-review`. An *open* PR/MR → `/review`. Both committed + uncommitted work present → run `my:soundness-review` twice (no-args, then the range).
 
-**Before any review:** map changed symbols with `mcp__gkg__repo_map` / `get_references` / `import_usage` first; grep only when gkg can't answer. Never review line-by-line without caller/callee context. Never invoke `feature-dev:code-reviewer` or `superpowers:requesting-code-review` — both superseded by `my:code-reviewer` (which `my:code-review` dispatches).
+**Before any review:** map changed symbols with `mcp__gkg__repo_map` / `get_references` / `import_usage` first; grep only when gkg can't answer. Never review line-by-line without caller/callee context. Never invoke `feature-dev:code-reviewer` or `superpowers:requesting-code-review` — both superseded by `my:code-reviewer` (which `my:soundness-review` dispatches).
 
 ## Communication
 
