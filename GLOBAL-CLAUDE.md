@@ -12,7 +12,7 @@
 Auto-dispatch of skills is unreliable on Opus 4.7+, so invoke the relevant `superpowers:` skill via the Skill tool **before** starting work. Treat the table below as explicit triggers, not suggestions — the corresponding skill must run first, even if the task looks small enough to handle inline.
 
 | Task class | Invoke first |
-|---|---|
+|---| ---|
 | New feature, component, or behavior change (any non-trivial creative work) | `superpowers:brainstorming` |
 | Multi-step implementation from a spec or written requirements | `superpowers:writing-plans` |
 | Writing or modifying production code (>1 file or >~30 lines) | `superpowers:test-driven-development` |
@@ -26,7 +26,7 @@ Skip the table only for: single-line fixes, typo/comment edits, doc-only changes
 
 **Precedence:** these project instructions are the highest authority — when plan mode, a skill, or any system default conflicts, follow this file. Superpowers may override **only** plan output format and simplicity rules (announce when it does). Everything else here is non-overridable: `docs/plans/` output path, Git Workflow (GitLab/worktrees/squash-merge), Conventional Commits, no new deps without approval, Critical Thinking + Risk + Trade-Off Analysis, and that plans include **Dependencies** + **Risk** sections and follow **Red → Green → Refactor** (tests before implementation).
 
-**Discovery authority:** while `superpowers:brainstorming` or `writing-plans` runs, it owns exploration — don't also run the Planning Standards' 5-step on top. The 5-step applies only when no superpowers discovery skill is active.
+**Discovery authority:** while `superpowers:brainstorming` or `writing-plans` runs, it owns exploration — don't also run other planning workflows. 
 
 #### Spec → Plan two-artifact flow
 
@@ -67,13 +67,16 @@ This switch controls token-consuming output across all sessions. Override per-pr
 ### Levels
 
 **min** — strongest reduction.
+
 - No preamble before tool calls; no end-of-turn summary.
 - One-line status only at non-obvious moments (finding, blocker, direction change). Skip status entirely for short reactive tasks.
 - Code: zero comments unless required by the language (shebangs, type stubs).
 - Plan/report/spec/review artifacts: bullet lists, no prose paragraphs.
 - Exploratory questions: ≤2 sentences total.
+- no recaps
 
 **medium** — moderate reduction *(default)*.
+
 - Optional one-sentence preamble when starting non-trivial work; ≤1 sentence end-of-turn summary.
 - Status updates at key inflection points only (per default Tone and style rules).
 - Code comments only when WHY is non-obvious (per default rules).
@@ -82,6 +85,7 @@ This switch controls token-consuming output across all sessions. Override per-pr
 - Do not suppress recaps
 
 **off** — switch disabled.
+
 - Native Claude Code behavior plus any output-style plugins (explanatory-output-style, etc.) and skill/agent verbosity instructions all apply unmodified.
 - Use for teaching mode, unfamiliar codebases, or when you explicitly want explanation over brevity.
 
@@ -149,6 +153,10 @@ These standards apply to **all** planning workflows — built-in plan mode, the 
 
 Before proposing any changes:
 
+0. Use gkg mcp tools to understand project structure. Announce using gkg.
+
+If gkg mcp tools are not available report this fact and use builtins:
+
 1. Use Glob to find relevant files and understand project structure
 2. Use Grep to search for related patterns, imports, and usages
 3. Use Read to examine the actual implementation of files you'll modify or extend
@@ -192,7 +200,7 @@ For any non-trivial decision, present alternatives:
 
 ### Plan Output Format
 
-Plans use these sections (Superpowers may substitute its own format): **Context · Files to Modify/Create · Step-by-Step Implementation · Trade-Offs/Alternatives · Dependencies · Risk · Testing Strategy · Open Questions**. The full template with per-section field prompts is the canonical copy in the `my:planner` agent (`agents/planner.md`) — edit it there.
+Plans use these sections (Superpowers may substitute its own format): **Context · Files to Modify/Create · Step-by-Step Implementation · Trade-Offs/Alternatives · Dependencies · Risk · Testing Strategy · Open Questions**. The full template with per-section field prompts is the canonical copy in the `my:planner` agent (`~/projects/claude-setup/my-plugin/agents/planner.md`) — edit it there.
 
 <!--
 Language-specific command cheatsheets (PHP/Laravel, Docker, Markdown, JS/TS, Python)
