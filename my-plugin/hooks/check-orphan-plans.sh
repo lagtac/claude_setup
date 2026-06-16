@@ -22,6 +22,8 @@ undated=()
 untracked=()
 for f in docs/plans/*.md; do
     name=$(basename "$f")
+    # README.md is a conventional index, not a dated plan -- never an orphan.
+    [ "$name" = "README.md" ] && continue
     [[ "$name" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}- ]] || undated+=("$name")
     git ls-files --error-unmatch "$f" >/dev/null 2>&1 || untracked+=("$name")
 done
