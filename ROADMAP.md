@@ -18,18 +18,16 @@ Make the harness reusable in new projects without forking copies. Spec:
   plugin (SessionStart, all repos). `150bb44`; annotator-local copy removed
   (`0ec215c`).
 - ✅ **Runtime-command contract — DRAFT** — schema + annotator + Node/Python
-  examples, not adopted. `e7d6a3b` →
+  examples, written down but not adopted. `e7d6a3b` →
   [`docs/harness-runtime-contract-DRAFT.md`](docs/harness-runtime-contract-DRAFT.md).
-- 📋 **Adopt the runtime-command contract** — promote gate *logic*
-  (`e2e-gate`/`review-gate`/`require-*`) into the plugin; have it read
-  `<repo>/.claude/harness.json`. ⚠ rewrites safety machinery → **re-run the live
-  e2e rehearsal**. Gate on a real project #2 validating the schema (rule of three).
-- 💭 **Split `my` → core + opt-in packs** (`my-laravel`, `my-clinical`) — core
-  keeps the `my:` namespace (no migration for universal items); only stack/domain
-  agents move. Trigger: a genuinely new project. Caveat: plugin enablement is
-  global-only, so packs need stack-conditioned triggers for per-repo behavior.
-- 💭 **`/harness-init` bootstrap** — drops `.claude/settings.json` hook wiring +
-  empty `harness.json` + docs/plans·ROADMAP·CHANGELOG stubs into a fresh repo.
+- 💭 **Generalize the gates — deferred, no second consumer yet.** Promoting the
+  gate logic (`e2e-gate`/`review-gate`/`require-*`) into the plugin behind a
+  per-repo `.claude/harness.json`, the core + stack/domain pack split, and a
+  `/harness-init` bootstrap are all designed in the spec but blocked on one
+  trigger: a real project adopting the gates. Today they live in exactly one
+  subproject (`diagoradisa-annotator`); no other repo — Laravel or Python — pulls
+  on them. Rule of three: don't crystallize the `harness.json` schema on n=1, and
+  adoption ⚠ rewrites safety machinery → re-run the live e2e rehearsal first.
 
 ## Other
 
