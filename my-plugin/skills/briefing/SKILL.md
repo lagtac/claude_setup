@@ -127,21 +127,56 @@ event decide.
    evolves; never silently rewrite a shipped briefing. Each addendum is dated and
    says what changed.
 
-## Writing the plain-English translation
+## Style rules (derived from the exemplars)
 
-- **Translate every term of art.** "Mosaic augmentation" → "a common trick that
-  mixes two training photos into one." Define on first use, in the sentence.
-- **Use analogies grounded in the domain.** Train/test leakage → "giving a
-  student the answers before the exam." Background images → "teaching it to say
-  'nothing here.'" The analogy must be *correct*, not just vivid.
-- **Concrete beats abstract.** Real numbers, real class names, real examples.
-  "misses more than 2 of every 3 cases" lands; "suboptimal recall" does not.
-- **Before/After tables** for behavioural or numeric change. Old value, new
-  value, one-line "what it does".
-- **Carry UI-facing copy verbatim**, including bilingual text (e.g. the Greek
-  clinician-facing strings), so reviewers approve the exact wording users see.
-- **Shorter than the source, but not aggressively short** — clarity outranks
-  brevity. A confused stakeholder is more expensive than a long paragraph.
+Prose mechanics the two named exemplars share — not generic advice. Each rule
+carries a verbatim quote from one of them; a rule you cannot quote-anchor to
+those files is invented, so drop it. (Disciplines 2 and 3 cover honest numbers
+and reporting your own mistakes — not repeated.)
+
+- **Title is a narrative sentence, joining the situation to the ask.** Use a
+  colon or `&`, never a noun-label. *"Where we stand: the two data changes and
+  what the clean experiment found"*; *"Post-training results & what we need from
+  clinicians/annotators."*
+- **Bold marks only the load-bearing skim-word** — the ask's noun, the
+  direction, the absolute, not decoration. *"The next jump is **yours, not
+  ours**"*; *"**More photographs will not fix it**"*; *"✅ **no difference**."*
+  Bullets in the TL;DR / scope sections open with a bold verdict-phrase and a
+  period: *"**Patient grouping: good.** It stopped the model cheating…"*;
+  *"**Production is untouched.**"*
+- **Translate every term of art on first use, in the sentence.** *"Mosaic
+  augmentation" → "a common trick that mixes two training photos into one."*
+- **Pick one domain-correct analogy per concept and reuse it.** Leakage stays
+  *"giving a student the answers before the test"* throughout; false positives
+  stay *"crying wolf"*; background images stay *"teach it to say 'nothing
+  here.'"* The analogy must be *correct*, not just vivid.
+- **Tag a heading with its audience when that section asks a group to act**, and
+  let the tag carry timing/priority: *"## What needs annotation-protocol review
+  (annotators — first)"*; *"(annotators — going forward)"*.
+- **Render change as a comparison table with verdict cells.** Columns name the
+  two states being compared; the right-hand cell carries a `✅` and a bold
+  verdict, not a raw number alone. *"| Missing more real lesions | looked worse
+  | ✅ **no difference** |"*. Right-align numeric columns (`---:`).
+- **Procedures are numbered imperative steps; the final asks are a numbered,
+  time-tagged, priority-ordered list.** Each ask leads with its timeframe in
+  bold: *"1. **This week — fissured-tongue protocol check.**"*; *"2. **Next 2–4
+  weeks — annotation additions**…"*.
+- **Quote UI- and clinician-facing copy verbatim as a blockquote; bilingual
+  strings give the original then an italic gloss.** Greek in `«…»`, English
+  underneath as *(…)*, so reviewers approve the exact wording users see —
+  *«Κερατωσική βλάβη…»* over *(Keratotic lesion — further investigation
+  required)*.
+- **Use a `>` callout for a single do-not warning** that must not be missed:
+  *"> Do **not** trace individual fissures."*
+- **Em-dash is the pivot** for the consequence or qualifier mid-sentence. *"The
+  scores dropped because the old scores were inflated — the new number is the
+  real one."*
+- **End on the decision, ownership explicit:** *"That's a human call."*; *"that
+  call is yours."*; *"The next jump is **yours, not ours**."*
+
+One length judgment the quotes can't pin to a single line: **shorter than the
+source, but not aggressively short** — clarity outranks brevity. A confused
+stakeholder is more expensive than a long paragraph.
 
 ## Polish pass (optional final step)
 
@@ -171,11 +206,13 @@ looking at a briefing:
   stakeholder, clinical reviewer, annotator, funder, regulatory-adjacent reader.
 - **Companion linking:** always link back to the experiment-log entry, plan/spec,
   or commit the briefing derives from. Relative paths.
-- **Exemplar corpus** (the model for this skill, in diagoradisa-ml — paths are
-  project-specific, cited as reference not template):
-  `docs/briefings/2026-05-21-post-training-stakeholder-asks.md` (audience-tagged
-  asks, clinical depth) and `docs/briefings/2026-06-01-dataset-changes-status.md`
-  (a clean honesty/anti-hype example).
+- **Exemplar corpus** (the model for this skill and the source of the **Style
+  rules** above, in diagoradisa-ml — paths are project-specific, cited as reference
+  not template): `docs/briefings/2026-05-21-post-training-stakeholder-asks.md`
+  (audience-tagged asks, clinical depth) and
+  `docs/briefings/2026-05-31-dataset-changes-status.md` (a clean honesty/anti-hype
+  example). The style rules are derived verbatim from these two files; re-read them
+  before extending those rules.
 
 ## Common mistakes
 
