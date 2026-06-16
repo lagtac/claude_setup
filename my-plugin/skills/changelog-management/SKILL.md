@@ -14,13 +14,29 @@ description: >
 
 CHANGELOG records contract or behaviour changes that reached `main` — what users, operators, and downstream services experience. Refactors, tests, lint, and internal docs do not belong here; they go to `docs/dev-reports/`.
 
-Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) with one project extension: a custom `### Deployment Contract` heading at the top of `[Unreleased]` for changes that affect how operators deploy or configure the app.
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). For a deployed app, a `### Deployment Contract` heading at the top of `[Unreleased]` collects operator-facing deploy/config changes; libraries usually omit it, and a project may define its own contract heading (see Adapting).
+
+## Adapting to the project
+
+This skill works for any software project. The specifics here are **defaults**; resolve a project's real conventions in this order, and never impose one it contradicts:
+
+1. **Match what exists** — follow the format an existing `CHANGELOG.md` already uses.
+2. **Read the project's `CLAUDE.md`** — it may document a custom contract heading, file locations, and git workflow. Honour those over the defaults.
+3. **Fall back to the defaults** — Keep a Changelog 1.1.0, `docs/plans/` links, `docs/dev-reports/` for internal work.
+4. **Ask when ambiguous** — especially project type (below).
+
+**Scale entries to whoever consumes this project's main/release branch:**
+- **Deployed app / service** → operators (deploy + config) and end users. Operator-facing changes go under `### Deployment Contract` (default).
+- **Library / SDK / CLI** → API consumers. Breaking changes are the headline: mark them and respect semver (e.g. a `**BREAKING**` prefix under `### Changed` / `### Removed`); `### Deployment Contract` usually doesn't apply.
+- **Data / ML pipeline or other** → whoever downstream depends on its output; the project may define its own contract heading (e.g. `### Dataset Contract`) — match what its CLAUDE.md documents.
+
+If no `CHANGELOG.md` exists and the user wants one, offer to create it with a Keep a Changelog header; don't silently scaffold.
 
 ## Files
 
-- `CHANGELOG.md` — project root.
-- `docs/plans/` — specs and plans linked from entries.
-- `docs/dev-reports/` — destination for everything that isn't contract/behaviour.
+- `CHANGELOG.md` — project root (default).
+- spec/plan docs — `docs/plans/` by default; use the project's documented location. Linked from entries.
+- internal-work destination — `docs/dev-reports/` by default; everything that isn't contract/behaviour.
 
 ## Decision table
 
@@ -67,9 +83,11 @@ Use one of: `### Added`, `### Changed`, `### Fixed`, `### Removed`, `### Docs`. 
 - Upload form now surfaces inline message when Firefox 149 on Wayland delivers an empty `DataTransfer`. See [docs/plans/...](docs/plans/2026-04-29-firefox-wayland-empty-drop-followup.md).
 ```
 
-### 5. Deployment Contract — operator-facing changes go first
+### 5. Contract heading — consumer-facing changes go first
 
-Place a `### Deployment Contract` heading at the **top** of `[Unreleased]`, before `### Added`. Use it for: port changes, new or renamed env vars, package-manager migrations, new runtime dependencies, infra requirements, CI/CD pipeline additions. Each bullet should tell an operator what they have to do or know.
+For a deployed app, place a `### Deployment Contract` heading at the **top** of `[Unreleased]`, before `### Added`. Use it for: port changes, new or renamed env vars, package-manager migrations, new runtime dependencies, infra requirements, CI/CD pipeline additions. Each bullet should tell an operator what they have to do or know.
+
+Adapt by project type (see Adapting): use the project's own contract heading if it defines one (e.g. `### Dataset Contract`); for a **library/SDK** there's no operator step — record breaking API changes under `### Changed` / `### Removed` with a `**BREAKING**` marker and a semver note instead.
 
 ### 6. Dated narrative — major coherent shipments
 
@@ -113,6 +131,6 @@ Skip broad scans (orphan-entry sweeps, link-resolution greps across all entries)
 
 - Logging a refactor or test addition because "it's a notable change." Notable to whom? Refactors → dev-reports.
 - Burying a deployment-affecting change in `### Changed`. Operators read top-down; `### Deployment Contract` exists so they don't miss it.
-- Adding an entry before the squash-merge has actually landed on `main`. Wait for the merge.
+- Adding an entry before the change has actually landed on the main/release branch. Wait for the merge.
 - Editing CHANGELOG without the paired roadmap edit when promoting ✅ — see roadmap-management rule 6.
 - Updating CHANGELOG entries when a plan file is renamed and forgetting that ROADMAP also linked to it. Use `git grep` on the old path.

@@ -12,18 +12,31 @@ description: >
 
 # Roadmap Management
 
-A roadmap is **forward-looking** — what's next, in flight, or shipped recently. A CHANGELOG is **backward-looking** — what reached `main` and changed contract or behaviour. They couple at one moment: the squash-merge that promotes a row from 🚧 to ✅. At that moment both files update in the same commit (rule 6).
+A roadmap is **forward-looking** — what's next, in flight, or shipped recently. A CHANGELOG is **backward-looking** — what reached `main` and changed contract or behaviour. They couple at one moment: the integration (squash-merge by default) that promotes a row from 🚧 to ✅. At that moment both files update in the same commit (rule 6).
 
 This skill owns the roadmap. The companion `changelog-management` skill owns the CHANGELOG. When a 🚧 → ✅ promotion happens, this skill drives the commit and delegates the CHANGELOG half to `changelog-management`.
 
+## Adapting to the project
+
+This skill works for any software project. The paths, git workflow, and legend below are **defaults**, not law. Resolve a project's real conventions in this order, and never impose one the project contradicts:
+
+1. **Match what exists.** If `ROADMAP.md` is already present, follow its format, legend, and section scheme.
+2. **Read the project's `CLAUDE.md`.** It documents the spec/plan location, git workflow (worktrees or not, default/release branch name, squash vs PR vs direct merge), and dev-report destination. Honour those over the defaults.
+3. **Fall back to the defaults** in this skill (`docs/plans/`, squash-merge to `main`, the legend below, `docs/dev-reports/`).
+4. **Ask when ambiguous** — e.g. project type, or where specs live if the project documents nothing. Don't guess a convention into existence.
+
+If no `ROADMAP.md` exists and the user wants one, offer to create it (default legend + a one-line intro); don't silently scaffold.
+
 ## Files
 
-- `ROADMAP.md` — project root. Living index of features. Owned by this skill.
-- `docs/plans/` — specs and plans linked from roadmap rows.
+- `ROADMAP.md` — project root (default). Living index of features. Owned by this skill.
+- spec/plan docs — `docs/plans/` by default; use the project's documented location. Linked from roadmap rows.
 - `CHANGELOG.md` — project root. Touched only via `changelog-management` (delegated at rule 6).
-- `docs/dev-reports/` — destination for refactors / tests / lint / internal docs. Owned by `changelog-management` rule 2.
+- internal-work destination — `docs/dev-reports/` by default; refactors / tests / lint / internal docs. Owned by `changelog-management` rule 2.
 
 ## Status legend
+
+Default — match a project's own legend if its `ROADMAP.md` already uses one:
 
 `✅ shipped` · `🚧 in progress` · `📋 planned` · `💭 discussed, not scheduled`
 
@@ -36,8 +49,8 @@ Look up the situation, then jump to the rule. Bold rows are the easy ones to get
 | Idea raised but user hasn't agreed yet | None — wait | — |
 | User agreed to add an idea | ROADMAP only — new row, status `💭`, no link | 3 |
 | Spec landed at `docs/plans/...-spec.md` | ROADMAP only — `💭 → 📋`, link spec | 4 |
-| Plan landed + worktree checked out | ROADMAP only — `📋 → 🚧`, link plan | 5 |
-| **Squash-merge to `main` just landed** | **ROADMAP + CHANGELOG in the same commit** — `🚧 → ✅` and add changelog entry | 6 |
+| Plan landed + work started | ROADMAP only — `📋 → 🚧`, link plan | 5 |
+| **Integration to the main/release branch just landed** (squash, PR, or direct merge) | **ROADMAP + CHANGELOG in the same commit** — `🚧 → ✅` and add changelog entry | 6 |
 | Scope or framing changed mid-flight | ROADMAP only — edit row in place, note pivot | 7 |
 | One row growing into multiple sub-tasks | ROADMAP only — suffixed numbering (`1`, `1b`, `1c`) | 7 |
 | Speculative `💭` / `📋` row now off-table | ROADMAP only — delete row | 7 |
@@ -77,12 +90,12 @@ Verify a spec file exists at `docs/plans/YYYY-MM-DD-<slug>-spec.md` (or the proj
 - Add a markdown link to the spec in the Spec / Plan column: `[spec](docs/plans/YYYY-MM-DD-<slug>-spec.md)`.
 - If the row body needs to grow (e.g., the spec materially reframed the feature), edit the title's tail clause to match — never leave the row title contradicting its linked spec.
 
-### 5. Promote 📋 → 🚧 — plan written and worktree checked out
+### 5. Promote 📋 → 🚧 — plan written and work started
 
 Two preconditions, both required:
 
-- A plan file at `docs/plans/YYYY-MM-DD-<slug>.md`.
-- A worktree exists for the branch (per the project's git workflow — see global CLAUDE.md). If work is happening directly on `main`, the row should not move to 🚧 in the first place; it's either small enough to skip the roadmap or it warrants a worktree.
+- A plan file exists (default `docs/plans/YYYY-MM-DD-<slug>.md`; use the project's location).
+- Implementation has actually started in an isolated workspace appropriate to the project's git workflow. If the project uses worktrees (see its CLAUDE.md), a worktree exists; if it uses branches, the feature branch exists; if it legitimately works on the main branch, "started" is enough. The point is real work underway — not a worktree per se. Don't withhold 🚧 in a project that doesn't use worktrees.
 
 Then:
 
@@ -90,13 +103,13 @@ Then:
 - Spec / Plan column → `[spec](...), [plan](...)`. Keep both links if both exist.
 - Do **not** touch the CHANGELOG yet. In-progress work has not changed any contract.
 
-### 6. Promote 🚧 → ✅ — merged to main (couples with CHANGELOG)
+### 6. Promote 🚧 → ✅ — integrated to the main/release branch (couples with CHANGELOG)
 
 This is the only transition that touches both files. **Both edits go in the same commit.**
 
 Preconditions:
 
-- The squash-merge to `main` has already happened (verify with `git log main` if uncertain — do not pre-emptively mark ✅ before the merge).
+- The integration to the project's main/release branch has already happened — squash-merge, PR merge, or direct, whatever the project uses (verify with `git log` on that branch if uncertain — do not pre-emptively mark ✅ before it lands).
 - The plan/spec links in the Spec / Plan column still resolve.
 
 Roadmap edit:
@@ -141,7 +154,7 @@ Use Conventional Commits in all cases (project rule).
 
 Edit-scoped only — no full-file audits:
 
-- The status reflects reality (squash-merge has actually landed for ✅; plan file actually exists for 🚧; spec file actually exists for 📋).
+- The status reflects reality (the integration has actually landed for ✅; plan file actually exists for 🚧; spec file actually exists for 📋).
 - The Spec / Plan column links resolve.
 - The markdown table is still well-formed (no broken pipes, no missing cells).
 
@@ -149,8 +162,8 @@ Skip broad audits (stale-💭 sweeps, orphan-row scans, full-file link greps). R
 
 ## Common mistakes
 
-- Promoting 📋 → 🚧 just because a worktree was created — the plan file must exist first.
-- Promoting 🚧 → ✅ before the squash-merge has actually happened (`git log main` not yet showing it).
+- Promoting 📋 → 🚧 just because a workspace was created — the plan file must exist first.
+- Promoting 🚧 → ✅ before the integration has actually landed on the main/release branch (`git log` not yet showing it).
 - Editing only the roadmap on a shipment, forgetting the CHANGELOG entry — or vice versa. The same-commit rule (9) is the safety net.
 - Putting a refactor or a test addition in CHANGELOG. It belongs in `docs/dev-reports/` (see `changelog-management` rule 2).
 - Deleting a ✅ row when the feature was later removed. Add a `### Removed` CHANGELOG entry instead; the historical row stays.
