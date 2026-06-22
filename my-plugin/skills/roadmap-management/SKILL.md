@@ -115,7 +115,7 @@ Preconditions:
 Roadmap edit:
 
 - Status → `✅`.
-- Update the row body if the implementation diverged from the plan (this is common — the row should describe what shipped, not what was planned). Keep it terse; deep narrative belongs in CHANGELOG.
+- Update the row body if the implementation diverged from the plan (this is common — the row should describe what shipped, not what was planned). Keep it to framing + one-line verdict; deep narrative belongs in the CHANGELOG and the linked docs, not the row (rule 11).
 
 CHANGELOG edit (in the **same commit**): hand off to the `changelog-management` skill for scope, structure, dating, and linking. Both edits land in one commit (rule 9 below).
 
@@ -137,8 +137,9 @@ If multiple shipments land in one go, list them in the body.
 ### 8. Linking discipline (roadmap side)
 
 - Every roadmap row in `📋`, `🚧`, or `✅` status **must** link to its spec and/or plan. A row without a link is by definition `💭`.
-- Use relative paths: `docs/plans/YYYY-MM-DD-<slug>.md`.
-- If a plan moves or is renamed (per the `clean-plans` skill), update the roadmap row's link. CHANGELOG-side updates are owned by `changelog-management`. When renaming, run `git grep` once on the old path to find every reference across both files.
+- **Same-repo targets → relative `.md` paths** (`docs/plans/YYYY-MM-DD-<slug>.md`); never hardcode `.html`. A relative `.md` link renders on the Git host's web UI (GitHub/GitLab serve the rendered Markdown), resolves in the repo, and opens in editors. If the project also exports docs to standalone HTML, the `.md`→`.html` extension is rewritten at *build* time — so authoring `.html` in source breaks the hosted and raw-repo views to "fix" a view the build already handles. Keep source links `.md`.
+- **Out-of-repo / cross-repo targets → absolute web URLs**, not relative `../other-repo/...` paths. A path that climbs out of the repo only resolves on a local checkout that happens to have the sibling repo beside it — it is dead on the Git host's web UI and in any exported HTML. Link the hosted URL instead (e.g. `https://<git-host>/<group>/<repo>/-/blob/<default-branch>/<path>`); verify the target's default branch rather than assuming `main`/`master`.
+- If a plan is **moved, archived (e.g. into `docs/plans/archive/`), or renamed** (per the `clean-plans` skill), repoint *every* link to it — a move silently breaks the link in all views, the Git host included. Run `git grep` on the old path across `ROADMAP.md`, `CHANGELOG.md`, and `docs/`. CHANGELOG-side updates are owned by `changelog-management`.
 
 CHANGELOG-side linking lives in `changelog-management`. The two files are tied together by their shared link down to `docs/plans/`, not to each other directly.
 
@@ -156,9 +157,28 @@ Edit-scoped only — no full-file audits:
 
 - The status reflects reality (the integration has actually landed for ✅; plan file actually exists for 🚧; spec file actually exists for 📋).
 - The Spec / Plan column links resolve.
+- The row body is still index-level (framing + one-line verdict + pointer) — you didn't append numbers, SHAs, or play-by-play that a linked doc already owns (rule 11).
 - The markdown table is still well-formed (no broken pipes, no missing cells).
 
 Skip broad audits (stale-💭 sweeps, orphan-row scans, full-file link greps). Run those only when the user explicitly asks for a roadmap audit.
+
+### 11. Row-body content discipline — index, not archive
+
+A roadmap row is an **index entry**, not the record of the work. The linked spec / plan / experiment-log / briefing is the source of truth; the row points at it. The same fact must not be maintained in both places — when the linked doc is later corrected, a duplicated row silently goes stale and ends up contradicting its own link.
+
+Keep in the row body (target ≤ ~2 sentences):
+
+- **What** it is — the one-clause framing.
+- **Current bottom line** — one line: shipped / NO-GO / blocked-on-X. Include a single figure *only when that figure is itself the verdict* (e.g. a NO-GO whose crux is "background-FP 51 vs 12") — one decisive number, not a metrics dump.
+- **A pointer** — "detail in the linked X" when the row links somewhere.
+
+Push to the linked doc, never copied into the row:
+
+- Metrics and numbers (mAP, AUC, counts, thresholds, dates beyond the row's own status), commit SHAs, per-phase / per-experiment play-by-play, mechanism explanations, full verdict reasoning, supersession chains.
+
+**Trim trigger** (applies whenever you write or edit a body — rules 3–7): if the body would run past ~2 sentences / ~3 lines, or you're about to paste a figure or SHA that already lives in a linked doc, **compress instead of appending**. When you touch a row that has already accumulated history, trim it to framing + verdict + pointer in the *same* edit — never add one more clause to an already-oversized cell. (Markdown table cells can't contain paragraph breaks, so an over-long cell can't even be reformatted into readable prose — the only available fix is less content.)
+
+Why this is a rule and not a style preference: the row and the linked doc are two copies of one fact, and only the linked doc is maintained as ground truth. Most `ROADMAP.md` files state this contract in their own intro ("Keep this short — details live in the linked docs"). Enforce it on every edit, not just new rows.
 
 ## Common mistakes
 
@@ -168,3 +188,5 @@ Skip broad audits (stale-💭 sweeps, orphan-row scans, full-file link greps). R
 - Putting a refactor or a test addition in CHANGELOG. It belongs in `docs/dev-reports/` (see `changelog-management` rule 2).
 - Deleting a ✅ row when the feature was later removed. Add a `### Removed` CHANGELOG entry instead; the historical row stays.
 - Adding a 💭 row for a casual brainstorm tangent. Wait for explicit user agreement first.
+- Pasting metrics, commit SHAs, or per-phase history into a row body that the linked doc already records, or appending one more clause to an already-bloated cell. The row points at detail; it doesn't duplicate it (rule 11).
+- Hardcoding `.html` in a link, or pointing at a cross-repo file with a relative `../other-repo/...` path. The first breaks the Git host's rendered view; the second is dead anywhere but a local checkout. Same-repo → relative `.md`; cross-repo → absolute URL (rule 8).

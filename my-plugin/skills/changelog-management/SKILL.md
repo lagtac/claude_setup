@@ -110,7 +110,14 @@ If the existing `## [Unreleased] — YYYY-MM-DD` date is older than today, bump 
 
 ### 8. Link to specs and plans
 
-Every entry that has a corresponding spec/plan in `docs/plans/` should link to it inline. Roadmap rows and CHANGELOG entries are tied together through their shared link to `docs/plans/`, not to each other directly. Use relative paths.
+Every entry that has a corresponding spec/plan in `docs/plans/` should link to it inline. Roadmap rows and CHANGELOG entries are tied together through their shared link to `docs/plans/`, not to each other directly.
+
+Same link discipline as `roadmap-management` rule 8 — a CHANGELOG is read on the Git host's web UI and is often exported to HTML for release notes, so links must survive both:
+
+- **Same-repo targets → relative `.md`**, never hardcode `.html`. The host renders Markdown; an HTML export rewrites the extension at build time, so `.html` in source breaks the hosted and raw views.
+- **Out-of-repo targets → absolute web URLs**, not relative `../other-repo/...` paths — a cross-repo relative path is dead anywhere but a local checkout with the sibling repo beside it.
+- When a linked doc is moved, archived, or renamed, repoint the link; `git grep` the old path across `CHANGELOG.md`, `ROADMAP.md`, and `docs/`.
+- An entry that references a now-deleted doc (e.g. a runbook removed with the feature it documented) should be **unlinked** — keep the filename as plain text so the historical entry still reads, but don't leave a dead link.
 
 ### 9. Commit discipline
 
@@ -127,6 +134,12 @@ Edit-scoped only — no full-file audits:
 
 Skip broad scans (orphan-entry sweeps, link-resolution greps across all entries). Run those only when the user explicitly asks for a CHANGELOG audit.
 
+### 11. Entry content discipline — summarise the change, link the detail
+
+A CHANGELOG entry records **what changed** for whoever consumes the branch; it is not a copy of the spec, plan, experiment-log, or briefing that explains the change. State the contract/behaviour delta in user/operator language and link the detail (rule 8) — don't reproduce metrics, commit SHAs, per-phase play-by-play, or full verdict reasoning that the linked doc already owns. Those facts live in one place — the linked doc, the source of truth — so a later correction there doesn't strand a stale copy here.
+
+A dated narrative (rule 6) is still **one short framing paragraph + bullets of what changed**, not a transplanted results section. If a bullet carries a figure only to re-prove a point the linked doc already makes, cut the figure and keep the link. (The companion `roadmap-management` rule 11 enforces the same index-not-archive discipline on the roadmap side.)
+
 ## Common mistakes
 
 - Logging a refactor or test addition because "it's a notable change." Notable to whom? Refactors → dev-reports.
@@ -134,3 +147,5 @@ Skip broad scans (orphan-entry sweeps, link-resolution greps across all entries)
 - Adding an entry before the change has actually landed on the main/release branch. Wait for the merge.
 - Editing CHANGELOG without the paired roadmap edit when promoting ✅ — see roadmap-management rule 6.
 - Updating CHANGELOG entries when a plan file is renamed and forgetting that ROADMAP also linked to it. Use `git grep` on the old path.
+- Transplanting an experiment-log's metrics, SHAs, or verdict reasoning into a CHANGELOG entry. Summarise the change and link the detail (rule 11).
+- Hardcoding `.html`, linking a cross-repo file by a relative `../other-repo/...` path, or leaving a link to a doc that was deleted. Same-repo → relative `.md`; cross-repo → absolute URL; deleted target → unlink to plain text (rule 8).
