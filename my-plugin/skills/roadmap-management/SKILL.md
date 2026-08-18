@@ -53,6 +53,7 @@ Look up the situation, then jump to the rule. Bold rows are the easy ones to get
 | **Integration to the main/release branch just landed** (squash, PR, or direct merge) | **ROADMAP + CHANGELOG in the same commit** — `🚧 → ✅` and add changelog entry | 6 |
 | Scope or framing changed mid-flight | ROADMAP only — edit row in place, note pivot | 7 |
 | One row growing into multiple sub-tasks | ROADMAP only — suffixed numbering (`1`, `1b`, `1c`) | 7 |
+| **One row blocks another** | ROADMAP only — express as order, never as a graph | 12 |
 | Speculative `💭` / `📋` row now off-table | ROADMAP only — delete row | 7 |
 | Already-shipped feature later removed from `main` | The ✅ row **stays**; CHANGELOG gets the `### Removed` entry | 7 + `changelog-management` |
 | **Any CHANGELOG-only edit** (deploy change, hotfix, removal, behaviour change with no roadmap row) | CHANGELOG only — use **`changelog-management`** | `changelog-management` |
@@ -180,6 +181,21 @@ Push to the linked doc, never copied into the row:
 
 Why this is a rule and not a style preference: the row and the linked doc are two copies of one fact, and only the linked doc is maintained as ground truth. Most `ROADMAP.md` files state this contract in their own intro ("Keep this short — details live in the linked docs"). Enforce it on every edit, not just new rows.
 
+### 12. Dependencies are expressed as order, not as a graph
+
+A roadmap says what and roughly when. Blocking relations are execution detail — a tracker's job (GitLab issue relations, Jira "is blocked by"), where they are structural rather than narrated. A roadmap absorbs a dependency by **making it an order**: if A blocks B, B sits in a later tier. Do not build a `Depends on` column. A roadmap that needs a real graph is telling you the work belongs in issues.
+
+What to write instead, in escalating order of need:
+
+- **Nothing.** If the priority/status tiers already put the blocker first, the dependency is expressed. Stop here — a prose edge that only restates the tier is pure decay surface.
+- **One clause, one direction.** Where an edge genuinely changes the order, name the blocker *from the blocked row*: `Blocked by row 4b.` Never mix directions — "raises the ceiling on row 5" in one row and "the keying half is row 4b" in another forces the reader to parse each sentence for which way the arrow runs.
+- **An `## Order of work` section**, once more than a couple of edges exist. Bullets of the form `**4b, then 7, then 4c.** <the constraint that forces it>` — state the *reason* (shared migration, structural prerequisite), not just the sequence. Close with the contract that anything unnamed is unordered, so the section never has to list rows it has nothing to say about.
+
+Two failure modes to watch:
+
+- **Split-rot.** When rule 7 splits a row, inherited edge clauses keep pointing at numbers that no longer mean what they meant. Re-read every prose edge in the rows you touch during a split, not just the ones you're renumbering.
+- **Two live orderings.** When a durable doc elsewhere already sequences the work — a code review's "suggested order of work", a spec's phasing — do not maintain a second copy. Keep one live, and leave a dated supersession note on the other pointing at it (rule 8's linking discipline applies).
+
 ## Common mistakes
 
 - Promoting 📋 → 🚧 just because a workspace was created — the plan file must exist first.
@@ -188,5 +204,6 @@ Why this is a rule and not a style preference: the row and the linked doc are tw
 - Putting a refactor or a test addition in CHANGELOG. It belongs in `docs/dev-reports/` (see `changelog-management` rule 2).
 - Deleting a ✅ row when the feature was later removed. Add a `### Removed` CHANGELOG entry instead; the historical row stays.
 - Adding a 💭 row for a casual brainstorm tangent. Wait for explicit user agreement first.
+- Narrating a dependency the priority tier already implies, adding a `Depends on` column, or leaving an inherited edge pointing at a row number a split has since renumbered (rule 12).
 - Pasting metrics, commit SHAs, or per-phase history into a row body that the linked doc already records, or appending one more clause to an already-bloated cell. The row points at detail; it doesn't duplicate it (rule 11).
 - Hardcoding `.html` in a link, or pointing at a cross-repo file with a relative `../other-repo/...` path. The first breaks the Git host's rendered view; the second is dead anywhere but a local checkout. Same-repo → relative `.md`; cross-repo → absolute URL (rule 8).
