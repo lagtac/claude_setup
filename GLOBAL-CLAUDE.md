@@ -54,47 +54,8 @@ Two diff reviewers, complementary — route by what you want:
 
 ## Communication
 
-- Write to be understood — someone without your context must be able to follow and act on it. Define a term before relying on it; never compress an explanation into an idiom or a slogan. Length is Output Discipline's job, and where the two conflict clarity wins.
+- Write to be understood — someone without your context must be able to follow and act on it. Define a term before relying on it; never compress an explanation into an idiom or a slogan.
 - Challenge assumptions — propose the best solution, not just a solution
-
-## Output Discipline
-
-**Verbosity: medium** *(global default)*
-
-This switch controls token-consuming output across all sessions. Override per-project by adding `**Verbosity: <level>**` to that project's CLAUDE.md.
-
-### Levels
-
-**min** — strongest reduction.
-
-- No preamble before tool calls; no end-of-turn summary.
-- One-line status only at non-obvious moments (finding, blocker, direction change). Skip status entirely for short reactive tasks.
-- Code: zero comments unless required by the language (shebangs, type stubs).
-- Plan/report/spec/review artifacts: bullet lists, no prose paragraphs.
-- Exploratory questions: ≤2 sentences total.
-- no recaps
-
-**medium** — moderate reduction *(default)*.
-
-- Optional one-sentence preamble when starting non-trivial work; ≤1 sentence end-of-turn summary.
-- Status updates at key inflection points only (per default Tone and style rules).
-- Code comments only when WHY is non-obvious (per default rules).
-- Plan/report artifacts: concise prose OK, no filler.
-- Exploratory questions: ≤3 sentences with a recommendation and main tradeoff.
-- Do not suppress recaps
-
-**off** — switch disabled.
-
-- Native Claude Code behavior plus any output-style plugins (explanatory-output-style, etc.) and skill/agent verbosity instructions all apply unmodified.
-- Use for teaching mode, unfamiliar codebases, or when you explicitly want explanation over brevity.
-
-### Override authority
-
-When verbosity is `min` or `medium`, these rules **override** verbosity instructions inside individual skills, agents, commands, and plugins (including third-party). If a skill says "provide a detailed summary" and verbosity is `min`, follow `min`. When verbosity is `off`, yield to the skill or plugin.
-
-### Soft cap, not hard cap
-
-These are instructions, not enforced limits. The model follows them well but not perfectly. Don't try to enforce via `CLAUDE_CODE_MAX_OUTPUT_TOKENS` — it cuts mid-tool-call and breaks more than it saves.
 
 ## Code
 
