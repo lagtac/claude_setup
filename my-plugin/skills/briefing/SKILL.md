@@ -2,231 +2,113 @@
 name: briefing
 description: >
   Use when authoring a briefing — a plain-English, decision-oriented write-up of
-  technical work for a NON-technical audience (stakeholders, clinical reviewers,
-  annotators, funders, regulators). Trigger on "write a briefing", "brief the
+  technical work for a NON-technical audience (stakeholders, reviewers, end
+  users, funders, execs). Trigger on "write a briefing", "brief the
   stakeholders", "explain X for non-technical readers", "stakeholder one-pager",
-  "summarise this experiment/plan for clinicians", or whenever someone needs a
-  derived plain-English view of engineer-facing docs (experiment-log entries,
-  plans, specs, commits). Owns briefing structure, source-grounding discipline,
-  and the docs/briefings/ convention. NOT for dev-facing "explain this spec to
-  me so I can build it" (different register) and NOT for CHANGELOG/ROADMAP edits.
+  or whenever someone needs a derived plain-English view of engineer-facing docs
+  (run/results logs, plans, specs, commits). Owns briefing structure,
+  source-grounding discipline, and the docs/briefings/ convention. NOT for
+  dev-facing "explain this spec so I can build it" (different register) and NOT
+  for CHANGELOG/ROADMAP edits.
 ---
 
 # Briefing Authoring
 
-A briefing is a **derived, plain-English view** of engineer-facing source
-documents, written for someone who makes decisions about the work but does not
-read code or experiment logs. It exists to answer a specific moment — a result
-landed, a decision is pending, an ask is needed — not to dump status.
+A briefing is a **derived, plain-English view** of engineer-facing source docs,
+for someone who decides about the work but doesn't read code or logs. It answers
+a specific moment — a result landed, a decision is pending, an ask is needed —
+not a status dump.
 
-The craft is not a section template. It is three disciplines; get these right and
-the sections write themselves. Get them wrong and you produce a briefing that
-reads beautifully and lies.
+The craft is three disciplines, not a template. Get them right and the sections
+write themselves. Prose mechanics and the polish pass live in **`STYLE.md`**
+(bundled alongside this skill) — read it before drafting.
 
-## The three disciplines (read before writing)
+## The three disciplines
 
-### 1. A briefing is a derived view, never the source of truth
+1. **A derived view, never the source of truth.** Name the companion doc(s) at
+   the top and defer to them for detail. *Precondition, checked at invocation:*
+   the ground-truth doc must already exist. If it doesn't, stop — you'd be
+   inventing, not deriving. Say so and redirect (brief the plan, or wait for the
+   result to be written).
 
-Name the engineer-facing companion doc(s) at the top and defer to them for full
-detail. The briefing simplifies; the companion is authoritative. A reader who
-wants the real numbers must be one click away from them. If there is no
-ground-truth doc to derive from, you are not writing a briefing — you are
-inventing claims. Stop and find the source.
+2. **Every number traces to a cited source.** The dominant failure is pretty
+   prose that distorts facts. Find each figure in the source and carry it across
+   unchanged. Round honestly and flag it (`~52%`, not a false-precision `51.7%`).
+   Never invent a number to make a sentence flow.
 
-### 2. Every number traces to a cited source
+3. **Honesty over hype.** Movement inside the noise band is not a result — say
+   so. Name what the work does **not** fix or mean; those sections earn the
+   trust. Report your own mistakes plainly. No cheerleading, no "leverage", no
+   "comprehensive".
 
-The dominant failure mode is prettifying prose while distorting facts. Before you
-write a number — accuracy, counts, percentages, sample sizes — locate it in the
-source doc and carry it across unchanged. Round honestly and say so (`~52%`, not
-a false-precision `51.7%` the source doesn't support). Never invent a number to
-make a sentence flow. When you approximate, the approximation must be defensible
-against the cited companion.
+## What event are you briefing?
 
-### 3. Honesty over hype
+You were triggered, so *whether* is settled. Classify the **event** — it sets the
+shape and the source doc:
 
-These briefings earn trust by refusing the triumphant narrative. Encode it
-explicitly:
+1. **A result landed (default).** Source = the run's results/log doc. Sequence is
+   **run → log → brief**.
+2. **A decision needs sign-off** — a re-prioritisation, a parked option, a fork.
+   Source = the plan/spec. Only when the plan encodes a *stakeholder* choice, not
+   internal execution detail.
+3. **A long-running job, at kickoff** — the one case that precedes results.
+   "We've started, here's the approach and why" is the event. Source = the
+   plan/recipe. Then **append dated updates to the same file**; don't start a new
+   briefing.
 
-- A small movement inside the noise band is not a result. Say so ("a 1-point
-  change on a 10-sample disease is noise, not progress").
-- Name what the work does **not** fix and what it does **not** mean — these
-  sections do more work than the good news.
-- Report your own mistakes plainly ("we were grading on the wrong exam").
-- No corporate cheerleading, no "leverage", no "comprehensive". Plain, direct,
-  occasionally blunt.
-
-## When to write one
-
-A briefing is **event-gated, not phase-gated.** Don't peg it to a fixed point in
-the work (after planning, after implementation); peg it to a decision-worthy
-event that has *already produced a ground-truth doc*. Discipline 1 forces this: a
-briefing is a derived view, so the source artifact must exist first — the briefing
-always lags the thing it summarises.
-
-Two reliable trigger points:
-
-1. **Post-results — the default.** A run finished, a verdict landed, an ask
-   emerged. Wait until the runtime ground-truth doc exists, then derive from it.
-   The natural sequence is **run → assess/log → brief**: the experiment-log entry
-   (e.g. what `stoma assess --log` writes) is the companion the briefing defers
-   to. Briefing before the result is durably written means inventing claims.
-2. **Post-planning — only when the plan encodes a stakeholder decision.** A
-   re-prioritisation, a parked option, a fork that needs sign-off. Source = the
-   spec/plan. If the plan is purely internal execution detail, there's nothing to
-   brief yet.
-
-Two anti-patterns:
-
-- **Pre-planning briefings** — almost never. Nothing grounded to derive from. The
-  rare exception is presenting a fork for sign-off, and even then you're briefing
-  a decision doc, not a phase.
-- **Mid-implementation status dumps** — wait for the result. The one exception is
-  the kickoff of something long-running and expensive (a multi-hour training run),
-  where "we've started, here's the recipe and why" is itself the event — and you
-  then *append dated updates* to that same briefing as results arrive, rather than
-  starting a new one.
+If none fits, recheck the Discipline 1 precondition before writing.
 
 ## Before you write
 
-1. **Identify the triggering event.** What just happened, or what decision is
-   pending? A briefing has a job. One sentence: *the result / the bug / the
-   verdict / the ask.*
-2. **Identify the audience(s) and their literacy.** Stakeholder with no ML
-   background? Clinicians? Annotators who need a protocol change? State it in the
-   metadata so register and jargon-budget are set deliberately. Different asks
-   for different audiences get **tagged** (see below).
-3. **Gather the source docs.** The experiment-log entry, the plan/spec, the
-   commit. These are your ground truth and your companion links.
-4. **Extract claims with their sources.** Pull every number and factual claim
-   into view *with where it came from* before prose. This is discipline 2 made
-   operational.
+1. **Name the audience and its literacy** in the metadata, so register and jargon
+   budget are deliberate. Multiple audiences → tag each ask (see `STYLE.md`, a sibling to this file).
+2. **Gather the source docs** — results/log, plan/spec, commit. These are your
+   ground truth and your companion links.
+3. **Extract every claim with its source** before writing prose. Discipline 2,
+   made operational.
 
-## Structure (the default shape — adapt to the event)
+## Structure (default shape — adapt to the event)
 
-The order below is the shape these briefings converge on. Not every briefing
-needs every section; a short status update may be TL;DR + one decision. Let the
-event decide.
+Not every briefing needs every section; a short update may be TL;DR + one
+decision. Let the event decide.
 
-1. **Title** — a narrative line, not a label. "Where we stand: a training-recipe
-   bug, an unused safety net, and a cheaper path" beats "Training Update".
-2. **Metadata block** — `Date`, `Audience` (state the ML-background assumption),
-   and **Companion / Full detail** links to the engineer-facing source docs.
-3. **`## TL;DR`** — the headline and the 2–4 load-bearing points, as bullets.
-   A reader who stops here should still come away with the decision or the ask.
-4. **Body** — the plain-English translation (see next section). One concern per
-   section, descriptive `##` headings.
-5. **What this does NOT mean / does NOT fix** — bound the scope; pre-empt the
-   wrong conclusion. Frequently the most valuable section.
-6. **The honest caveat** — sample-size limits, noise floor, what is still
-   uncertain, what would change the conclusion.
-7. **The ask / the decision** — audience-tagged ("annotators — first"), in
-   **priority order**, concrete and actionable. End on what you need or what was
-   decided.
-8. **Appendix** — parameter tables, exact values, "skip unless curious".
-9. **Dated `## Addendum` / `## Update` sections** — append as the situation
-   evolves; never silently rewrite a shipped briefing. Each addendum is dated and
-   says what changed.
+1. **Title** — a narrative line, not a label.
+2. **Metadata** — `Date`, `Audience`, and **Companion / Full detail** links to
+   the source docs.
+3. **`## TL;DR`** — headline + 2–4 load-bearing bullets. A reader who stops here
+   still gets the decision or ask.
+4. **Body** — the plain-English translation. One concern per `##` section.
+5. **What this does NOT mean / fix** — bound the scope; pre-empt wrong
+   conclusions. Often the most valuable section.
+6. **The honest caveat** — sample size, noise floor, what's still uncertain.
+7. **The ask / decision** — audience-tagged, priority-ordered, concrete. End
+   here.
+8. **Appendix** — exact values, "skip unless curious".
+9. **Dated `## Addendum`** — append as things evolve; never silently rewrite a
+   shipped briefing.
 
-## Style rules (derived from the exemplars)
+## Polish pass (optional)
 
-Prose mechanics the two named exemplars share — not generic advice. Each rule
-carries a verbatim quote from one of them; a rule you cannot quote-anchor to
-those files is invented, so drop it. (Disciplines 2 and 3 cover honest numbers
-and reporting your own mistakes — not repeated.)
+Discipline 3 keeps slop out at write time; this is a safety net. After drafting,
+run a de-slop / humanizing pass if you have one. Two briefing-specific guardrails
+in `STYLE.md` — don't flatten the structured bullets/tables, and don't strip real
+caveats or numbers.
 
-- **Title is a narrative sentence, joining the situation to the ask.** Use a
-  colon or `&`, never a noun-label. *"Where we stand: the two data changes and
-  what the clean experiment found"*; *"Post-training results & what we need from
-  clinicians/annotators."*
-- **Bold marks only the load-bearing skim-word** — the ask's noun, the
-  direction, the absolute, not decoration. *"The next jump is **yours, not
-  ours**"*; *"**More photographs will not fix it**"*; *"✅ **no difference**."*
-  Bullets in the TL;DR / scope sections open with a bold verdict-phrase and a
-  period: *"**Patient grouping: good.** It stopped the model cheating…"*;
-  *"**Production is untouched.**"*
-- **Translate every term of art on first use, in the sentence.** *"Mosaic
-  augmentation" → "a common trick that mixes two training photos into one."*
-- **Pick one domain-correct analogy per concept and reuse it.** Leakage stays
-  *"giving a student the answers before the test"* throughout; false positives
-  stay *"crying wolf"*; background images stay *"teach it to say 'nothing
-  here.'"* The analogy must be *correct*, not just vivid.
-- **Tag a heading with its audience when that section asks a group to act**, and
-  let the tag carry timing/priority: *"## What needs annotation-protocol review
-  (annotators — first)"*; *"(annotators — going forward)"*.
-- **Render change as a comparison table with verdict cells.** Columns name the
-  two states being compared; the right-hand cell carries a `✅` and a bold
-  verdict, not a raw number alone. *"| Missing more real lesions | looked worse
-  | ✅ **no difference** |"*. Right-align numeric columns (`---:`).
-- **Procedures are numbered imperative steps; the final asks are a numbered,
-  time-tagged, priority-ordered list.** Each ask leads with its timeframe in
-  bold: *"1. **This week — fissured-tongue protocol check.**"*; *"2. **Next 2–4
-  weeks — annotation additions**…"*.
-- **Quote UI- and clinician-facing copy verbatim as a blockquote; bilingual
-  strings give the original then an italic gloss.** Greek in `«…»`, English
-  underneath as *(…)*, so reviewers approve the exact wording users see —
-  *«Κερατωσική βλάβη…»* over *(Keratotic lesion — further investigation
-  required)*.
-- **Use a `>` callout for a single do-not warning** that must not be missed:
-  *"> Do **not** trace individual fissures."*
-- **Em-dash is the pivot** for the consequence or qualifier mid-sentence. *"The
-  scores dropped because the old scores were inflated — the new number is the
-  real one."*
-- **End on the decision, ownership explicit:** *"That's a human call."*; *"that
-  call is yours."*; *"The next jump is **yours, not ours**."*
+## Conventions
 
-One length judgment the quotes can't pin to a single line: **shorter than the
-source, but not aggressively short** — clarity outranks brevity. A confused
-stakeholder is more expensive than a long paragraph.
-
-## Polish pass (optional final step)
-
-Discipline 3 already keeps slop out at write time, so this is a safety net, not
-the main mechanism. Once the draft is written, run it through `my:de-slop` (pass
-the briefing's file path) to catch residual corporate vocabulary, filler openers,
-and padded constructions. Two guardrails, because de-slop doesn't know it's
-looking at a briefing:
-
-- **Phrase-level only — skip restructuring.** Apply de-slop's delete / compress /
-  swap, but **not** its "convert bullets to prose" step. A briefing's TL;DR
-  bullets, before/after tables, and audience-tagged asks are deliberately
-  structured for stakeholder skim-ability; flattening them to prose defeats the
-  format.
-- **Caveats and numbers are content, not hedges.** de-slop strips hedge stacks,
-  but a briefing's epistemic honesty is load-bearing: approximations (`~52%`,
-  "between 65% and 100%"), noise-floor warnings ("this is noise, not a result"),
-  and single-run/sample-size caveats must survive untouched. Don't let a polish
-  pass false-precision a sourced number or delete a real caveat.
-
-## Conventions (defaults — adapt per project)
-
-- **Location & name:** `docs/briefings/YYYY-MM-DD-<slug>.md`. This is the
-  stakeholder-facing surface; engineer docs stay in `.claude/docs/` /
-  `docs/experiment-log/` / `docs/plans/`. Don't invent `docs/features/` etc.
-- **Audience taxonomy** (state the relevant one in the metadata): non-technical
-  stakeholder, clinical reviewer, annotator, funder, regulatory-adjacent reader.
-- **Companion linking:** always link back to the experiment-log entry, plan/spec,
-  or commit the briefing derives from. Relative paths.
-- **Exemplar corpus** (the model for this skill and the source of the **Style
-  rules** above, in diagoradisa-ml — paths are project-specific, cited as reference
-  not template): `docs/briefings/2026-05-21-post-training-stakeholder-asks.md`
-  (audience-tagged asks, clinical depth) and
-  `docs/briefings/2026-05-31-dataset-changes-status.md` (a clean honesty/anti-hype
-  example). The style rules are derived verbatim from these two files; re-read them
-  before extending those rules.
+- **Location:** if the host project already has a briefings location/format,
+  follow it. Otherwise default to `docs/briefings/YYYY-MM-DD-<slug>.md`. Engineer
+  docs stay wherever they already live; don't invent new trees.
+- **Companion linking:** always link back to the source doc, with relative paths.
 
 ## Common mistakes
 
-- **Distorting a number to make the prose flow.** The cardinal sin. Re-check
-  every figure against its source before finishing.
-- **Writing a status dump instead of answering an event.** If it doesn't end on
-  a decision or an ask, ask what it's *for*.
-- **Burying or omitting the bad news.** "What this does NOT fix" is not optional
-  garnish; it's where trust is earned.
-- **Celebrating noise.** A movement inside the noise band is not a result.
-- **No companion link / unsourced claims.** A briefing with nothing to derive
-  from is invention. Find the ground-truth doc first.
-- **Untagged asks.** When multiple audiences must act, say who does what, in
-  priority order.
-- **Silently rewriting a shipped briefing.** Append a dated addendum instead.
-- **Slipping into the dev-narration register.** Briefings are for non-technical
-  readers; "as a dev you'd…" framing belongs elsewhere.
+- **Distorting a number to make prose flow.** The cardinal sin.
+- **A status dump instead of an answer.** If it doesn't end on a decision or ask,
+  ask what it's for.
+- **Burying the bad news.** "What this does NOT fix" is where trust is earned.
+- **Celebrating noise.** Movement inside the noise band isn't a result.
+- **Untagged asks** when multiple audiences must act.
+- **Silently rewriting a shipped briefing** instead of appending an addendum.
+- **The dev-narration register.** If a sentence assumes the reader reads code or
+  logs, translate it or cut it.
