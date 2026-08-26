@@ -50,7 +50,7 @@ Two diff reviewers, complementary — route by what you want:
 - built-in **`/code-review`** = *bug-finder* (correctness/efficiency); `--fix` applies fixes, `ultra` is the deep multi-agent sweep. Use to find or fix bugs.
 - Want both → `my:soundness-review` first, then `/code-review --fix`. Explicit security sweep → `/security-review`. An *open* PR/MR → `/review`. Both committed + uncommitted work present → run `my:soundness-review` twice (no-args, then the range).
 
-**Before any review:** map changed symbols with `mcp__gkg__repo_map` / `get_references` / `import_usage` first; grep only when gkg can't answer. Never review line-by-line without caller/callee context. Never invoke `feature-dev:code-reviewer` or `superpowers:requesting-code-review` — both superseded by `my:code-reviewer` (which `my:soundness-review` dispatches).
+**Before any review:** map changed symbols with the built-in `LSP` tool (`findReferences`, `incomingCalls`, `documentSymbol`) first, then a plain `Grep` for the name token — string-literal refs are invisible to symbol tools. Never review line-by-line without caller/callee context. Never invoke `feature-dev:code-reviewer` or `superpowers:requesting-code-review` — both superseded by `my:code-reviewer` (which `my:soundness-review` dispatches).
 
 ## Communication
 
@@ -117,9 +117,9 @@ These standards apply to **all** planning workflows — built-in plan mode, the 
 
 Before proposing any changes:
 
-0. Use gkg mcp tools to understand project structure. Announce using gkg.
+0. Map structure with the built-in `LSP` tool — `workspaceSymbol` to locate a symbol, `findReferences` / `incomingCalls` for its callers, `documentSymbol` for a file's shape. Announce using LSP. It reads live from the language server, so there is no index to refresh and no staleness to check. It resolves against the session's project root, so run it from the repo you are asking about.
 
-If gkg mcp tools are not available report this fact and use builtins:
+If no language server is configured for the file type, `LSP` returns an error — report that and use the builtins:
 
 1. Use Glob to find relevant files and understand project structure
 2. Use Grep to search for related patterns, imports, and usages
