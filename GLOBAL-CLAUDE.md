@@ -56,7 +56,6 @@ Two diff reviewers, complementary — route by what you want:
 
 - Write to be understood — someone without your context must be able to follow and act on it. Define a term before relying on it; never compress an explanation into an idiom or a slogan. Length is Output Discipline's job, and where the two conflict clarity wins.
 - Challenge assumptions — propose the best solution, not just a solution
-- Follow existing patterns — check sibling files before creating new ones
 
 ## Output Discipline
 
@@ -96,6 +95,10 @@ When verbosity is `min` or `medium`, these rules **override** verbosity instruct
 ### Soft cap, not hard cap
 
 These are instructions, not enforced limits. The model follows them well but not perfectly. Don't try to enforce via `CLAUDE_CODE_MAX_OUTPUT_TOKENS` — it cuts mid-tool-call and breaks more than it saves.
+
+## Code
+
+- Match the surrounding code — read sibling files for naming, structure and idiom before adding new ones. Consistency with what is there beats a preference of your own.
 
 ## Git Workflow
 
