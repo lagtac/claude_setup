@@ -54,7 +54,7 @@ Two diff reviewers, complementary — route by what you want:
 
 ## Communication
 
-- Be concise and direct
+- Write to be understood — someone without your context must be able to follow and act on it. Define a term before relying on it; never compress an explanation into an idiom or a slogan. Length is Output Discipline's job, and where the two conflict clarity wins.
 - Challenge assumptions — propose the best solution, not just a solution
 - Follow existing patterns — check sibling files before creating new ones
 
