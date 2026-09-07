@@ -140,6 +140,12 @@ Before proposing any changes:
 
 0. Map structure with the built-in `LSP` tool — `workspaceSymbol` to locate a symbol, `findReferences` / `incomingCalls` for its callers, `documentSymbol` for a file's shape. Announce using LSP. It reads live from the language server, so there is no index to refresh and no staleness to check. It resolves against the session's project root, so run it from the repo you are asking about.
 
+Never infer that no server is configured. The language, the absence of `.ts`
+files, a `checkJs: false` tsconfig and a "vanilla JS" project shape are all
+worthless as evidence — servers are enabled globally as plugins and resolve
+symbols in plain `.js`. Calling `LSP` and reading its answer is the only
+reliable signal, and it costs one call.
+
 If no language server is configured for the file type, `LSP` returns an error — report that and use the builtins:
 
 1. Use Glob to find relevant files and understand project structure
