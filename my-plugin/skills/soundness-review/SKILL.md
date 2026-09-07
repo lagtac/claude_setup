@@ -40,10 +40,14 @@ If args is empty, all three variables are empty — the skill runs in defaults (
 
 **If `RANGE` is set** (committed-range mode):
 
+Split `RANGE` on its `..` or `...` separator into `BASE` and `TIP` (an empty `TIP` means `HEAD`), then:
+
 ```bash
-git diff "$RANGE"
+git diff "$(git merge-base "$BASE" "$TIP")" "$TIP"
 git log "$RANGE" --oneline
 ```
+
+Use the **merge base**, not the literal range. `git diff A..B` is the two-endpoint diff — identical to `git diff A B` — so on a branch that has diverged from its base it renders base-only commits as reversions the branch never made. Only the merge base gives the branch's own changes. (`git log "$RANGE"` is correct on two dots and stays as written; the asymmetry is deliberate.)
 
 The diff is the primary payload; the log is appended after the diff under a `--- COMMITS IN RANGE ---` separator so the reviewer sees the commit boundary structure (one logical change vs many).
 
@@ -104,7 +108,7 @@ Substitute, by `MODE`:
 > Assess the change against these soundness dimensions — **not** a line-level bug scan. Mark genuinely-inapplicable dimensions as **N/A** with a one-line reason in the dual-perspective tables — do not silently skip.
 >
 > 1. **Solves the stated problem.** The change accomplishes its intent (and the supplied plan, if any). Judge whether it does the right thing, not whether each line is bug-free.
-> 2. **Architecture & pattern fit.** Follows existing conventions, sits at the right abstraction level, respects layer boundaries; no new abstraction where three similar lines would do.
+> 2. **Architecture & pattern fit.** Follows existing conventions, sits at the right abstraction level, respects layer boundaries; no new abstraction where three similar lines would do. You cannot judge this from the diff hunks alone — read every file the payload touches in full, plus a sibling file or two, before assessing this dimension or dimension 3.
 > 3. **Soundness of approach.** Treats the root cause, not a symptom. No bandaid `try/catch`, no backwards-compatibility cruft (renamed-but-still-exported symbols, dual "migration" code paths), no fallback logic that silently masks a failure.
 > 4. **Risk & blast radius.** What is hard to reverse (schema, contract, data migration), what could break elsewhere, what needs manual verification or a deploy step. When the diff **removes or renames a symbol used across files**, sweep the whole repo for orphaned callers — a plain text search for the name token, since string-literal references (route/event names, config/DI keys, ORM eager-load paths, templates) are invisible to symbol tools. An orphaned caller is a **Critical** soundness finding, not an out-of-scope line-level bug.
 > 5. **Plan alignment.** When a `## Plan Alignment` block was supplied above, treat every deviation between the diff and the plan as a finding.
@@ -119,7 +123,7 @@ Substitute, by `MODE`:
 > 2. **Sequencing & atomicity.** Steps are ordered so dependencies land before dependents; each step is a coherent, single-purpose commit. Where the plan implements behaviour, it follows Red → Green → Refactor (tests before implementation), per the project's plan standard.
 > 3. **Test-strategy adequacy.** The planned tests actually pin the intended behaviour, at the right level (unit / feature / integration), and would fail for the right reason before the implementation exists. Flag tests that assert nothing meaningful or mock the code under test — specifically: matches-nothing filters/globs, degenerate parameters that make the assertion vacuous, assertions against assumed filenames/paths rather than the real producing code, and references to non-existent fixtures. A change to a public surface (route, relationship, serialized contract, CLI) needs at least one end-to-end test of the real surface, not only unit tests.
 > 4. **Risk & reversibility.** Hard-to-reverse steps (schema changes, API/data contracts, migrations, deletions) are identified with a mitigation or rollback note; blast radius is named. Flag unflagged irreversible steps.
-> 5. **Grounding (verify against the repo).** Use Read / Grep / Glob to confirm the plan's claims: referenced files, symbols, routes, and commands exist; stated assumptions about current behaviour hold; proposed patterns match existing conventions. Every stale reference or false assumption is a finding citing `plan-section` ↔ `repo file:line` (or "(not found)"). **Reference completeness:** for any symbol the plan removes or renames, independently sweep the repo — both a symbol-reference tool and a plain text search for the name token (string-literal references are invisible to symbol tools) — and verify every caller appears in "Files to Modify." A missing caller is a completeness finding; do not trust the plan's file list.
+> 5. **Grounding (verify against the repo).** Use Read / Grep / Glob to confirm the plan's claims: referenced files, symbols, routes, and commands exist; stated assumptions about current behaviour hold; proposed patterns match existing conventions. Every stale reference or false assumption is a finding citing `plan-section` ↔ `repo file:line` (or "(not found)"). **Reference completeness:** for any symbol the plan removes or renames, independently sweep the repo and verify every caller appears in "Files to Modify." Always run a plain text search for the name token — string-literal references (routes, DI keys, ORM eager-loads, templates) are invisible to symbol tools. Additionally try `LSP` `findReferences`; it errors when no language server covers the file type, and in that case report that the sweep was text-only rather than implying a symbol sweep ran. A missing caller is a completeness finding; do not trust the plan's file list.
 > 6. **Snippet logic.** Inspect embedded test/implementation snippets for **logic** errors only: off-by-ones, a test asserting the wrong thing, a snippet that cannot achieve its step's stated goal, contradictory snippets across steps. **Out of scope:** snippets the plan *clearly marks as abbreviated* (`…`, "imports omitted", "sketch"), and pure formatting/style. Do **not** flag those, and do **not** run a lint/type/style pass — that is the built-in `/code-review`'s job on real code. Note the boundary with dimension 1: a *clearly-marked elision* is fine here, but a snippet presented as executable that omits an import/helper the plan never defines is a completeness finding under dimension 1 — because a cold executor would be forced to invent it. The test is "would the executor have to guess?", not "is a line missing".
 
 **Plan Alignment output** (`{{MODE_OUTPUT_SECTION}}` for diff-review with alignment — current text):
@@ -192,7 +196,7 @@ The agent writes its review to `docs/plans/{{REVIEW_SLUG}}.md`. After dispatch r
 4. Confirm <PLAN_DIRECTORY>/<REVIEW_SLUG>.md exists. Print pointer.
 ```
 
-The example is the canonical execution trace — follow it literally for the no-args case. Range mode swaps step 1 for `git diff $RANGE` + `git log $RANGE --oneline`. Plan-alignment mode adds the substitution for `PLAN_ALIGNMENT` (otherwise empty string).
+The example is the canonical execution trace — follow it literally for the no-args case. Range mode swaps step 1 for the merge-base diff (`git diff "$(git merge-base "$BASE" "$TIP")" "$TIP"`) + `git log "$RANGE" --oneline`. Plan-alignment mode adds the substitution for `PLAN_ALIGNMENT` (otherwise empty string).
 
 ## Worked example: plan-review (clean tree)
 
