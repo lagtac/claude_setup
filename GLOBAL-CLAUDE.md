@@ -57,6 +57,27 @@ Two diff reviewers, complementary — route by what you want:
 - Write to be understood — someone without your context must be able to follow and act on it. Define a term before relying on it; never compress an explanation into an idiom or a slogan.
 - Challenge assumptions — propose the best solution, not just a solution
 
+## UI Design
+
+Any discussion that turns to UI — screens, layout, controls, states, visual
+language — must be **shown**, not described. Reach for the design tooling before
+writing a prose description or a table of class names:
+
+- **`design`** — a Claude Design canvas of `.dc.html` artboards on one pan/zoom
+  canvas. **Always, for any screen, state or flow.** This holds inside
+  `superpowers:brainstorming` too: that skill's own Visual Companion is an
+  ephemeral local server, it is not a substitute, and it is not to be offered.
+- **`frontend-design`** — aesthetic direction, typography, and choices that do
+  not read as templated defaults.
+- **`artifact-diagramming`** — when the point is a mechanism rather than a screen.
+
+Prose may summarise a design that has been drawn. It may not stand in for one.
+
+This does not replace the **Visual Language** section a spec requires: that
+section maps an already-drawn design onto real primitives and semantic classes,
+verified against the stylesheet rather than assumed. Both are needed — the
+drawing decides, the table records.
+
 ## Code
 
 - Match the surrounding code — read sibling files for naming, structure and idiom before adding new ones. Consistency with what is there beats a preference of your own.
