@@ -63,6 +63,16 @@ This is the reason the diff mode is weaker at architectural judgment than the pl
 - **No diff-size guard.** Nothing caps the payload or degrades gracefully on a large range. A big pre-merge range can exhaust the reviewer's context with no signal to the caller that coverage was partial.
 - **Background-dispatch wording.** Step 3 says "Do not run the agent in the background," but subagent dispatch is asynchronous by construction in the current harness; the caller waits regardless. Harmless, but the sentence promises control the caller does not have.
 
+## Resolution
+
+All findings above were fixed on 2026-09-07, in two commits.
+
+**The four blocking findings** (commit `4166d72`): the agent/prompt contradiction now reads identically in both files; `LSP` was added to the agent's grant with a text-search fallback that reports a text-only sweep as such (the grant was verified live — the agent loads and its malformed-prompt guard fires); committed ranges diff from the merge base; and the payload restriction was replaced by an instruction to read every touched file in full before judging dimensions 2 and 3.
+
+**The secondary findings** (this commit): a single collision rule now covers both slugs — the review path is checked before dispatch and suffixed `-2`, `-3` rather than overwriting, which closes the plan-review case (its date comes from the plan's filename and never changes) and the diff-review case (same branch, same day) together. `None material.` became a legal answer for the dual-perspective tables in *both* places it had to be legal: the schema, and the "present arguments BOTH for and against" directive that was the actual source of the filler — scoped so it does not erase the N/A rows the dimensions require. The default capture is now `git diff HEAD` plus the untracked loop, which is complete and non-overlapping. A 2000-line size guard warns and proceeds, passing the payload size into the prompt so uneven coverage is declared instead of hidden. And in place of a second reviewer pass, every `Critical` finding must now cite a repo location the reviewer actually opened, or be downgraded — the label has to be earned in-pass.
+
+The "no verification pass" finding is therefore mitigated, not eliminated: labels remain self-assessed. A genuine adversarial check would need a second agent, which is a design change, not a fix.
+
 ## Track record
 
 There is **no empirical evidence for the current version.** The only review artifact on disk, `docs/plans/2026-05-08-skill-consolidation-smoke-review.md`, cites "checklist item 6, item 4, item 9" and the old `/my:code-review` name — it was produced *before* commit `f1fb0c1` ("slim skill to judgment + plan-alignment, delegate bug-finding to built-in") replaced the bug checklist with the current soundness dimensions, and before `a7bdfc1` added plan-review mode at all. That smoke review is, ironically, a demonstration of the bug-scanning behaviour the current version explicitly disowns.

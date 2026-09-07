@@ -54,14 +54,20 @@ The diff is the primary payload; the log is appended after the diff under a `---
 **Otherwise** (working-tree mode, default):
 
 ```bash
-git diff
-git diff --staged
+git diff HEAD
 git ls-files --others --exclude-standard
 ```
 
-The third command lists untracked files; for each one, run `git diff --no-index /dev/null <path>` to produce canonical new-file diff output (`diff --git`, `new file mode`, `--- /dev/null`, `+++ b/<path>`, `@@`, content). Concatenate those onto the working-tree and staged diffs. Do **not** hand-construct the diff headers — `git diff --no-index` does this correctly and consistently.
+`git diff HEAD` covers staged **and** unstaged changes to tracked files in one view. Do not also run `git diff` and `git diff --staged` separately: a file that is both staged and further modified yields two hunk sets whose line numbers do not compose, and the reviewer cannot tell which state it is judging.
+
+The second command lists untracked files; for each one, run `git diff --no-index /dev/null <path>` to produce canonical new-file diff output (`diff --git`, `new file mode`, `--- /dev/null`, `+++ b/<path>`, `@@`, content). Concatenate those onto the `git diff HEAD` output. (`git ls-files --others` stops listing a file once it is staged, so the two commands never cover the same file twice.) Do **not** hand-construct the diff headers — `git diff --no-index` does this correctly and consistently.
 
 If the resulting payload is empty and `PLAN_PATH` is unset, stop with a message: `No changes to review.` (working-tree mode) or `Range <RANGE> is empty.` (range mode). Otherwise, proceed to step 1a.
+
+**Size guard.** Count the payload's lines (`wc -l`). If it exceeds **2000**, do not stop — warn and proceed, so the partial coverage is visible rather than silent:
+
+- Print to the user: `(Payload is <N> lines; the reviewer's coverage may be uneven. Narrow with a tighter range or a path-scoped diff for a closer read.)`
+- Prepend this line to the `{{SUBJECT}}` block at substitution time, above the fenced code block: `Note: this payload is <N> lines. If you cannot assess all of it at the same depth, say so explicitly under "Needs Investigation" and name which parts you covered shallowly — do not present uneven coverage as complete.`
 
 ### 1a. Detect review mode
 
@@ -88,6 +94,7 @@ Substitute, by `MODE`:
 - `{{SUBJECT}}`:
   - diff-review → ``The combined diff to review:`` followed by a fenced ```diff block with the payload.
   - plan-review → ``The plan document to review (`<PLAN_PATH>`):`` followed by a fenced ```markdown block with the **full** contents of `PLAN_PATH`.
+  - In **either** mode, if the size guard in step 1 tripped, its `Note: this payload is <N> lines…` line goes here — between the introductory sentence and the fenced block.
 - `{{CRITERIA}}`:
   - diff-review → the **Diff criteria** block below.
   - plan-review → the **Plan criteria** block below.
@@ -102,6 +109,8 @@ Substitute, by `MODE`:
 - `{{REVIEW_SLUG}}`:
   - diff-review → `<YYYY-MM-DD>-<branch-or-cwd>-review` (unchanged; replace `/` in branch with `-`).
   - plan-review → `<plan-basename-without-.md>-plan-review` (e.g. `docs/plans/2026-05-28-foo.md` → `2026-05-28-foo-plan-review`).
+
+**Collision rule (both modes).** Before substituting, check whether `{{PLAN_DIRECTORY}}/{{REVIEW_SLUG}}.md` already exists. If it does, append `-2` (then `-3`, and so on) until the path is free, and use that. Neither slug is unique on its own: diff-review repeats for the same branch on the same day, and plan-review's date comes from the *plan's* filename and never changes, so every re-review of a plan would otherwise overwrite the last one. Reviews are a record — never overwrite a previous one.
 
 **Diff criteria** (`{{CRITERIA}}` for diff-review — this is the current text, preserved):
 
@@ -180,8 +189,7 @@ The agent writes its review to `docs/plans/{{REVIEW_SLUG}}.md`. After dispatch r
 
 ```
 0. Args is empty — RANGE, PLAN_PATH, DESCRIPTION all empty.
-1. Bash:  git diff
-   Bash:  git diff --staged
+1. Bash:  git diff HEAD
    Bash:  git ls-files --others --exclude-standard
    → For each untracked file: git diff --no-index /dev/null <path>
    → Concatenate into DIFF
