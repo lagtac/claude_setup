@@ -54,7 +54,7 @@ Two diff reviewers, complementary — route by what you want:
 
 ## Communication
 
-- Write to be understood — someone without your context must be able to follow and act on it. Define a term before relying on it; never compress an explanation into an idiom or a slogan.
+- Write to be understood — short sentences, terms defined at first use, no idioms. The full ruleset is the `plain` output style (`GLOBAL-output-styles/plain.md`, symlinked to `~/.claude/output-styles/`), which is enabled via `"outputStyle": "plain"` in `~/.claude/settings.json`. **Edit the style file, not this line** — this line is only a fallback for when the style is not loaded (it does not reach subagents, which run their own system prompt).
 - Challenge assumptions — propose the best solution, not just a solution
 
 ## UI Design
