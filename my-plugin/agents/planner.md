@@ -23,8 +23,8 @@ This agent is self-contained: it does not inherit any project `CLAUDE.md`. The d
 
 You MUST do all five steps. Do not skip steps even when the task looks small — 4.7-style literal execution depends on you having actually read what you propose to change.
 
-1. **Glob** for relevant files and understand project structure.
-2. **Grep** for related patterns, imports, callers, and existing usages.
+1. Find relevant files and understand project structure — `Bash` with `find`/`ls`, or the `Glob` tool if you have it.
+2. Search for related patterns, imports, callers, and existing usages — `Bash` with `grep -rn '<token>' .` (or `rg`), or the `Grep` tool if you have it. Your tool list may not include `Grep` or `Glob` even though this file requests them; `Bash` is always present, so use it and do not skip the search.
 3. **Read** the actual implementation of every file you plan to modify or extend. Do not propose changes to code you have not read.
 4. Identify existing patterns, conventions, and abstractions already in use. Match them.
 5. Check for existing solutions that might already cover the request. If found, prefer reuse over new code.
