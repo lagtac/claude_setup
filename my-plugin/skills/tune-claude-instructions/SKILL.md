@@ -108,7 +108,6 @@ Match this format. One row per file. Severity comes from the ladder in step 3.
 
 | File | S | R | F | Severity | Why |
 |---|---|---|---|---|---|
-| `agents/planner.md` | ❌ | ❌ | ❌ | CRITICAL | No exploration discipline, no reasoning prompt, no plan template embedded |
 | `commands/commit.md` | ❌ | ❌ | ❌ | CRITICAL | Two-line template; produces single-commit dumps with vague messages |
 | `agents/code-reviewer.md` | ✅ | ⚠️ | ✅ | Medium | Reasoning prompt is implicit ("be thorough"); needs explicit "show reasoning before verdict" |
 | `commands/clean-gone-branches.md` | ✅ | n/a | ✅ | OK | Workflow command; reasoning not applicable |
@@ -163,7 +162,7 @@ If the user wants a durable record, offer to write the audit table plus applied-
 
 - **Don't pad already-strong files.** If S/R/F all pass, skip. Adding more constraints to a working prompt over-constrains and bloats tokens.
 - **Don't propose a shared preamble.** It's tempting to write one "4.7 specificity block" and prepend it everywhere. Don't — agents and commands have different jobs and over-shared boilerplate dilutes their actual instructions. Each file owns its standards.
-- **Don't grade dispatcher files.** A one-line command like `/plan` that just invokes the planner agent, or a `CLAUDE.md` that's only `<tag @path>` includes, has no S/R/F surface — grade the targets/included files, not the dispatcher.
+- **Don't grade dispatcher files.** A one-line command like `/my:summarize` that just invokes the summarizer agent, or a `CLAUDE.md` that's only `<tag @path>` includes, has no S/R/F surface — grade the targets/included files, not the dispatcher.
 - **Don't dismiss `CLAUDE.md` / docs files by filename.** A context-heavy file with embedded directives ("Always X", "Never Y", "When X, do Y") has a real S/R/F surface in those passages even though the rest of the file is pure reference. Read for directive content before deciding `n/a`.
 - **Don't pile on MUSTs.** Capitalised commands feel forceful but read as noise. Explain *why* the model should do something — literal-following is also literal-understanding. A two-sentence rationale beats a one-word imperative.
 - **Don't audit global files (`~/.claude/...`) without explicit consent.** Either the user asks directly or `--global` is passed. Even with consent, confirm before each write — global edits affect every project on the machine.

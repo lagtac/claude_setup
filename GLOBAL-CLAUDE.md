@@ -122,7 +122,7 @@ MRs add no review value solo, but open one as a **CI gate** or a **durable/linka
 
 ## Planning Standards
 
-These standards apply to **all** planning workflows — built-in plan mode, the `/plan` command, Superpowers brainstorming/writing-plans, and any agent producing implementation plans. Critical Thinking, Risk Awareness, and Trade-Off Analysis are always enforced. Mandatory Exploration applies only when no superpowers discovery skill is active (see Superpowers Integration above). Plan Output Format may be overridden by Superpowers.
+These standards apply to **all** planning workflows — built-in plan mode, Superpowers brainstorming/writing-plans, and any agent producing implementation plans. Critical Thinking, Risk Awareness, and Trade-Off Analysis are always enforced. Mandatory Exploration applies only when no superpowers discovery skill is active (see Superpowers Integration above). Plan Output Format may be overridden by Superpowers.
 
 **Verify against ground truth, not the artifact.** Discovery — caller lists, filenames, parameters — must come from executing against the real system (search the repo, run the command), never from memory or from re-reading the plan.
 
@@ -191,7 +191,7 @@ For any non-trivial decision, present alternatives:
 
 ### Plan Output Format
 
-Plans use these sections (Superpowers may substitute its own format): **Context · Files to Modify/Create · Step-by-Step Implementation · Trade-Offs/Alternatives · Dependencies · Risk · Testing Strategy · Open Questions**. The full template with per-section field prompts is the canonical copy in the `my:planner` agent (`~/projects/claude-setup/my-plugin/agents/planner.md`) — edit it there.
+Plans use these sections (Superpowers may substitute its own format): **Context · Files to Modify/Create · Step-by-Step Implementation · Trade-Offs/Alternatives · Dependencies · Risk · Testing Strategy · Open Questions**. The full template with per-section field prompts lives in `GLOBAL-rules/plan-format.md` (symlinked to `~/.claude/rules/`), which loads automatically when a `docs/plans/*.md` file is touched — edit it there.
 
 <!--
 Language-specific command cheatsheets (PHP/Laravel, Docker, Markdown, JS/TS, Python)

@@ -56,4 +56,4 @@ Does the file specify the output structure?
 | Two ❌, or any ❌ on a workhorse agent/command | **Medium** | Targeted section edit. |
 | Three ❌ on a workhorse file | **CRITICAL** | Full rewrite likely. |
 
-A "workhorse" file is one that runs on every invocation of an important workflow — planner, code-reviewer, commit, push. A one-line dispatcher that delegates to an agent is not a workhorse; grade its target instead.
+A "workhorse" file is one that runs on every invocation of an important workflow — code-reviewer, commit, push. A one-line dispatcher that delegates to an agent is not a workhorse; grade its target instead.

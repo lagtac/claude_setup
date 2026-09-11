@@ -1,5 +1,17 @@
 # Single-source the planning standards via a shared file (runtime-read)
 
+> **Status: SUPERSEDED (2026-09-11) — not executed, and no longer needed.**
+>
+> This plan removed the duplicated planning standards by *sharing* them between
+> two consumers: `GLOBAL-CLAUDE.md` and the `my:planner` subagent. The planner
+> path has since been retired, so the second consumer no longer exists and there
+> is nothing left to share. The plan template now lives in
+> `GLOBAL-rules/plan-format.md`, loaded lazily when a `docs/plans/*.md` file is
+> touched.
+>
+> See [`2026-09-11-retire-planner-path-spec.md`](2026-09-11-retire-planner-path-spec.md).
+> Kept as a record of the approach considered and rejected.
+
 ## Context
 
 The planning discipline (Critical Thinking, Mandatory Exploration, Simplicity, Trade-Off, Risk,
