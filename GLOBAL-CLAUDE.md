@@ -4,7 +4,8 @@
 
 - Always write designs, specs, plans and reviews to `<project-root>/docs/plans/YYYY-MM-DD-<slug>.md` unless explicitly instructed otherwise. Determine `<project-root>` from the nearest `.git` directory, `composer.json`, `package.json`, or similar project marker. **This overrides Superpowers' default plan/spec paths** — Superpowers must also write to `docs/plans/`.
 - Always use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages
-- Common prefixes: `feat:`, `fix:`, `refactor:`, `test:`, `chore:`, `docs:`
+- The full format is `type(scope): sentence`. The scope is the part of the codebase affected; each project defines its own scopes. Projects that already use `type:` without a scope keep that format.
+- Common types: `feat:`, `fix:`, `refactor:`, `test:`, `chore:`, `docs:`
 - Never add new dependencies without approval
 
 ### Superpowers Integration
