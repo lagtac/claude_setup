@@ -9,6 +9,8 @@ description: >
   plan-alignment. NOT a bug scanner — low-level bug-finding, `--fix`, and deep `ultra` review are
   delegated to the built-in `/code-review`. Pointing it at a `.md` plan with a clean working tree
   reviews the plan itself (grounded against the repo + snippet-logic check) instead of a diff.
+  Specs (`*-spec.md`) are not reviewed on their own here — use `my:spec-review`; checking a diff
+  against a spec still belongs here.
 ---
 
 # Code Review
@@ -75,10 +77,13 @@ Let `PLAN_PATH` be from step 0 and `payload` be the captured diff. Set `MODE`:
 
 | `PLAN_PATH` | `payload` | `MODE` | Action |
 |---|---|---|---|
+| set, ends in `-spec.md` | empty | — | Stop: `This is a spec. Run my:spec-review <PLAN_PATH> instead.` Do not dispatch. |
 | set | empty | `plan-review` | Subject is the plan document; ignore `RANGE` if it was set. |
 | set | non-empty | `diff-review` | Build the Plan Alignment block (step 2). **Print the nudge below to the user.** |
 | unset | empty | — | Stop: `No changes to review.` (or `Range <RANGE> is empty.` if `RANGE` was set). |
 | unset | non-empty | `diff-review` | Plain diff review. |
+
+Rows are matched top to bottom; the first match wins. A spec with a non-empty payload still falls through to `diff-review`, which checks the change against the spec.
 
 Nudge (print to the user, not into the dispatch prompt), when `PLAN_PATH` is set and `payload` is non-empty:
 

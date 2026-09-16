@@ -10,6 +10,8 @@ This file is the prompt template the `my:soundness-review` skill sends to the `m
 - `{{PLAN_DIRECTORY}}` — the absolute directory the review file should land in
 - `{{REVIEW_SLUG}}` — the filename stem for the review file (no `.md` suffix)
 
+Copied rules: the Anti-Sycophancy Directives, the surfacing table and the Dual-Perspective tables are copied into `my-plugin/skills/spec-review/spec-reviewer-prompt.md`. When you edit them here, check that file too.
+
 The body below this header is the prompt itself. Send everything below the `---` line.
 
 ---
