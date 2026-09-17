@@ -69,8 +69,10 @@ The steps:
 1. **Draft.** Read the description and, when a repo exists, the repo. Fill every force with a value and a label. A force with no evidence is `assumed`.
 2. **Show.** Print the whole table in chat.
 3. **Ask.** Make one `AskUserQuestion` call with at most 4 questions. Choose from `assumed` and `inferred` forces, in this priority order: the gate forces 1, 3, 4, 7 first, then 5, 10, then the rest by number. The gate forces come first because D4 decides on them. Each question offers concrete ranges as options. A force already `stated` is never asked about.
-4. **Correct.** The user may correct any row in free text before the skill continues. Answered and corrected forces become `stated`.
+4. **Correct.** The user may correct any row in free text before the skill continues. The correction window is the same `AskUserQuestion` call: the call tells the user to write corrections to any row in the notes of an answer. When no force is `assumed` or `inferred`, there is nothing to ask, so the skill makes no call and does not pause. Answered and corrected forces become `stated`.
 5. **Record.** Every force still `assumed` after step 4 is copied to "Open for brainstorming" in the brief.
+
+**When the question cannot be asked** (`AskUserQuestion` is not in the tool list, as in a headless `claude -p` run, or the call fails): the skill does not ask in plain text and does not end its turn. Every force keeps its label, so unasked gate forces stay `assumed` and block the D4 collapse. Step 5 then copies them to "Open for brainstorming". Confirmed with the user on 2026-09-17, while writing the plan.
 
 One call with up to 4 questions is used instead of one question per message. The forces are closely linked and quick to answer, and ten separate messages would push the user to skip the step. Brainstorming's one-question rule still applies inside brainstorming.
 
@@ -163,7 +165,7 @@ Rejected: a dedicated `my:candidate-architect` agent. It would match the `spec-r
   - `cheap` — everything else.
 - For each `hard` decision that depends on a load, storage, cost or latency number, write and run a Python standard-library script in `<scratchpad>/architect/<slug>/`. It estimates that number from the forces and from "Numbers it depends on". The script and its printed output go into the brief. Python's standard library only, so no new dependencies.
 - A `hard` decision with no such number (for example, a public data format) gets no script. The brief writes "no quantity to check" and one line of reason.
-- **Near a limit** means the estimate is within a factor of 2 of a known capacity or budget. In that case, or when a force the decision depends on is `assumed`, the skill proposes a spike in 2–3 sentences: the question and what it will try. It runs the spike only after the user approves. Spike code stays in the scratchpad, labelled throwaway, and is never committed. Only the result goes into the brief.
+- **Near a limit** means the estimate is within a factor of 2 of a known capacity or budget. In that case, or when a force the decision depends on is `assumed`, the skill proposes a spike in 2–3 sentences: the question and what it will try. It runs the spike only after the user approves. When the user declines, or the approval question cannot be asked (see D3), the brief records the spike as "proposed, not run" and lists it under "Open for brainstorming". Spike code stays in the scratchpad, labelled throwaway, and is never committed. Only the result goes into the brief.
 
 **D10 — The brief.** Path: `docs/plans/YYYY-MM-DD-<slug>-architecture.md`. The brief uses the sections below, not the plan format. The rule file `GLOBAL-rules/plan-format.md` loads for every `**/docs/plans/*.md` file and says every plan section is required. It also allows a skill to use its own format. `SKILL.md` must state that the brief follows D10 and not the plan format. The rule's `paths` are not changed. The skill commits it with `docs(plans): add architecture brief for <slug>`. Sections, in order:
 
@@ -223,7 +225,7 @@ After committing, the skill prints the brief path and tells the caller to invoke
 
 ## Risk
 
-1. **`AskUserQuestion` may fail in headless `claude -p` runs**, so tests cannot answer questions. Mitigation: test fixtures state all forces the skill would ask about, so they are `stated` and no question is asked. The first plan task confirms this works. The question step is tested once by hand in an interactive session.
+1. **`AskUserQuestion` is not available in headless `claude -p` runs** (checked on 2026-09-17: the tool is absent from the tool list), so tests cannot answer questions. Mitigation: the "cannot be asked" rules in D3, D8 and D9 let a headless run finish. The small fixture states every force, so no question is needed. The large fixture leaves one force unstated, to test the D3 rule. The question step is tested once by hand in an interactive session.
 2. **Brainstorming may ignore the brief**: ask about `stated` forces again, propose new approaches, or classify the task as bounded. Detection: in the large-fixture handoff test, count re-asked `stated` forces, and check that brainstorming neither proposes new approaches nor picks the bounded path. If this happens, strengthen the `GLOBAL-CLAUDE.md` sentence. Do not edit brainstorming.
 3. **Cost.** Each full run uses 3 subagents plus evaluation. Limited by the D2 trigger and the D4 gate.
 4. **Too much process for mid-sized work.** Detection: after 3 real uses, check whether each brief changed the resulting spec. If none did, narrow the D2 trigger. At the same point, review the D4 thresholds against the gate results of those uses.
