@@ -6,7 +6,7 @@
 |---|---|---|
 | **This spec** | `docs/plans/2026-09-17-architect-skill-spec.md` | What to build, why, and the trade-offs. Start here. |
 | Implementation plan | `docs/plans/2026-09-17-architect-skill.md` | Written after this spec is approved. Test steps and commit breakdown. |
-| Global instructions | `GLOBAL-CLAUDE.md` | The Superpowers trigger table (line 17), the Discovery authority rule (line 30) and the Spec → Plan flow (lines 32–40). The table and line 30 change. |
+| Global instructions | `GLOBAL-CLAUDE.md` | The Superpowers trigger table, the "Discovery authority" paragraph and the "Spec → Plan two-artifact flow" section, all under "Superpowers Integration". All three change. |
 | Existing skill to copy from | `my-plugin/skills/spec-review/SKILL.md` | Model for the step layout, the absolute-path rule for subagents, and the worked example. |
 | Existing agent wording | `my-plugin/agents/spec-reviewer.md` | Source of the search-tool wording copied into the candidate prompt ("Contract with the Calling Skill", the grounding bullet). |
 | Test precedent | `docs/plans/2026-09-16-spec-review-skill.md` | "How tests run": headless `claude -p --plugin-dir` runs against a worktree plugin, with fixture inputs in the scratchpad. |
@@ -69,8 +69,8 @@ The steps:
 1. **Draft.** Read the description and, when a repo exists, the repo. Fill every force with a value and a label. A force with no evidence is `assumed`.
 2. **Show.** Print the whole table in chat.
 3. **Ask.** Make one `AskUserQuestion` call with at most 4 questions. Choose from `assumed` and `inferred` forces, in this priority order: 5, 1, 4, 7, 10, then the rest by number. Each question offers concrete ranges as options. A force already `stated` is never asked about.
-4. **Record.** Answered forces become `stated`. Every force still `assumed` is copied to "Open for brainstorming" in the brief.
-5. **Correct.** The user may correct any row in free text before the skill continues. A corrected row becomes `stated`.
+4. **Correct.** The user may correct any row in free text before the skill continues. Answered and corrected forces become `stated`.
+5. **Record.** Every force still `assumed` after step 4 is copied to "Open for brainstorming" in the brief.
 
 One call with up to 4 questions is used instead of one question per message. The forces are closely linked and quick to answer, and ten separate messages would push the user to skip the step. Brainstorming's one-question rule still applies inside brainstorming.
 
@@ -162,9 +162,9 @@ After committing, the skill prints the brief path and tells the caller to invoke
 
 **D11 — `GLOBAL-CLAUDE.md` changes.**
 
-- New trigger table row, placed above the brainstorming row (line 17): "New project, new subsystem, or change to a data model, storage choice or public contract | `my:architect`, then `superpowers:brainstorming`".
-- Line 30, Discovery authority. Add: "`my:architect` runs before brainstorming, not during it. When an architecture brief exists, brainstorming treats it as settled input and asks only about items under its 'Open for brainstorming' section."
-- Spec → Plan flow, step 1 (line 36): when a brief exists, "How to read this spec" lists it first.
+- New trigger table row, placed above the brainstorming row: "New project, new subsystem, or change to a data model, storage choice or public contract | `my:architect`, then `superpowers:brainstorming`".
+- "Discovery authority" paragraph. Add: "`my:architect` runs before brainstorming, not during it. When an architecture brief exists, brainstorming treats it as settled input and asks only about items under its 'Open for brainstorming' section."
+- "Spec → Plan two-artifact flow", step 1: when a brief exists, "How to read this spec" lists it first.
 
 ## Out of scope
 
