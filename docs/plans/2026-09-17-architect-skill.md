@@ -32,7 +32,7 @@ Smaller gaps this plan fills without a spec change. Review these before executin
 - **No git repository.** The skill still writes the brief to `<cwd>/docs/plans/`, skips the commit, and says so. D10 assumes a repo; a new project may not have one yet.
 - **Brief name collision.** An existing brief path gets `-2`, `-3`, like `my:spec-review` reviews.
 - **Contrast record.** Each candidate in the brief gets one `**Contrast:**` line naming the axes it differs on. This makes the D5 check visible and testable.
-- **Starting axis values per shape.** SKILL.md gives a table of default axis values for each menu shape, adjusted to the system. It makes the D5 before-dispatch check concrete.
+- **Starting axis values per shape.** SKILL.md gives a table of default axis values for each menu shape, adjusted to the system. It makes the D5 before-dispatch check concrete. Confirmed with the user on 2026-09-17.
 - **Skip lines for unpicked shapes** are written in both gate outcomes: all 6 menu shapes when one candidate is made, the 4 unpicked shapes when three are made.
 
 ## How tests run
@@ -78,12 +78,12 @@ cd "$FX" && claude -p --plugin-dir "$WT/my-plugin" --permission-mode acceptEdits
 **Files:**
 
 - Create: `$SCRATCH/fixtures/small.md`, `$SCRATCH/fixtures/large.md`, `$SCRATCH/fixtures/manual.md`
-- Create: `$SCRATCH/fx/small`, `$SCRATCH/fx/large` (empty git repos)
+- Create: `$SCRATCH/fx/small`, `$SCRATCH/fx/large`, `$SCRATCH/fx/manual`, `$SCRATCH/fx/perm` (empty git repos)
 - Create: `$SCRATCH/check_brief.py`, `$SCRATCH/sample-brief.md`
 
 **Interfaces:**
 
-- Produces: fixture texts and repos used by Tasks 2, 3 and 5; `python3 "$SCRATCH/check_brief.py" <brief> small|large` (exit 0 and `PASS` when all checks pass, exit 1 and one `FAIL: …` line per failed check); `python3 "$SCRATCH/check_brief.py" --draft <candidate.md>` (checks the 7 D6 headings); Red notes `$SCRATCH/red-baseline-notes.md`.
+- Produces: fixture texts and repos used by Tasks 2, 4 and 5; `python3 "$SCRATCH/check_brief.py" <brief> small|large|interactive` (exit 0 and `PASS` when all checks pass, exit 1 and one `FAIL: …` line per failed check); `python3 "$SCRATCH/check_brief.py" --draft <candidate.md>` (checks the 7 D6 headings); Red notes `$SCRATCH/red-baseline-notes.md`.
 
 - [ ] **Step 1: Preflight — `general-purpose` with `model: "opus"`**
 
@@ -97,7 +97,23 @@ grep -o '"model":"opus"' opus.jsonl | head -1                      # present
 tail -1 opus.jsonl | grep -o '"result":"[^"]*"'                    # contains ok, no error text
 ```
 
-Expected: all three present, and the result says `ok`. **If the dispatch is rejected**, stop. Ask the user: "Spec D7 picked `model: \"opus\"` for candidates. The Agent tool rejects it for `general-purpose` with [error text]. Keep D7 with another model, or change the packaging?" Do not choose a model yourself.
+Expected: all three present, and the result says `ok`.
+
+Then check that the Green flags allow everything the skill does: a `Write` outside the cwd, `git`, `python3`, and an `Agent` dispatch.
+
+```bash
+mkdir -p "$SCRATCH/fx/perm" && git -C "$SCRATCH/fx/perm" init -q && cd "$SCRATCH/fx/perm"
+claude -p --model haiku --plugin-dir "$WT/my-plugin" --permission-mode acceptEdits \
+  --allowedTools "Bash(git:*)" "Bash(python3:*)" "Bash(mkdir:*)" "Bash(mktemp:*)" "Bash(date:*)" "Bash(ls:*)" \
+  --max-budget-usd 1 --output-format stream-json --verbose \
+  "Do these in order: 1) Write the text hi to $SCRATCH/preflight/perm.txt. 2) Run: git status --short. 3) Run: python3 -c 'print(2+2)'. 4) Use the Agent tool with subagent_type general-purpose, model haiku, prompt 'Reply ok'. Report each result." > perm.jsonl
+tail -1 perm.jsonl | grep -o '"permission_denials":\[[^]]*\]'   # "permission_denials":[]
+cat "$SCRATCH/preflight/perm.txt"                                  # hi
+```
+
+If any denial is listed, replace `--permission-mode acceptEdits --allowedTools …` with `--permission-mode bypassPermissions` in every Green command of this plan. The runs happen in throwaway fixture repos, so nothing needs protecting.
+
+**If the opus dispatch is rejected**, stop. Ask the user: "Spec D7 picked `model: \"opus\"` for candidates. The Agent tool rejects it for `general-purpose` with [error text]. Keep D7 with another model, or change the packaging?" Do not choose a model yourself.
 
 - [ ] **Step 2: Preflight — `AskUserQuestion` in headless runs**
 
@@ -227,6 +243,8 @@ def check_brief(path, mode):
             fails.append(f"force {n} has labels {labels}, expected exactly one")
     gate = section(text, "Collapse gate").lower()
     want = "one candidate" if mode == "small" else "three candidates"
+    if mode == "interactive":
+        want = "gate overridden by the user"
     if want not in gate:
         fails.append(f"collapse gate does not say '{want}'")
     if mode == "small":
@@ -237,7 +255,10 @@ def check_brief(path, mode):
     for n, labels in rows.items():
         if labels == ["assumed"] and FORCE_NAMES[n] not in open_items:
             fails.append(f"assumed force {n} ({FORCE_NAMES[n]}) not in Open for brainstorming")
-    if "chosen without the user" not in section(text, "Decision").lower():
+    without_user = "chosen without the user" in section(text, "Decision").lower()
+    if mode == "interactive" and without_user:
+        fails.append("interactive run but Decision says 'chosen without the user'")
+    if mode != "interactive" and not without_user:
         fails.append("headless run but Decision lacks 'chosen without the user'")
     return fails
 
@@ -313,6 +334,7 @@ python3 "$SCRATCH/check_brief.py" "$SCRATCH/sample-brief.md" small; echo "exit=$
 sed 's/- Force 9 cost./- nothing/' "$SCRATCH/sample-brief.md" > "$SCRATCH/sample-bad.md"
 python3 "$SCRATCH/check_brief.py" "$SCRATCH/sample-bad.md" small; echo "exit=$?"    # FAIL: assumed force 9 (cost) …, exit=1
 python3 "$SCRATCH/check_brief.py" "$SCRATCH/sample-brief.md" large; echo "exit=$?"  # FAIL: … 'three candidates', exit=1
+python3 "$SCRATCH/check_brief.py" "$SCRATCH/sample-brief.md" interactive; echo "exit=$?"  # FAIL: … 'gate overridden by the user' and FAIL: interactive run but Decision says …, exit=1
 ```
 
 Expected: exactly the results in the comments. If not, fix the checker, not the sample.
@@ -776,55 +798,7 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 
 ---
 
-### Task 3: Green on the large fixture
-
-**Files:**
-
-- Modify (only if a check fails): `my-plugin/skills/architect/SKILL.md`, `my-plugin/skills/architect/candidate-prompt.md`
-
-**Interfaces:**
-
-- Consumes: the skill from Task 2; `$SCRATCH/fixtures/large.md`, `$SCRATCH/fx/large`, the checker.
-- Produces: the large-fixture session ID and brief path, used by the handoff test in Task 5.
-
-- [ ] **Step 1: Run**
-
-```bash
-FX="$SCRATCH/fx/large"; LOG="$SCRATCH/green/large.jsonl"
-cd "$FX" && claude -p --plugin-dir "$WT/my-plugin" --permission-mode acceptEdits \
-  --allowedTools "Bash(git:*)" "Bash(python3:*)" "Bash(mkdir:*)" "Bash(mktemp:*)" "Bash(date:*)" "Bash(ls:*)" \
-  --max-budget-usd 20 --output-format stream-json --verbose \
-  "Run my:architect $SCRATCH/fixtures/large.md" > "$LOG"
-grep -o '"session_id":"[^"]*"' "$LOG" | head -1 | cut -d'"' -f4 > "$SCRATCH/green/large-session.txt"
-```
-
-- [ ] **Step 2: Check**
-
-```bash
-BRIEF=$(ls "$FX"/docs/plans/*-architecture.md); echo "$BRIEF"
-git -C "$FX" log --oneline -1                                                   # docs(plans): add architecture brief for …
-python3 "$SCRATCH/check_brief.py" "$BRIEF" large                               # PASS
-# three drafts with all D6 sections
-DRAFTS=$(grep -o '/[^"]*/architect/[a-z0-9-]*/candidate-[abc]\.md' "$LOG" | sort -u); echo "$DRAFTS"   # 3 paths
-for d in $DRAFTS; do python3 "$SCRATCH/check_brief.py" --draft "$d"; done      # PASS ×3
-# contrast rule held, or a label says otherwise
-grep -n -E '^\*\*Contrast:\*\*|near-copy of candidate|contrast rule not met' "$BRIEF"   # one Contrast line per candidate
-# at least one estimate script ran
-grep -o '"command":"[^"]*python3 [^"]*"' "$LOG" | head                          # ≥ 1 line
-grep -c -E '^`{3}python' "$BRIEF"                                               # ≥ 1
-# force 9 stayed assumed and reached Open for brainstorming (the checker also tests this)
-grep -n -i 'force 9' "$BRIEF"                                                   # in Forces and in Open for brainstorming
-```
-
-Expected: every comment holds. The checker covers "every force has a label", "Open for brainstorming lists every `assumed` force" and "three candidates". Read the Candidates section: for each pair, the Contrast line names at least two differing axes, or a near-copy label is present. Read the whole brief once.
-
-If a check fails, rerun once. If it fails twice, fix the skill files, rerun, then amend the Task 2 commit (`git commit --amend --no-edit` after `git add my-plugin/skills/architect`). Before a rerun, reset the fixture repo as in Task 2 Step 3.
-
-No new commit unless the skill files changed.
-
----
-
-### Task 4: `GLOBAL-CLAUDE.md` wiring and the ROADMAP row
+### Task 3: `GLOBAL-CLAUDE.md` wiring and the ROADMAP row
 
 **Files:**
 
@@ -834,7 +808,7 @@ No new commit unless the skill files changed.
 **Interfaces:**
 
 - Consumes: skill name `my:architect`; brief section name `Open for brainstorming`; brief file pattern `docs/plans/*-architecture.md`.
-- Produces: the handoff text the Task 5 brainstorming run is tested against.
+- Produces: the handoff text. Task 4 appends it to the large-fixture run's system prompt, and the Task 5 handoff resumes that run.
 
 - [ ] **Step 1: Red**
 
@@ -922,18 +896,68 @@ If the lint shows errors, run the same lint in the main checkout (`/home/dchris/
 
 ---
 
+### Task 4: Green on the large fixture
+
+**Files:**
+
+- Modify (only if a check fails): `my-plugin/skills/architect/SKILL.md`, `my-plugin/skills/architect/candidate-prompt.md`
+
+**Interfaces:**
+
+- Consumes: the skill from Task 2; the `GLOBAL-CLAUDE.md` text from Task 3; `$SCRATCH/fixtures/large.md`, `$SCRATCH/fx/large`, the checker.
+- Produces: the large-fixture session ID and brief path, used by the handoff test in Task 5.
+
+- [ ] **Step 1: Run**
+
+This run also carries the new `GLOBAL-CLAUDE.md` in its system prompt. Reason: `claude --help` says the system prompt is recorded on a session's first request, and every resume sends that record as-is, even when a later launch passes different text. The Task 5 handoff resumes this session, so the new handoff rules must be recorded here. The old `~/.claude/CLAUDE.md` is also loaded; its "Discovery authority" line is a subset of the new one, so the two do not conflict.
+
+```bash
+FX="$SCRATCH/fx/large"; LOG="$SCRATCH/green/large.jsonl"
+cd "$FX" && claude -p --plugin-dir "$WT/my-plugin" --permission-mode acceptEdits \
+  --allowedTools "Bash(git:*)" "Bash(python3:*)" "Bash(mkdir:*)" "Bash(mktemp:*)" "Bash(date:*)" "Bash(ls:*)" \
+  --append-system-prompt "$(cat "$WT/GLOBAL-CLAUDE.md")" \
+  --max-budget-usd 20 --output-format stream-json --verbose \
+  "Run my:architect $SCRATCH/fixtures/large.md" > "$LOG"
+grep -o '"session_id":"[^"]*"' "$LOG" | head -1 | cut -d'"' -f4 > "$SCRATCH/green/large-session.txt"
+```
+
+- [ ] **Step 2: Check**
+
+```bash
+BRIEF=$(ls "$FX"/docs/plans/*-architecture.md); echo "$BRIEF"
+git -C "$FX" log --oneline -1                                                   # docs(plans): add architecture brief for …
+python3 "$SCRATCH/check_brief.py" "$BRIEF" large                               # PASS
+# three drafts with all D6 sections
+DRAFTS=$(grep -o '/[^"]*/architect/[a-z0-9-]*/candidate-[abc]\.md' "$LOG" | sort -u); echo "$DRAFTS"   # 3 paths
+for d in $DRAFTS; do python3 "$SCRATCH/check_brief.py" --draft "$d"; done      # PASS ×3
+# contrast rule held, or a label says otherwise
+grep -n -E '^\*\*Contrast:\*\*|near-copy of candidate|contrast rule not met' "$BRIEF"   # one Contrast line per candidate
+# at least one estimate script ran
+grep -o '"command":"[^"]*python3 [^"]*"' "$LOG" | head                          # ≥ 1 line
+grep -c -E '^`{3}python' "$BRIEF"                                               # ≥ 1
+# force 9 stayed assumed and reached Open for brainstorming (the checker also tests this)
+grep -n -i 'force 9' "$BRIEF"                                                   # in Forces and in Open for brainstorming
+```
+
+Expected: every comment holds. The checker covers "every force has a label", "Open for brainstorming lists every `assumed` force" and "three candidates". Read the Candidates section: for each pair, the Contrast line names at least two differing axes, or a near-copy label is present. Read the whole brief once.
+
+If a check fails, rerun once. If it fails twice, fix the skill files and rerun. Commit the fix as `fix(my-plugin): <what changed> in my:architect`; the squash merge folds it in. Before a rerun, reset the fixture repo as in Task 2 Step 3.
+
+No new commit unless the skill files changed.
+
+---
+
 ### Task 5: Handoff test, manual test, integrate
 
 - [ ] **Step 1: Handoff — continue the large-fixture run into brainstorming**
 
-The headless session reads `~/.claude/CLAUDE.md`, which still has the old text until merge. So the new `GLOBAL-CLAUDE.md` is appended to the system prompt. The old "Discovery authority" line is a subset of the new one, so the two do not conflict.
+This resumes the Task 4 session. Its recorded system prompt already holds the new `GLOBAL-CLAUDE.md` (see Task 4 Step 1). Do not pass `--append-system-prompt` here: on resume it is ignored.
 
 ```bash
 FX="$SCRATCH/fx/large"; LOG="$SCRATCH/green/handoff.jsonl"
 BRIEF_REL=$(cd "$FX" && ls docs/plans/*-architecture.md)
 cd "$FX" && claude -p --resume "$(cat "$SCRATCH/green/large-session.txt")" \
   --plugin-dir "$WT/my-plugin" --permission-mode acceptEdits --max-budget-usd 10 \
-  --append-system-prompt "$(cat "$WT/GLOBAL-CLAUDE.md")" \
   --output-format stream-json --verbose \
   "Invoke superpowers:brainstorming with $BRIEF_REL as input. This is a headless run: when you would ask a question, write it and stop. Do not write the spec yet." > "$LOG"
 grep -o '"skill":"superpowers:brainstorming"' "$LOG" | head -1    # present
@@ -947,7 +971,7 @@ Read `handoff-result.txt` and the assistant text in the log. Record in `$SCRATCH
 2. **No re-asked forces.** Count questions about forces 1–8 or 10, which are `stated` in the brief. (Pass: 0.) Questions about force 9 (cost), the candidate choice or the spike are allowed.
 3. **No new approaches.** It does not propose 2–3 new approaches. It starts its design from the brief's Decision. (Pass: no new approach list.)
 
-If a check fails, rerun once. If it fails twice, strengthen the "Discovery authority" wording in `GLOBAL-CLAUDE.md`, amend the Task 4 commit, and rerun. Never edit brainstorming (spec Risk 2).
+If a check fails, rerun once. If it fails twice, strengthen the "Discovery authority" wording in `GLOBAL-CLAUDE.md` and commit it as `docs(global): <what changed>`. Then rerun Task 4 Step 1 (so the new wording is recorded in a fresh session, after resetting the fixture repo), update `large-session.txt`, and rerun this step. Never edit brainstorming (spec Risk 2).
 
 - [ ] **Step 2: Manual test — ask the user**
 
@@ -966,7 +990,7 @@ Expected, in order:
 4. If a spike is proposed, an approval question appears with `Run the spike` and `Skip`. The user picks `Skip`.
 5. The brief: force 8 is `stated`; forces 6 and 9 are `assumed` and appear under "Open for brainstorming"; Collapse gate says `Gate overridden by the user`; the Decision does **not** say "chosen without the user"; a skipped spike says `spike proposed, not run`.
 
-Then run `python3 "$SCRATCH/check_brief.py" <brief> large` on the brief. It fails only on "chosen without the user", which is correct for an interactive run. Record the results in `$SCRATCH/green/manual-notes.md`. If an item fails, fix the skill, amend the Task 2 commit, and repeat this step.
+Then run `python3 "$SCRATCH/check_brief.py" <brief> interactive`. Expected: `PASS`. Record the results in `$SCRATCH/green/manual-notes.md`. If an item fails, fix the skill, commit the fix as `fix(my-plugin): …`, and repeat this step.
 
 - [ ] **Step 3: Final lint over all changed files**
 
@@ -1005,15 +1029,16 @@ Do not delete the branch.
 - Agent tool accepting `model: "opus"` for `general-purpose` — confirmed in Task 1 Step 1; no repo precedent (`my-plugin/skills/clean-plans/SKILL.md` and `my-plugin/skills/tune-claude-instructions/SKILL.md` use `haiku`).
 - `AskUserQuestion` schema: 1–4 questions per call, 2–4 options per question. So the D8 one-candidate question (2 options) and the D3 call (up to 4 questions) fit.
 - `superpowers:brainstorming` 6.3.0, unchanged.
-- Task order is fixed: Task 3 uses the Task 2 skill; Task 5 Step 1 uses the Task 3 session and the Task 4 text.
+- Task order is fixed: Task 4 uses the Task 2 skill and the Task 3 `GLOBAL-CLAUDE.md` text; Task 5 Step 1 resumes the Task 4 session.
 
 ## Risk
 
 - **Headless runs cost money and time.** At least: Red 2 runs, small 1, large 1 (4 Opus agents: evaluation plus 3 candidates), handoff 1, preflight 2. Reruns on failure add more. `--max-budget-usd` caps each run.
-- **Checks are structural.** The checker and greps prove sections, labels and tool calls, not design quality. Mitigation: read each brief in full (Task 2 Step 3, Task 3 Step 2).
+- **Checks are structural.** The checker and greps prove sections, labels and tool calls, not design quality. Mitigation: read each brief in full (Task 2 Step 3, Task 4 Step 2).
 - **Model output varies between runs.** Rerun once before editing; fix the skill after a second failure.
 - **Test briefs leak into the branch.** Prevented by running every test inside `$SCRATCH/fx/*` repos, never in `$WT`. Guard: `git -C "$WT" status --short` before each commit shows only the task's files.
-- **Handoff test uses an appended system prompt**, not the real `~/.claude/CLAUDE.md`. The two texts overlap. A pass here is strong evidence, not proof. The post-merge session is the real check; Risk 2 of the spec covers the follow-up.
+- **Handoff test uses an appended system prompt**, recorded in the Task 4 session, next to the old `~/.claude/CLAUDE.md`. The two texts overlap. A pass here is strong evidence, not proof. The first real use after merge is the real check; spec Risk 2 covers the follow-up.
+- **A handoff wording fix is expensive.** The resumed session keeps its recorded prompt, so a `GLOBAL-CLAUDE.md` change means a fresh large-fixture run before the handoff can be retested.
 - **The manual test needs the user.** It cannot be automated because `AskUserQuestion` is absent headless. The plan stops and asks at Task 5 Step 2.
 - **Blast radius of the `GLOBAL-CLAUDE.md` edit:** every project, because `~/.claude/CLAUDE.md` links to it. It changes when brainstorming starts and what it asks. Reversible by reverting the squash commit. The branch is kept.
 
@@ -1022,16 +1047,16 @@ Do not delete the branch.
 | Spec item | Task |
 |---|---|
 | D1 brief before brainstorming, skill does not write the spec | Task 2 Step 2 (intro, step 9 last lines); handoff Task 5 Step 1 |
-| D2 trigger | Task 2 Step 2 (description); Task 4 Step 2 |
-| D3 forces, labels, one call of ≤4, priority order, corrections, record, cannot-be-asked | Task 2 Step 2 (step 1); Task 3 (force 9); Task 5 Step 2 |
-| D4 collapse gate, `assumed` gate force blocks it, skip lines, shown at choice | Task 2 Step 2 (step 2, step 7); Task 2 Step 3; Task 3 |
-| D5 shape A, two menu shapes with reasons, contrast before and after | Task 2 Step 2 (steps 3, 5); Task 3 Step 2 |
-| D6 schema, malformed, exclusion, subagent failure and retry | Task 2 Steps 1–2 (steps 4, 5); Task 3 Step 2 |
+| D2 trigger | Task 2 Step 2 (description); Task 3 Step 2 |
+| D3 forces, labels, one call of ≤4, priority order, corrections, record, cannot-be-asked | Task 2 Step 2 (step 1); Task 4 (force 9); Task 5 Step 2 |
+| D4 collapse gate, `assumed` gate force blocks it, skip lines, shown at choice | Task 2 Step 2 (step 2, step 7); Task 2 Step 3; Task 4 |
+| D5 shape A, two menu shapes with reasons, contrast before and after | Task 2 Step 2 (steps 3, 5); Task 4 Step 2 |
+| D6 schema, malformed, exclusion, subagent failure and retry | Task 2 Steps 1–2 (steps 4, 5); Task 4 Step 2 |
 | D7 `general-purpose` + `opus`, prompt inputs, absolute root, scratch drafts, search wording | Task 1 Step 1; Task 2 Steps 1–2 (steps 0, 4) |
-| D8 ownership, scenarios, pre-mortem, comparison, choice incl. one-candidate and cannot-be-asked | Task 2 Step 2 (steps 6, 7); Tasks 2–3 checker; Task 5 Step 2 |
-| D9 reversibility labels, estimate scripts, no-quantity line, near-limit spike, approval, not-run | Task 2 Step 2 (step 8); Task 3 Step 2; Task 5 Step 2 |
-| D10 brief path, 9 sections, not the plan format, commit, handoff print | Task 2 Step 2 (steps 0, 9); checker in Tasks 2–3 |
-| D11 trigger row, Discovery authority rules, Spec → Plan step 1 | Task 4 Steps 2–5 |
-| ROADMAP row | Task 4 Step 6; Task 5 Step 5 |
+| D8 ownership, scenarios, pre-mortem, comparison, choice incl. one-candidate and cannot-be-asked | Task 2 Step 2 (steps 6, 7); checker in Tasks 2 and 4; Task 5 Step 2 |
+| D9 reversibility labels, estimate scripts, no-quantity line, near-limit spike, approval, not-run | Task 2 Step 2 (step 8); Task 4 Step 2; Task 5 Step 2 |
+| D10 brief path, 9 sections, not the plan format, commit, handoff print | Task 2 Step 2 (steps 0, 9); checker in Tasks 2 and 4 |
+| D11 trigger row, Discovery authority rules, Spec → Plan step 1 | Task 3 Steps 2–5 |
+| ROADMAP row | Task 3 Step 6; Task 5 Step 5 |
 | Orphan-plan hook | No change: a committed brief matches `^[0-9]{4}-[0-9]{2}-[0-9]{2}-` (`my-plugin/hooks/check-orphan-plans.sh:28`) |
-| Testing: Red baseline, small, large, handoff, manual | Task 1 Step 8; Task 2 Step 3; Task 3; Task 5 Steps 1–2 |
+| Testing: Red baseline, small, large, handoff, manual | Task 1 Step 8; Task 2 Step 3; Task 4; Task 5 Steps 1–2 |
