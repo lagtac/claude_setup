@@ -68,7 +68,7 @@ The steps:
 
 1. **Draft.** Read the description and, when a repo exists, the repo. Fill every force with a value and a label. A force with no evidence is `assumed`.
 2. **Show.** Print the whole table in chat.
-3. **Ask.** Make one `AskUserQuestion` call with at most 4 questions. Choose from `assumed` and `inferred` forces, in this priority order: 5, 1, 4, 7, 10, then the rest by number. Each question offers concrete ranges as options. A force already `stated` is never asked about.
+3. **Ask.** Make one `AskUserQuestion` call with at most 4 questions. Choose from `assumed` and `inferred` forces, in this priority order: the gate forces 1, 3, 4, 7 first, then 5, 10, then the rest by number. The gate forces come first because D4 decides on them. Each question offers concrete ranges as options. A force already `stated` is never asked about.
 4. **Correct.** The user may correct any row in free text before the skill continues. Answered and corrected forces become `stated`.
 5. **Record.** Every force still `assumed` after step 4 is copied to "Open for brainstorming" in the brief.
 
@@ -82,7 +82,9 @@ One call with up to 4 questions is used instead of one question per message. The
 - force 7: one developer,
 - force 10: does not require more than one data store or deployable.
 
-The gate judges the recorded value of each force, whatever its label. An `assumed` value is written down in D3, so it can be judged like any other. For each shape it skipped, the skill writes one line naming the force value that would have justified it. Otherwise it makes three candidates.
+If any gate force (1, 3, 4, 7 or 10) is still `assumed` after D3, the gate does not collapse: the skill makes three candidates. Reason: the choice between one and three must not rest on a value the agent invented. For each shape it skipped, the skill writes one line naming the force value that would have justified it. Otherwise it makes three candidates.
+
+The gate result is shown to the user at the D8 choice step (see D8), not before dispatch. When the gate made one candidate, that step is where the user can ask for three.
 
 Reason: requiring three designs for a small tool invents complexity and gives it false standing in a comparison. This follows the Simplicity Rules in `GLOBAL-CLAUDE.md`.
 
@@ -102,7 +104,9 @@ Reason: requiring three designs for a small tool invents complexity and gives it
   - synchronous versus asynchronous communication,
   - where computation runs (server, worker, client).
 
-  The skill checks the rule on the chosen shapes before dispatch, and on the returned drafts after. A draft that fails the check is labelled "near-copy of candidate X" in the brief. It is not dropped and not regenerated.
+  The skill checks the rule on the chosen shapes before dispatch, and on the returned drafts after.
+  - **Before dispatch:** if a shape pair fails, replace the later shape with the next menu shape that passes. If no menu shape passes, dispatch anyway and label the pair "contrast rule not met" in the brief.
+  - **After return:** a draft that fails the check is labelled "near-copy of candidate X" in the brief. It is not dropped and not regenerated.
 
 **D6 — Fixed candidate schema.** Every subagent returns markdown with exactly these sections, in order, in about 800 words:
 
@@ -114,9 +118,18 @@ Reason: requiring three designs for a small tool invents complexity and gives it
 6. `### Numbers it depends on` — a list, for example "under 50 writes/s to one MySQL instance".
 7. `### Weakest point` — the candidate's best argument against itself.
 
-A draft missing a section is recorded as malformed in the brief, with the names of the missing sections.
+A draft missing a section is recorded as malformed in the brief, with the names of the missing sections. A malformed draft still takes part in evaluation, **unless** it lacks `### Components` or `### Connections`. Then it is excluded from D8 and from the choice, and kept in the appendix.
 
-**D7 — Packaging: `general-purpose` agent plus a prompt file.** The skill dispatches `subagent_type: "general-purpose"` with `model: "opus"`. The prompt is built from `candidate-prompt.md`. The subagents return text only. The main agent saves each draft to `<scratchpad>/architect/<slug>/candidate-{a,b,c}.md`. `<scratchpad>` is the session's scratchpad directory from the system prompt. When there is none, it is a directory made with `mktemp -d`.
+**Subagent failure.** A subagent that errors, times out or returns empty text is retried once. If it fails again, the skill continues with the remaining candidates. The brief records the missing candidate and the error. If no candidate is left, the skill stops and reports the errors. It writes no brief.
+
+**D7 — Packaging: `general-purpose` agent plus a prompt file.** The skill dispatches `subagent_type: "general-purpose"` with `model: "opus"`. The prompt is built from `candidate-prompt.md`. Its inputs are:
+
+- the user's description of the system, word for word,
+- the absolute repo root, when a repo exists (subagents do not reliably inherit the session's working directory, as noted in `my-plugin/skills/spec-review/SKILL.md` step 2),
+- the confirmed forces table from D3, with labels,
+- the assigned shape and its one-line reason (D5),
+- the D6 schema,
+- the search-tool wording below. The subagents return text only. The main agent saves each draft to `<scratchpad>/architect/<slug>/candidate-{a,b,c}.md`. `<scratchpad>` is the session's scratchpad directory from the system prompt. When there is none, it is a directory made with `mktemp -d`.
 
 The prompt includes the search-tool wording from `my-plugin/agents/spec-reviewer.md`: search with `grep -rn` and `find` through Bash, use `Grep`/`Glob`/`LSP` only when present, and never skip a search because they are missing. Reason: these tools are removed from subagents at run time.
 
@@ -135,7 +148,12 @@ Rejected: a dedicated `my:candidate-architect` agent. It would match the `spec-r
   Trace each scenario step by step through the Connections table. Record the step where it breaks, or "holds".
 - **Pre-mortem.** Assume the design failed one year after launch. Write the three most likely causes for each candidate.
 - **Comparison.** A table with forces as rows and candidates as columns. Each cell is `meets`, `partial` or `fails`, with a reason.
-- **Choice.** The skill states a recommendation with reasons. The user picks with `AskUserQuestion`. The brief records why each rejected candidate lost.
+- **Choice.** The skill states a recommendation with reasons, then asks with `AskUserQuestion`:
+  - **Two or more candidates:** the user picks one.
+  - **One candidate** (the gate collapsed, or only one survived D5–D6): the skill shows the gate result and asks "accept, or make three?". "Make three" returns to D5 with three shapes. This is the only point where the user overrides the gate.
+  - **The question cannot be asked** (for example, `AskUserQuestion` fails in a headless run): the skill takes its recommended candidate, writes "chosen without the user" in the brief's Decision section, and adds the choice to "Open for brainstorming".
+
+  The brief records why each rejected candidate lost.
 
 **D9 — Reversibility and checks** (chosen design only).
 
@@ -143,10 +161,11 @@ Rejected: a dedicated `my:candidate-architect` agent. It would match the `spec-r
   - `hard` — data model, storage engine, public API or data format, process boundaries, vendor lock-in,
   - `medium` — internal module boundaries, library choice behind an interface,
   - `cheap` — everything else.
-- For each `hard` decision, write and run a Python standard-library script in `<scratchpad>/architect/<slug>/`. It estimates load, storage, cost or latency from the forces and from "Numbers it depends on". The script and its printed output go into the brief. Python's standard library only, so no new dependencies.
+- For each `hard` decision that depends on a load, storage, cost or latency number, write and run a Python standard-library script in `<scratchpad>/architect/<slug>/`. It estimates that number from the forces and from "Numbers it depends on". The script and its printed output go into the brief. Python's standard library only, so no new dependencies.
+- A `hard` decision with no such number (for example, a public data format) gets no script. The brief writes "no quantity to check" and one line of reason.
 - **Near a limit** means the estimate is within a factor of 2 of a known capacity or budget. In that case, or when a force the decision depends on is `assumed`, the skill proposes a spike in 2–3 sentences: the question and what it will try. It runs the spike only after the user approves. Spike code stays in the scratchpad, labelled throwaway, and is never committed. Only the result goes into the brief.
 
-**D10 — The brief.** Path: `docs/plans/YYYY-MM-DD-<slug>-architecture.md`. The skill commits it with `docs(plans): add architecture brief for <slug>`. Sections, in order:
+**D10 — The brief.** Path: `docs/plans/YYYY-MM-DD-<slug>-architecture.md`. The brief uses the sections below, not the plan format. The rule file `GLOBAL-rules/plan-format.md` loads for every `**/docs/plans/*.md` file and says every plan section is required. It also allows a skill to use its own format. `SKILL.md` must state that the brief follows D10 and not the plan format. The rule's `paths` are not changed. The skill commits it with `docs(plans): add architecture brief for <slug>`. Sections, in order:
 
 1. **How to read this brief** — related documents with paths, in reading order. The spec written next lists this brief first in its own "How to read this spec".
 2. **Forces** — the D3 table with labels.
@@ -163,7 +182,12 @@ After committing, the skill prints the brief path and tells the caller to invoke
 **D11 — `GLOBAL-CLAUDE.md` changes.**
 
 - New trigger table row, placed above the brainstorming row: "New project, new subsystem, or change to a data model, storage choice or public contract | `my:architect`, then `superpowers:brainstorming`".
-- "Discovery authority" paragraph. Add: "`my:architect` runs before brainstorming, not during it. When an architecture brief exists, brainstorming treats it as settled input and asks only about items under its 'Open for brainstorming' section."
+- "Discovery authority" paragraph. Add, in plain wording:
+  - `my:architect` runs before brainstorming, not during it.
+  - When an architecture brief exists, brainstorming treats it as settled input. It asks only about items under the brief's "Open for brainstorming" section.
+  - The brief's Decision replaces brainstorming's "propose 2-3 approaches" step. Brainstorming presents its design sections starting from that Decision.
+  - When a brief exists, brainstorming classifies the task as architectural, never bounded or spike.
+  - If brainstorming upgrades a task to architectural partway through, and the task matches the `my:architect` trigger, it stops and runs `my:architect` first.
 - "Spec → Plan two-artifact flow", step 1: when a brief exists, "How to read this spec" lists it first.
 
 ## Out of scope
@@ -177,8 +201,8 @@ After committing, the skill prints the brief path and tells the caller to invoke
 
 | File | Status | Responsibility |
 |---|---|---|
-| `my-plugin/skills/architect/SKILL.md` | Create | Steps D3–D10: forces, gate, dispatch, evaluation, checks, brief |
-| `my-plugin/skills/architect/candidate-prompt.md` | Create | Candidate subagent prompt: shape, forces table, schema (D6), search wording (D7) |
+| `my-plugin/skills/architect/SKILL.md` | Create | Steps D3–D10: forces, gate, dispatch, failure handling, evaluation, choice, checks, brief; states the brief does not use the plan format |
+| `my-plugin/skills/architect/candidate-prompt.md` | Create | Candidate subagent prompt: description, repo root, forces table, shape and reason, schema (D6), search wording (D7) |
 | `GLOBAL-CLAUDE.md` | Modify | D11 |
 | `ROADMAP.md` | Modify | New row for `my:architect` |
 
@@ -187,7 +211,7 @@ After committing, the skill prints the brief path and tells the caller to invoke
 - **Brief before brainstorming (D1) vs inside it.** Pro: this skill controls its own method, and the brief is a durable record. Con: two artifacts before the plan, and the handoff depends on brainstorming following one sentence in `GLOBAL-CLAUDE.md`.
 - **Parallel subagents (D5) vs one agent writing three.** Pro: real independence, so fewer near-copies. Con: three agent runs per use, and each draft must be checked against the schema.
 - **One question call of up to 4 (D3) vs one question per message.** Pro: the user sees all assumptions at once and answers quickly. Con: at most 4 forces are confirmed by question. The rest stay `assumed` unless the user corrects them in free text.
-- **Collapse gate (D4).** Pro: no invented complexity for small tools. Con: the thresholds are judgment calls. A borderline system may get one candidate when two would help. The user can override by asking for three.
+- **Collapse gate (D4).** Pro: no invented complexity for small tools. Con: the thresholds are judgment calls. A borderline system may get one candidate when two would help. The user can override at the D8 choice step by asking for three. An `assumed` gate force blocks the collapse, which may cost three runs for a system that turns out to be small.
 - **`general-purpose` + prompt (D7) vs dedicated agent.** Pro: two new files, not three. Con: no agent-level "malformed prompt" stop. The schema check after return partly covers this.
 
 ## Dependencies
@@ -200,9 +224,9 @@ After committing, the skill prints the brief path and tells the caller to invoke
 ## Risk
 
 1. **`AskUserQuestion` may fail in headless `claude -p` runs**, so tests cannot answer questions. Mitigation: test fixtures state all forces the skill would ask about, so they are `stated` and no question is asked. The first plan task confirms this works. The question step is tested once by hand in an interactive session.
-2. **Brainstorming may ignore the brief** and ask about `stated` forces again. Detection: in the large-fixture handoff test, count re-asked `stated` forces. If this happens, strengthen the `GLOBAL-CLAUDE.md` sentence. Do not edit brainstorming.
+2. **Brainstorming may ignore the brief**: ask about `stated` forces again, propose new approaches, or classify the task as bounded. Detection: in the large-fixture handoff test, count re-asked `stated` forces, and check that brainstorming neither proposes new approaches nor picks the bounded path. If this happens, strengthen the `GLOBAL-CLAUDE.md` sentence. Do not edit brainstorming.
 3. **Cost.** Each full run uses 3 subagents plus evaluation. Limited by the D2 trigger and the D4 gate.
-4. **Too much process for mid-sized work.** Detection: after 3 real uses, check whether each brief changed the resulting spec. If none did, narrow the D2 trigger.
+4. **Too much process for mid-sized work.** Detection: after 3 real uses, check whether each brief changed the resulting spec. If none did, narrow the D2 trigger. At the same point, review the D4 thresholds against the gate results of those uses.
 5. **Blast radius.** The `GLOBAL-CLAUDE.md` edit changes the start of the design flow in every project, because `~/.claude/CLAUDE.md` links to it. Easy to reverse: revert one commit. No data or contract changes.
 
 ## Testing strategy
@@ -213,18 +237,17 @@ Same method as `docs/plans/2026-09-16-spec-review-skill.md`: headless `claude -p
 - **Small fixture.** A solo-developer tool with no targets, stated in the description. Pass when:
   - the gate makes one candidate,
   - every skipped shape has a skip reason,
-  - the brief has all 9 sections.
+  - the one-candidate choice either asks "accept, or make three?" or records "chosen without the user",
+  - the brief has all 9 sections and none of the plan-format sections.
 - **Large fixture.** A description with stated high write load, strict consistency for one entity, and a team of 3. Pass when:
   - three drafts exist with all D6 sections,
   - the contrast rule holds, or a near-copy label appears,
   - every force has a label,
   - at least one estimate script was run (a Bash tool call runs `python3` in the run log),
   - "Open for brainstorming" lists every `assumed` force.
-- **Handoff.** Continue the large-fixture run into brainstorming. Pass when no `stated` force is asked about again.
+- **Handoff.** Continue the large-fixture run into brainstorming. Pass when no `stated` force is asked about again, no new approaches are proposed, and the path is architectural.
 - **Manual.** One interactive run to check the D3 question step and the D9 spike approval.
 
 ## Open questions
 
-The four design choices (D1, D2, D5, D9) and the D7 packaging were confirmed with the user on 2026-09-17.
-
-1. **D4 thresholds** (50 requests/s, 1 s latency, 1 hour downtime per month) were added while writing this spec. The user approved the gate and its forces, but not these numbers.
+None. The design choices (D1, D2, D5, D7, D9) were confirmed with the user on 2026-09-17. The review answers in `docs/plans/2026-09-17-architect-skill-spec-review.md` were accepted as recommended on the same day. The D4 thresholds are starting values, reviewed under Risk item 4.
