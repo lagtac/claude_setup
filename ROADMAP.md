@@ -54,9 +54,10 @@ Follow-ups spawned by the planner retirement. Spec:
 
 ## Design workflow
 
-- 🚧 **`my:architect`** — forces-first architecture brief before brainstorming:
+- ✅ **`my:architect`** — forces-first architecture brief before brainstorming:
   labelled forces, collapse gate, parallel candidates, evaluation and estimate
-  scripts. Spec:
+  scripts. Shipped in `3d9a7f9`; `GLOBAL-CLAUDE.md` now runs it before
+  brainstorming for new systems and contract changes. Spec:
   [`docs/plans/2026-09-17-architect-skill-spec.md`](docs/plans/2026-09-17-architect-skill-spec.md),
   plan: [`docs/plans/2026-09-17-architect-skill.md`](docs/plans/2026-09-17-architect-skill.md).
 
