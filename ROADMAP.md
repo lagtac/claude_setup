@@ -39,18 +39,15 @@ Follow-ups spawned by the planner retirement. Spec:
   `/my:task`; Superpowers owns planning. Plan template moved to the lazy
   `GLOBAL-rules/plan-format.md`. Supersedes the unexecuted
   [`2026-05-28-single-source-planning-standards.md`](docs/plans/2026-05-28-single-source-planning-standards.md).
-- 💭 **`clean-plans` scans abolished paths** — discovers from
-  `docs/superpowers/plans/` and `docs/superpowers/specs/`, which `GLOBAL-CLAUDE.md`
-  overrides to `docs/plans/`. Bug fix, one file.
-- 💭 **`tune-claude-instructions` is a model behind** — scoped to "Opus 4.7+"
-  in 8 places, and missing the subagent tool-filtering lesson it should own
-  (learned in `2c459be`).
-- 💭 **Plugin docs drift** — `README.md` documents none of the 9 skills;
-  `plugin.json` still describes the plugin as "commands and agents", omitting
-  skills and hooks.
-- 💭 **`summarizer` plan-path convention** — writes
-  `$planDirectory/{name}-plan.md`, contradicting the mandated
-  `YYYY-MM-DD-<slug>.md` naming.
+- ✅ **`clean-plans` scans abolished paths** — now scans only `docs/plans/`
+  and names plans with no `-plan` suffix. `d58da69`.
+- ✅ **`tune-claude-instructions` is a model behind** — wording no longer pins
+  Opus 4.7; adds a tool check for tools subagents never get. `6958704`.
+- ✅ **Plugin docs drift** — `README.md` documents all skills, agents and hooks;
+  `plugin.json` names skills and hooks. `965d423`.
+- ✅ **`summarizer` plan-path convention** — reads and writes dated files in
+  `docs/plans/`, and no longer spawns a sub-agent it cannot get. `dd45902`;
+  the same `$planDirectory` fix for `optimize-prompt` in `60f6b67`.
 
 ## Design workflow
 
