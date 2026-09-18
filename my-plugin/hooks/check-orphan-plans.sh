@@ -13,6 +13,9 @@
 #   - statusless (it has no `**Status:**` line, optionally inside a `> ` quote).
 # Projects without that README are not affected.
 #
+# Reports (critiques, audits) may live in docs/reports/. Its files get the same
+# checks, and the docs/plans/README.md index lists them too.
+#
 # Emits a Claude Code SessionStart additionalContext line when orphans exist;
 # stays silent (exit 0, no output) otherwise. Run with --text for a plain-text
 # report when testing by hand.
@@ -29,7 +32,7 @@ untracked=()
 unindexed=()
 statusless=()
 index=docs/plans/README.md
-for f in docs/plans/*.md; do
+for f in docs/plans/*.md docs/reports/*.md; do
     name=$(basename "$f")
     # README.md is a conventional index, not a dated plan -- never an orphan.
     [ "$name" = "README.md" ] && continue
@@ -47,7 +50,7 @@ done
 join() { local out; out=$(printf '%s, ' "$@"); echo "${out%, }"; }
 msg=""
 if [ ${#undated[@]} -gt 0 ] || [ ${#untracked[@]} -gt 0 ]; then
-    msg="⚠ Orphaned plans in docs/plans/ (commit them, or rename to YYYY-MM-DD-<slug>)."
+    msg="⚠ Orphaned plans in docs/plans/ or docs/reports/ (commit them, or rename to YYYY-MM-DD-<slug>)."
     [ ${#untracked[@]} -gt 0 ] && msg+=" Untracked: $(join "${untracked[@]}")."
     [ ${#undated[@]} -gt 0 ] && msg+=" Undated: $(join "${undated[@]}")."
 fi
