@@ -52,6 +52,14 @@ Follow-ups spawned by the planner retirement. Spec:
   `$planDirectory/{name}-plan.md`, contradicting the mandated
   `YYYY-MM-DD-<slug>.md` naming.
 
+## Design workflow
+
+- 🚧 **`my:architect`** — forces-first architecture brief before brainstorming:
+  labelled forces, collapse gate, parallel candidates, evaluation and estimate
+  scripts. Spec:
+  [`docs/plans/2026-09-17-architect-skill-spec.md`](docs/plans/2026-09-17-architect-skill-spec.md),
+  plan: [`docs/plans/2026-09-17-architect-skill.md`](docs/plans/2026-09-17-architect-skill.md).
+
 ## Other
 
 Historical, self-contained efforts are tracked as dated specs in `docs/plans/`
