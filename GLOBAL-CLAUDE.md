@@ -20,7 +20,7 @@ Auto-dispatch of skills is unreliable on Opus 4.7+, so invoke the relevant `supe
 | Multi-step implementation from a spec or written requirements | `superpowers:writing-plans` |
 | Writing or modifying production code (>1 file or >~30 lines) | `superpowers:test-driven-development` |
 | Bug, test failure, or unexpected behavior | `superpowers:systematic-debugging` |
-| Starting non-trivial work that warrants a worktree (see Git Workflow rules) — before any code changes | `superpowers:using-git-worktrees` |
+| Starting non-trivial work that warrants a worktree (see Git Workflow rules) — before any code changes | `superpowers:using-git-worktrees` (create the worktree with `git worktree add`, never `EnterWorktree`) |
 | Executing a plan from `docs/plans/` | `superpowers:executing-plans` |
 | Branch is feature-complete and ready to integrate | `superpowers:finishing-a-development-branch` |
 | Major work needs review before merge | `superpowers:requesting-code-review` |
@@ -61,6 +61,10 @@ Three reviewers, complementary — route by what you want:
 - Want both → `my:soundness-review` first, then `/code-review --fix`. Explicit security sweep → `/security-review`. An *open* PR/MR → `/review`. Both committed + uncommitted work present → run `my:soundness-review` twice (no-args, then the range).
 
 **Before any review:** map changed symbols with the built-in `LSP` tool (`findReferences`, `incomingCalls`, `documentSymbol`) first, then a plain `Grep` for the name token — string-literal refs are invisible to symbol tools. Never review line-by-line without caller/callee context. Never invoke `feature-dev:code-reviewer` or `superpowers:requesting-code-review` — both superseded by `my:code-reviewer` (which `my:soundness-review` dispatches).
+
+**When to review:** once, at the end of the branch. Run the reviews in parallel on the whole range (`BASE..HEAD`). Before each commit, only reread `git diff --cached`. Reviewing every commit and then the whole branch again only adds waits.
+
+**One fix round per review.** A finding about input that today's code never produces goes into the plan's **Risk** section as a known limit, not into a fix. A fix gets one re-review, and that re-review is final. Without this limit, each fix invites a new edge case and the rounds do not end.
 
 ## Communication
 
@@ -200,6 +204,7 @@ For any non-trivial decision, present alternatives:
 
 - **End-to-end coverage.** A change to a public surface (route, relationship, serialized contract, CLI) needs at least one test exercising the real surface end-to-end — not only unit tests of the changed unit.
 - **No vacuous tests.** Each test must fail for the right reason before implementation. Assertions on generated artifacts must reference the real producing code, not an assumed pattern. Reject degenerate parameters, matches-nothing filters, and references to non-existent fixtures.
+- **The red step is the mutation proof.** A test that failed with the expected message before implementation has proven it can fail. Only an assertion that never went red needs an extra deliberate break.
 - **Rehearse runbooks.** Operator scripts/runbooks must be dry-run against the real target before the plan is marked done.
 
 ### Plan Output Format
