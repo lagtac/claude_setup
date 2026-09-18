@@ -1,45 +1,91 @@
 # claude-setup
 
-A Claude Code plugin providing personal commands and agents for development workflows.
+My Claude Code setup. It has two parts:
+
+- **`my-plugin/`** — the `my` plugin: skills, commands, agents and hooks for
+  development workflows.
+- **`GLOBAL-*`** — global instructions, rules and output styles. Files in
+  `~/.claude/` are symlinks into these, so edit them here.
+
+## Installation
+
+Load the plugin from its folder with the `--plugin-dir` flag:
+
+```bash
+claude --plugin-dir ~/projects/claude-setup/my-plugin
+```
+
+To load it in every session, add an alias to `~/.bash_aliases`:
+
+```bash
+alias claude='claude --plugin-dir ~/projects/claude-setup/my-plugin'
+```
+
+## Skills
+
+Skills load when a task matches their description, or when you call them
+as `/my:<name>`.
+
+- `my:architect` — Writes an architecture brief from the forces on a system,
+  before the spec. Output: `docs/plans/YYYY-MM-DD-<slug>-architecture.md`.
+- `my:spec-review` — Reviews one `*-spec.md` as a system: components, contracts,
+  state ownership, failure spread. Output: a review in `docs/plans/`.
+- `my:soundness-review` — Gives a for/against verdict on a diff, or checks a
+  diff or plan against its plan. Output: a review in `docs/plans/`. Bug-finding
+  goes to the built-in `/code-review`.
+- `my:briefing` — Writes a plain-English, decision-focused briefing for
+  non-technical readers, in `docs/briefings/`.
+- `my:roadmap-management` — Edits `ROADMAP.md`: adds rows and moves them between
+  status tiers.
+- `my:changelog-management` — Edits `CHANGELOG.md` for shipped features, fixes
+  and deploy changes.
+- `my:dev-reports` — Builds a daily or weekly developer report from git history.
+- `my:git-squasher` — Squashes runs of small consecutive commits.
+- `my:clean-plans` — Renames randomly named plan files in `docs/plans/` to dated
+  names, and offers to delete trivial ones.
+- `my:tune-claude-instructions` — Audits instruction files (CLAUDE.md, agents,
+  commands, skills) for vague directives and for tools a subagent will not have.
+- `my:de-slop` — Rewrites text so it does not read as machine-written.
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `/my:soundness-review` | Dual-perspective soundness verdict + plan-alignment, written to `docs/plans/`; or, on a clean tree with a `.md` plan, reviews the plan itself (bug-finding/fix delegated to built-in `/code-review`) |
-| `/my:summarize` | Compare a plan/review against the actual git diff |
-| `/my:commit` | Structured commit workflow |
-| `/my:push` | Push with pre-push checks |
-| `/my:optimize-prompt` | Optimize a prompt template |
-| `/my:clean-gone-branches` | Clean up local branches whose remote is gone |
-| `/my:laravel-debug` | Laravel-specific debugging |
-| `/my:laravel-migration-check` | Check Laravel migrations |
+- `/my:commit` — Structured commit workflow with Conventional Commits.
+- `/my:push` — Push with pre-push checks.
+- `/my:summarize` — Compare a plan or review against the actual git diff (runs
+  the `summarizer` agent).
+- `/my:optimize-prompt` — Score and rewrite a prompt; saves it to
+  `docs/plans/optimized-prompts/`.
+- `/my:clean-gone-branches` — Remove local branches whose remote is gone, with
+  their worktrees.
+- `/my:laravel-debug` — Laravel-specific debugging.
+- `/my:laravel-migration-check` — Check Laravel migrations for safety and
+  rollback.
 
 ## Agents
 
 | Agent | Model | Used by |
-|-------|-------|---------|
-| `code-reviewer` | opus | `/my:soundness-review` |
+| --- | --- | --- |
+| `code-reviewer` | opus | `my:soundness-review` |
+| `spec-reviewer` | opus | `my:spec-review` |
 | `summarizer` | sonnet | `/my:summarize` |
 | `laravel-fullstack-expert` | — | `/my:laravel-*` |
+| `oral-medicine-expert` | — | Called directly (oral medicine questions) |
 
-## Installation
+## Hooks
 
-From a local path:
+Defined in `my-plugin/hooks/hooks.json`:
 
-```bash
-claude plugin add /path/to/claude-setup
-```
+- **SessionStart** — `check-orphan-plans.sh` warns about files in `docs/plans/`
+  or `docs/reports/` that are untracked or not named `YYYY-MM-DD-<slug>`.
+  If `docs/plans/README.md` contains `<!-- plans-index: strict -->`, it also
+  warns about plans missing from that index or missing a `**Status:**` line.
+- **PostToolUse** — after `git merge --squash`, reminds Claude to update the
+  roadmap with `my:roadmap-management`.
 
-Or from a git remote:
+## Settings
 
-```bash
-claude plugin add https://github.com/your-user/claude-setup.git
-```
-
-## Recommended Project Settings
-
-The plugin only ships deny-list safety defaults. Add these to your project's `.claude/settings.json` as needed:
+`settings.json` at the repo root holds a deny-list of unsafe commands.
+Add allow rules to your project's `.claude/settings.json` as needed:
 
 ```json
 {
@@ -57,5 +103,5 @@ The plugin only ships deny-list safety defaults. Add these to your project's `.c
 }
 ```
 
-**Important:** `$planDirectory` must be set in your project settings (via `plansDirectory`) for the `/my:soundness-review` and `/my:summarize` commands to write their output files.
-
+Skills, commands and agents write to fixed paths under `docs/` in the project
+root. They do not read `plansDirectory`.
