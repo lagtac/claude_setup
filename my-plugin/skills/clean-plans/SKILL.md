@@ -8,7 +8,15 @@ description: >
 
 # Plan File Cleaner
 
-Organize plan/spec/review `.md` files: rename important project-specific documents to `{YYYY-MM-DD}-{feature}-{type}.md`, and offer to delete trivial or unrelated ones.
+Organize plan/spec/review `.md` files: rename important project-specific documents to the dated names below, and offer to delete trivial or unrelated ones.
+
+| Type | New name |
+|---|---|
+| `plan` | `{YYYY-MM-DD}-{feature}.md` — no suffix |
+| `spec` | `{YYYY-MM-DD}-{feature}-spec.md` |
+| `review` | `{YYYY-MM-DD}-{feature}-review.md` |
+
+These match the global layout rules (`~/.claude/rules/docs-layout.md`). A plan has no `-plan` suffix.
 
 The per-file classification in step 3 fans out to parallel Haiku subagents — independent rubric-driven extraction with no shared state. The main session handles discovery, approval, and execution.
 
@@ -16,10 +24,9 @@ The per-file classification in step 3 fans out to parallel Haiku subagents — i
 
 ### 1. Discover files
 
-List `.md` files in these directories (if they exist):
-- `docs/plans/`
-- `docs/superpowers/plans/`
-- `docs/superpowers/specs/`
+List the `.md` files in `docs/plans/`. Skip `README.md`, which is an index, not a plan.
+
+Superpowers' default folders (`docs/superpowers/plans/`, `docs/superpowers/specs/`) are not scanned. The global instructions send all plans and specs to `docs/plans/`.
 
 ### 2. Classify: rename or skip?
 
@@ -45,8 +52,8 @@ digraph classify {
 Examples:
 - `vivid-discovering-papert.md` -> RENAME (random three-word)
 - `annotation-data-quality-evaluation.md` -> SKIP (descriptive domain slug)
-- `2026-03-10-batch-export-plan.md` -> SKIP (already dated)
-- `2026-03-10-auth-redesign-design.md` -> SKIP (already dated, specs dir)
+- `2026-03-10-batch-export.md` -> SKIP (already dated)
+- `2026-03-10-auth-redesign-spec.md` -> SKIP (already dated)
 
 ### 3. Triage each candidate (dispatched in parallel)
 
@@ -57,11 +64,10 @@ Each candidate is triaged into one of two buckets, with metadata extraction for 
 Documents that describe meaningful feature work, architectural decisions, or domain-specific plans worth preserving. Extract metadata:
 
 - **feature**: Main topic in 2-4 kebab-case words (e.g., `batch-export`, `dev-report-todos`)
-- **type**: One of `plan`, `review`, `spec`, `design` — infer from:
-  - Parent directory name (`specs/` -> `spec`, `plans/` -> `plan`)
+- **type**: One of `plan`, `review`, `spec` — infer from:
   - H1 heading (e.g., "# Plan: ..." -> `plan`)
-  - Content keywords ("review", "evaluation", "specification")
-  - Existing suffix (e.g., `*-design.md` -> `design`)
+  - Content keywords ("review", "evaluation", "specification", "design")
+  - Existing suffix (e.g., `*-spec.md` or `*-design.md` -> `spec`)
   - Default to `plan` if ambiguous
 
 #### DELETE — trivial or unrelated documents
@@ -85,7 +91,7 @@ Each subagent gets this self-contained prompt (substitute `<PATH>` for the candi
 Classify the plan/spec/review file at <PATH>.
 
 Read the file in full, then return ONE JSON object on a single line, no prose, no code fences:
-{"path": "<PATH>", "decision": "RENAME"|"DELETE", "feature": "<kebab-case-2-to-4-words>"|null, "type": "plan"|"review"|"spec"|"design"|null, "reason": "<one short sentence>"}
+{"path": "<PATH>", "decision": "RENAME"|"DELETE", "feature": "<kebab-case-2-to-4-words>"|null, "type": "plan"|"review"|"spec"|null, "reason": "<one short sentence>"}
 
 Decision rules:
 
@@ -93,10 +99,10 @@ RENAME — important, project-specific documents describing meaningful feature w
 architectural decisions, or domain-specific plans worth preserving. For RENAME,
 populate feature and type:
 - feature: 2-4 kebab-case words for the main topic (e.g. "batch-export")
-- type: one of plan/review/spec/design — infer from parent directory
-  (specs/ -> spec, plans/ -> plan), H1 heading ("# Plan: ..." -> plan),
-  content keywords (review, evaluation, specification), existing suffix
-  (*-design.md -> design); default to "plan" if ambiguous.
+- type: one of plan/review/spec — infer from the H1 heading
+  ("# Plan: ..." -> plan), content keywords (review, evaluation,
+  specification, design), existing suffix (*-spec.md or *-design.md -> spec);
+  default to "plan" if ambiguous.
 
 DELETE — trivial or unrelated documents matching any of:
 - Chore/tooling meta-plans (configuring tools, skills, CI tweaks, linter setup —
@@ -139,7 +145,7 @@ stat -c '%y' PATH | cut -d' ' -f1
 Proposed renames (important project documents):
 | Current                         | New                                    |
 |---------------------------------|----------------------------------------|
-| vivid-discovering-papert.md     | 2026-03-20-batch-export-plan.md        |
+| vivid-discovering-papert.md     | 2026-03-20-batch-export.md             |
 
 Proposed deletions (trivial/unrelated):
 | File                            | Reason                                 |
