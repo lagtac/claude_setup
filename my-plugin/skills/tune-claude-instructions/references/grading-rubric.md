@@ -1,6 +1,6 @@
 # Grading Rubric
 
-How to grade Claude instruction files for literal-instruction-following models (Opus 4.7+). Used by the `tune-claude-instructions` skill on both grading paths — inline (1–5 files) and parallel Haiku dispatch (6+ files) — so the rubric stays the single source of truth.
+How to grade Claude instruction files for literal-instruction-following models (Opus 4.7 and every later model). Used by the `tune-claude-instructions` skill on both grading paths — inline (1–5 files) and parallel Haiku dispatch (6+ files) — so the rubric stays the single source of truth.
 
 ## Read the file in full
 
@@ -33,7 +33,7 @@ Does the file enumerate the dimensions, fields, or sections the output must cove
 
 ### R — Reasoning
 
-Does the file explicitly request step-by-step reasoning *before* conclusions? Power phrases that pass: "think step by step", "show your reasoning", "before drawing conclusions", "before listing recommendations". Implicit cues like "be thorough", "be careful", "analyze deeply", "use sequential thinking" do **not** pass — 4.7+ takes them at face value and skips ahead to the answer.
+Does the file explicitly request step-by-step reasoning *before* conclusions? Power phrases that pass: "think step by step", "show your reasoning", "before drawing conclusions", "before listing recommendations". Implicit cues like "be thorough", "be careful", "analyze deeply", "use sequential thinking" do **not** pass — a literal-following model takes them at face value and skips ahead to the answer.
 
 - ✅ "Think step by step. Show your reasoning at each diagnostic stage before drawing conclusions."
 - ⚠️ "Analyze carefully"
@@ -46,6 +46,16 @@ Does the file specify the output structure?
 - ✅ A literal markdown skeleton, JSON schema, or numbered template with actual `## Heading` lines
 - ⚠️ Section names listed but no template shown
 - ❌ "Output the result"
+
+## Tool check
+
+Does the file require a tool its reader will not have? This is not a fourth column. It feeds severity and `why`.
+
+- An agent file, or a prompt a skill or command dispatches to a subagent, fails the check when it requires `Grep`, `Glob`, `LSP`, `Task` or `Agent`. Subagents never receive these, whatever the agent's `tools:` line says.
+- A step that names one of these tools **with a `Bash` fallback** passes, e.g. "the `Grep` tool, or `grep -rn` through `Bash` when `Grep` is absent".
+- Main-session files (commands, skills, `CLAUDE.md`) pass when they name `Grep` or `Glob`, but note it in `why`: auto mode can remove both.
+
+A failed tool check raises the severity by one step (OK → Low, Low → Medium). Quote the passage in `problem_passages`.
 
 ## Severity ladder
 
