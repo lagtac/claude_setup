@@ -7,6 +7,12 @@
 #     to git history; this is exactly how humble-floating-wave.md was lost), or
 #   - undated    (name does not follow the mandated YYYY-MM-DD-<slug> convention).
 #
+# When the project keeps an index at docs/plans/README.md, it also flags a plan
+# that is:
+#   - unindexed  (its file name does not appear in README.md), or
+#   - statusless (it has no `**Status:**` line, optionally inside a `> ` quote).
+# Projects without that README are not affected.
+#
 # Emits a Claude Code SessionStart additionalContext line when orphans exist;
 # stays silent (exit 0, no output) otherwise. Run with --text for a plain-text
 # report when testing by hand.
@@ -20,20 +26,37 @@ cd "$root" || exit 0
 shopt -s nullglob
 undated=()
 untracked=()
+unindexed=()
+statusless=()
+index=docs/plans/README.md
 for f in docs/plans/*.md; do
     name=$(basename "$f")
     # README.md is a conventional index, not a dated plan -- never an orphan.
     [ "$name" = "README.md" ] && continue
     [[ "$name" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}- ]] || undated+=("$name")
     git ls-files --error-unmatch "$f" >/dev/null 2>&1 || untracked+=("$name")
+    if [ -f "$index" ]; then
+        grep -qF -- "$name" "$index" || unindexed+=("$name")
+        grep -qE '^(> )?\*\*Status:\*\*' "$f" || statusless+=("$name")
+    fi
 done
 
-[ ${#undated[@]} -eq 0 ] && [ ${#untracked[@]} -eq 0 ] && exit 0
+[ ${#undated[@]} -eq 0 ] && [ ${#untracked[@]} -eq 0 ] \
+    && [ ${#unindexed[@]} -eq 0 ] && [ ${#statusless[@]} -eq 0 ] && exit 0
 
 join() { local out; out=$(printf '%s, ' "$@"); echo "${out%, }"; }
-msg="⚠ Orphaned plans in docs/plans/ (commit them, or rename to YYYY-MM-DD-<slug>)."
-[ ${#untracked[@]} -gt 0 ] && msg+=" Untracked: $(join "${untracked[@]}")."
-[ ${#undated[@]} -gt 0 ] && msg+=" Undated: $(join "${undated[@]}")."
+msg=""
+if [ ${#undated[@]} -gt 0 ] || [ ${#untracked[@]} -gt 0 ]; then
+    msg="⚠ Orphaned plans in docs/plans/ (commit them, or rename to YYYY-MM-DD-<slug>)."
+    [ ${#untracked[@]} -gt 0 ] && msg+=" Untracked: $(join "${untracked[@]}")."
+    [ ${#undated[@]} -gt 0 ] && msg+=" Undated: $(join "${undated[@]}")."
+fi
+if [ ${#unindexed[@]} -gt 0 ] || [ ${#statusless[@]} -gt 0 ]; then
+    [ -n "$msg" ] && msg+=" "
+    msg+="⚠ Plans out of step with docs/plans/README.md (add a row, or a **Status:** line)."
+    [ ${#unindexed[@]} -gt 0 ] && msg+=" Not in the index: $(join "${unindexed[@]}")."
+    [ ${#statusless[@]} -gt 0 ] && msg+=" No status line: $(join "${statusless[@]}")."
+fi
 
 if [ "${1:-}" = "--text" ]; then
     echo "$msg"
