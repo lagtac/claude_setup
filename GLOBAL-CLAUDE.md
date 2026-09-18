@@ -3,6 +3,7 @@
 **Important:**
 
 - Always write designs, specs, plans and reviews to `<project-root>/docs/plans/YYYY-MM-DD-<slug>.md` unless explicitly instructed otherwise. Determine `<project-root>` from the nearest `.git` directory, `composer.json`, `package.json`, or similar project marker. **This overrides Superpowers' default plan/spec paths** — Superpowers must also write to `docs/plans/`.
+- Reports (critiques and audits: findings about a whole product or area on one day) go to `<project-root>/docs/reports/` instead. Their findings become work through one `-action-plan.md` in `docs/plans/`, with one section per phase, never one file per phase. Reviews of one spec, plan or diff stay in `docs/plans/`. Details, the status line and the optional index: `GLOBAL-rules/docs-layout.md` (symlinked to `~/.claude/rules/`).
 - Always use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages
 - The full format is `type(scope): sentence`. The scope is the part of the codebase affected; each project defines its own scopes. Projects that already use `type:` without a scope keep that format.
 - Common types: `feat:`, `fix:`, `refactor:`, `test:`, `chore:`, `docs:`
