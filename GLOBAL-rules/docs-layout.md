@@ -48,6 +48,39 @@ report → action plan (phases) → spec → plan → branch
 - **One order only.** The action plan keeps the order of the phases. The roadmap links to it and
   does not copy that order.
 
+### Making an action plan
+
+1. **Read the whole report.** Note each finding's reference (item letter, finding code or
+   heading), so every finding can be traced.
+2. **Look for an existing action plan** on the same area in `docs/plans/`. If one exists, route
+   the new findings into it (see above) and skip to step 6.
+3. **Sort the findings.** Mark each one as a bug, a feature, a shared definition (tokens,
+   components), a use of shared things in pages, a product decision, or blocked outside the
+   project's scope.
+4. **Propose phases and their order** to the user: which phase each finding goes to, what each
+   phase's gate is, and what document comes next. Shared definitions come before the phases that
+   use them. Wait for the user's answer. The order is a decision, so it is not guessed.
+5. **Write the action plan** in the shape above. Record the user's answers as numbered decisions,
+   with the date.
+6. **Connect it.** Give the report and the action plan a status line. If the project has an
+   index, add both rows in the same commit. Link the action plan from the roadmap, without
+   copying its order.
+7. **Run the checklist** below, then commit. The action plan is documentation only, so it needs
+   no worktree.
+
+### Checklist
+
+- Every finding in the report is in a phase, marked out of scope, or marked blocked, with its
+  reference. None is missing.
+- Every phase has a gate and a next document ("none" counts as an answer).
+- No phase mixes a bug fix and a feature on one branch.
+- No phase uses a shared definition before the phase that defines it.
+- Every decision the user gave is in the numbered list, with its date.
+- Every section name that another file cites matches a heading exactly. Check with
+  `grep -F "## <name>"`.
+- After any move or rename, `git grep` finds no link to the old path.
+- The roadmap links to the action plan and does not repeat the order.
+
 ## Status line
 
 Every file in `docs/plans/` and `docs/reports/` opens with one line, just under its title:
