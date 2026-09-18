@@ -7,11 +7,12 @@
 #     to git history; this is exactly how humble-floating-wave.md was lost), or
 #   - undated    (name does not follow the mandated YYYY-MM-DD-<slug> convention).
 #
-# When the project keeps an index at docs/plans/README.md, it also flags a plan
-# that is:
+# When the project keeps an index at docs/plans/README.md that opts in with the
+# line `<!-- plans-index: strict -->`, it also flags a plan that is:
 #   - unindexed  (its file name does not appear in README.md), or
 #   - statusless (it has no `**Status:**` line, optionally inside a `> ` quote).
-# Projects without that README are not affected.
+# Projects without that marker are not affected, even if they keep a README
+# of their own design (some generate theirs, or keep status in ROADMAP.md).
 #
 # Reports (critiques, audits) may live in docs/reports/. Its files get the same
 # checks, and the docs/plans/README.md index lists them too.
@@ -32,13 +33,15 @@ untracked=()
 unindexed=()
 statusless=()
 index=docs/plans/README.md
+strict=0
+[ -f "$index" ] && grep -qF '<!-- plans-index: strict -->' "$index" && strict=1
 for f in docs/plans/*.md docs/reports/*.md; do
     name=$(basename "$f")
     # README.md is a conventional index, not a dated plan -- never an orphan.
     [ "$name" = "README.md" ] && continue
     [[ "$name" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}- ]] || undated+=("$name")
     git ls-files --error-unmatch "$f" >/dev/null 2>&1 || untracked+=("$name")
-    if [ -f "$index" ]; then
+    if [ "$strict" = 1 ]; then
         grep -qF -- "$name" "$index" || unindexed+=("$name")
         grep -qE '^(> )?\*\*Status:\*\*' "$f" || statusless+=("$name")
     fi
