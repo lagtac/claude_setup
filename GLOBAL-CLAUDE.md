@@ -101,6 +101,7 @@ We use **GitLab** unless stated otherwise in the project. There are no "pull req
 - Always squash-merge when integrating branches — no regular merges, whether via MR or local `git merge --squash`
 - Use `glab` CLI (not `gh`) for MR operations when you do open an MR
 - Use `glab mr create` instead of `gh pr create`
+- Read `git diff --cached` before every commit. The Edit tool has silently dropped a character, and a trailer the project forbids has slipped into a commit.
 
 ### Splitting scope before branching
 
@@ -111,6 +112,8 @@ If a roadmap row, issue, or task list mixes a bug fix and a feature, split into 
 - Any task that will produce 2+ commits
 - Any task from a plan or spec
 - Any task involving code changes + tests
+
+Create the worktree with `git worktree add`, not the `EnterWorktree` tool, and run each command as `cd <worktree> && …`. The `EnterWorktree` guard refuses combined commands, `git -C` and script files, so one mutation check took three or four calls.
 
 ### When NOT to use worktrees
 
