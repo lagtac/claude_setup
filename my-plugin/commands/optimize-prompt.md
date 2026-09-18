@@ -138,7 +138,7 @@ Present your analysis in this structure:
 
 **IMPORTANT**: After completing your analysis, you MUST save the optimized prompt to a markdown file:
 
-1. **File location**: `$planDirectory/optimized-prompts/`
+1. **File location**: `docs/plans/optimized-prompts/` in the project root. Create the folder if it does not exist.
 2. **Filename**: Use a kebab-case descriptive name based on the prompt topic, e.g., `refactor-hand-limit-popup.md`
 3. **File contents**: Export ONLY the optimized prompt itself (the content from the "✨ OPTIMIZED PROMPT" section), without the scorecard or analysis
 
