@@ -4,7 +4,7 @@ description: >
   Use when the user wants to audit or tune Claude instruction files (CLAUDE.md,
   AGENTS.md, agent definitions, command templates, skill files) for
   literal-instruction-following models (Opus 4.7 and every later model). Also
-  flags prompts that require tools a subagent never receives. Trigger on requests
+  flags prompts that require tools a subagent may not receive. Trigger on requests
   like "audit my CLAUDE.md for the new model", "my agents got worse on the new model",
   "make my prompts more specific", "tune my prompts", "audit my global setup",
   or invocation via /tune-claude-instructions (optionally with --global).
@@ -153,9 +153,13 @@ Pick from the **fix-pattern catalog** below and show a diff (or, for a full rewr
 
 *Why it works:* templates anchor structure deterministically; prose descriptions of structure get loosely interpreted.
 
-**Pattern G — Require only tools the reader will have.** Subagents do not get `Grep`, `Glob` or `LSP`, even when the agent's `tools:` line lists them. They cannot spawn other subagents either, so `Task` and `Agent` never arrive. A main session in auto mode can also lack `Grep` and `Glob`. Rewrite each such step as a `Bash` command:
+**Pattern G — Require only tools the reader will have.** An agent's `tools:` line is not a promise. In 310 subagent transcripts on this machine (September 2026), subagents called `Bash` 7445 times, `Grep` once, and `Glob`, `LSP`, `Task` and `Agent` never. So treat `Grep`, `Glob` and `LSP` as unreliable in a subagent. A main session in auto mode can also lack `Grep` and `Glob`. Rewrite each such step as a `Bash` command.
+
+Spawning is different. A subagent can spawn its own subagents (Claude Code v2.1.172 and later) only when its `tools:` line lists `Agent` and nesting is on; `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1` turns it off. A prompt that spawns sub-agents from an agent whose `tools:` line lacks `Agent` cannot run. Add `Agent` to the line, or do the work in the agent itself.
+
+Examples:
 - "Use Grep to find every caller" → "Find every caller with Bash: `grep -rn '<name>' .`"
-- "Spawn a sub-agent to read the diff" → "Read the diff yourself with Bash: `git diff <range> -- <file>`, one file at a time."
+- "Spawn a sub-agent to read the diff", in an agent with no `Agent` tool → "Read the diff yourself with Bash: `git diff <range> -- <file>`, one file at a time."
 
 Check two places. The agent file is one. The dispatch prompt that a skill or command builds for that agent is the other, and it matters more: it reaches the agent whatever the agent file says.
 
@@ -182,7 +186,7 @@ If the user wants a durable record, offer to write the audit table plus applied-
 - Grading files by length instead of S/R/F. A 5-line file can be specific; a 100-line file can be vague.
 - Treating "be careful", "be thorough", "think hard" as passing the Reasoning dimension. They don't — only explicit reasoning prompts do.
 - Forgetting to re-grade after editing. Without the re-grade, you can't tell if the fix landed.
-- Trusting an agent's `tools:` line. The runtime removes `Grep`, `Glob`, `LSP`, `Task` and `Agent` from subagents whatever that line says. Grade what the prompt requires against what the agent will really get (Pattern G).
+- Trusting an agent's `tools:` line. `Grep`, `Glob` and `LSP` rarely reach a subagent, whatever that line says. Grade what the prompt requires against what the agent will really get (Pattern G).
 - Over-fitting to the article that motivated this skill. The pattern (specificity > vagueness) is not tied to one model — apply it whenever a model behaves more literally than expected.
 
 ## Reference

@@ -46,7 +46,7 @@ Follow-ups spawned by the planner retirement. Spec:
 - ✅ **Plugin docs drift** — `README.md` documents all skills, agents and hooks;
   `plugin.json` names skills and hooks. `965d423`.
 - ✅ **`summarizer` plan-path convention** — reads and writes dated files in
-  `docs/plans/`, and no longer spawns a sub-agent it cannot get. `dd45902`;
+  `docs/plans/`, and reads the diff itself. `dd45902`;
   the same `$planDirectory` fix for `optimize-prompt` in `60f6b67`.
 
 ## Design workflow

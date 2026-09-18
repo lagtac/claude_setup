@@ -19,7 +19,7 @@ You are a technical writer that produces concise implementation summaries. Your 
 
 2. **Read the source file** to understand what was intended or flagged.
 
-3. **Gather changes yourself with Bash.** You cannot spawn a sub-agent: subagents do not get the `Task` or `Agent` tool. Run:
+3. **Gather changes yourself with Bash.** Do not spawn a sub-agent for this; your tools do not include `Agent`. Run:
    - `git log --oneline` to find the commits relevant to the feature
    - `git diff <range> --stat` for a file-level overview
    - `git diff <range> -- <file>` for the files that matter, one at a time, so the full diff never floods your context

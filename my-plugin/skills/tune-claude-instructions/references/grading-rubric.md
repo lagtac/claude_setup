@@ -51,7 +51,7 @@ Does the file specify the output structure?
 
 Does the file require a tool its reader will not have? This is not a fourth column. It feeds severity and `why`.
 
-- An agent file, or a prompt a skill or command dispatches to a subagent, fails the check when it requires `Grep`, `Glob`, `LSP`, `Task` or `Agent`. Subagents never receive these, whatever the agent's `tools:` line says.
+- An agent file, or a prompt a skill or command dispatches to a subagent, fails the check when it requires `Grep`, `Glob` or `LSP` without a `Bash` fallback. Subagents rarely receive these, whatever the agent's `tools:` line says. It also fails when an agent's prompt spawns sub-agents but its `tools:` line does not list `Agent`. See Pattern G in `SKILL.md` for the evidence.
 - A step that names one of these tools **with a `Bash` fallback** passes, e.g. "the `Grep` tool, or `grep -rn` through `Bash` when `Grep` is absent".
 - Main-session files (commands, skills, `CLAUDE.md`) pass when they name `Grep` or `Glob`, but note it in `why`: auto mode can remove both.
 
