@@ -1,6 +1,6 @@
 # Grading Rubric
 
-How to grade Claude instruction files for literal-instruction-following models (Opus 4.7 and every later model). Used by the `tune-claude-instructions` skill on both grading paths — inline (1–5 files) and parallel Haiku dispatch (6+ files) — so the rubric stays the single source of truth.
+How to grade Claude instruction files for literal-instruction-following models (Opus 4.7 and every later model). Used by the `tune-claude-instructions` skill on both grading paths — inline and parallel Haiku dispatch — so the rubric stays the single source of truth.
 
 ## Read the file in full
 
@@ -33,11 +33,13 @@ Does the file enumerate the dimensions, fields, or sections the output must cove
 
 ### R — Reasoning
 
-Does the file explicitly request step-by-step reasoning *before* conclusions? Power phrases that pass: "think step by step", "show your reasoning", "before drawing conclusions", "before listing recommendations". Implicit cues like "be thorough", "be careful", "analyze deeply", "use sequential thinking" do **not** pass — a literal-following model takes them at face value and skips ahead to the answer.
+Does the output have to contain the reasoning, placed *before* the conclusion it supports? Passing forms: a required "Reasoning" section above the verdict, "at each stage, write what you checked and what it showed", "before the recommendations, write the evidence". A bare "think step by step" earns ⚠️ at most: the newest models already reason internally, so the phrase adds little unless the reasoning must appear in the output. Implicit cues like "be thorough", "be careful", "analyze deeply", "use sequential thinking" do **not** pass.
 
-- ✅ "Think step by step. Show your reasoning at each diagnostic stage before drawing conclusions."
-- ⚠️ "Analyze carefully"
-- ❌ (no reasoning prompt at all)
+- ✅ "At each diagnostic stage, write what you checked and what it showed before moving on." / a template with `### Reasoning` above `### Verdict`
+- ⚠️ "Think step by step" or "Analyze carefully", with nothing required in the output
+- ❌ (no reasoning asked for at all, in a file that produces a judgment)
+
+R is `n/a` for files that produce no judgment, such as a command that runs a fixed sequence of git steps.
 
 ### F — Format
 
@@ -56,6 +58,27 @@ Does the file require a tool its reader will not have? This is not a fourth colu
 - Main-session files (commands, skills, `CLAUDE.md`) pass when they name `Grep` or `Glob`, but note it in `why`: auto mode can remove both.
 
 A failed tool check raises the severity by one step (OK → Low, Low → Medium). Quote the passage in `problem_passages`.
+
+## Harness check
+
+Does the file assume a harness feature that does not work? It fails when it:
+
+- names a tool parameter the tool does not have (for example "do not run it in the background" when subagents always run in the background and the Agent tool has no such parameter);
+- runs a command that opens an editor or waits for input: `git rebase -i` without `GIT_SEQUENCE_EDITOR`, a `reword` step, `git commit` without `-m`, `git add -p`;
+- asks the user with `AskUserQuestion` and gives no fallback for when the tool is absent (a headless run, some subagents);
+- takes a destructive step (delete, force, reset, migrate, push) without a stop condition or a confirmation.
+
+## Consistency check
+
+Does the file give two instructions that cannot both be followed? Check:
+
+- two rules in the file that conflict;
+- a worked example that breaks a rule of the same file (the example usually wins);
+- a default that conflicts with the user's standing rules, with no sentence saying which wins;
+- text left from an earlier version that names a step, file or command that no longer exists;
+- emphasis (ALL CAPS, "CRITICAL", "you MUST") on more than the one or two rules that truly override the rest.
+
+A failed harness or consistency check raises the severity by one step, like the tool check. Quote the passage in `problem_passages`.
 
 ## Severity ladder
 

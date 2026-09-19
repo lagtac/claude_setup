@@ -2,7 +2,8 @@
 name: dev-reports
 description: >
   Use when the user asks to generate a developer report, weekly report, daily report,
-  dev log, changelog, or activity summary from git history. Also when invoked via /dev-report.
+  dev log, or activity summary from git history. Also when invoked via /my:dev-reports.
+  NOT for CHANGELOG.md entries (use changelog-management).
 ---
 
 # Developer Report Generator
@@ -12,25 +13,26 @@ Generate concise developer reports from git history. No fluff — developer audi
 ## Arguments
 
 ```
-/dev-report weekly                       # weekly, current/last week
-/dev-report weekly 2026-W10              # specific ISO week
-/dev-report weekly 2026-W10 path/to/dir  # custom output path
-/dev-report today                        # today
-/dev-report daily                        # all days since last report
-/dev-report daily 2026-03-20             # specific day
+/my:dev-reports weekly                       # weekly, current week (see Monday rule)
+/my:dev-reports weekly 2026-W10              # specific ISO week
+/my:dev-reports weekly 2026-W10 path/to/dir  # custom output path
+/my:dev-reports today                        # today only
+/my:dev-reports daily                        # one report per day since the newest existing daily report
+/my:dev-reports daily 2026-03-20             # that day only
 ```
 
-Defaults: type=today, date=today, path=docs/dev-reports/
+Defaults: type=today, path=docs/dev-reports/
 
 ## Steps
 
 ### 1. Parse arguments and determine date range
 
-- **Today**: (default): Filename: `YYYY-MM-DD.md`. Range: single day
-- **Daily**: Filename: `YYYY-MM-DD.md`. Range: single day.
-- **Weekly**: ISO week. Filename: `YYYY-WNN.md`. Range: Monday–Sunday.
+- **`today`** (default): one file, `YYYY-MM-DD.md`, for today.
+- **`daily <date>`**: one file, `YYYY-MM-DD.md`, for that day.
+- **`daily`** with no date: find the newest `YYYY-MM-DD.md` in the output directory. Make one report for each day after it, up to and including today, that has commits. Days with no commits get no file. If no daily report exists yet, do today only.
+- **`weekly`**: ISO week, Monday–Sunday, one file `YYYY-WNN.md`. With no week given, use the current week. If today is Monday and the current week has no commits yet, use the previous week.
 
-When in doubt use current ISO date/week. If today is Monday and current week has no commits, use previous week.
+**Existing file.** If the target file already exists, ask with `AskUserQuestion` whether to overwrite it or stop. If `AskUserQuestion` is not available, stop and say the file exists. Never overwrite silently.
 
 Compute ISO week boundaries:
 ```bash
@@ -52,18 +54,23 @@ print(sun.strftime('%Y-%m-%d'))
 
 **Weekly reports**: prefer existing daily reports as input. If every day in the Mon–Sun range either has a `YYYY-MM-DD.md` in the output directory or no commits, read those dailies and synthesize the weekly from them — the dailies have already done the commit-grouping work, so this is faster and produces a more coherent narrative. Fall back to `git log` for any uncovered days, then merge.
 
-**Daily reports** (and weekly fallback for uncovered days): extract commits from git.
+**Daily reports** (and weekly fallback for uncovered days): extract commits from the default branch (`main`, else `master`).
 
 ```bash
-git log --all --no-merges --after="DAY_BEFORE_START" --before="DAY_AFTER_END" \
-  --date=short --format="%h|%ad|%s"
+git log <default-branch> --first-parent --no-merges \
+  --after="START 00:00:00" --before="END 23:59:59" \
+  --date=short --format="%h|%cd|%s"
 ```
 
-Boundaries are exclusive — offset by one day. If zero commits found (and no daily report exists for the range), tell the user and stop.
+`START` and `END` are the first and last day of the range, as `YYYY-MM-DD`. Always give the times. A date without a time means that date at the current clock time, so `--after=<day before>` pulls in commits from the evening before and the morning after.
+
+Read the default branch, not `--all`. When work is squash-merged and the feature branch is kept, `--all` shows each change twice: once as the branch's commits, once as the squash commit. The default branch is what shipped. Work that exists only on an unmerged branch is left out; if the user asks for it, add `git log <branch> --not <default-branch>` for that branch and label it "in progress".
+
+If zero commits are found (and no daily report exists for the range), tell the user and stop.
 
 ### 3. Check for milestones (optional)
 
-Read `docs/MILESTONES.md` if it exists. Match commits against milestone descriptions to identify relevant milestones. If no milestones file, omit the Milestone(s) line.
+Read `docs/MILESTONES.md` if it exists. List a milestone only when a commit in the range names it, its number, or the feature it describes. If unsure, leave it out. If no milestones file exists, or none matches, omit the Milestone(s) line.
 
 ### 4. Read project TODOs (optional)
 
@@ -71,7 +78,7 @@ Read `docs/TODO.md` if it exists. Extract pending items — lines that do NOT st
 
 - Group items by their nearest preceding section header (e.g., `## 2026-02-10`)
 - Items before any section header go under a general "Ungrouped" heading
-- list the first 5 and append: `*...and N more pending items*`
+- List the first 5 items in file order, counted across all groups, and append: `*...and N more pending items*` when more exist
 - If no TODO file exists or no pending items found, omit the Pending TODOs section entirely
 
 ### 5. Group commits into Changes
@@ -90,7 +97,7 @@ One paragraph, 2–4 sentences. Synthesize the Changes into a narrative. Mention
 ### 7. Assemble and write
 
 ```markdown
-# [Weekly|Daily] Report — YYYY-MM-DD to YYYY-MM-DD
+# [Weekly|Daily] Report — YYYY-MM-DD to YYYY-MM-DD   ← daily: just YYYY-MM-DD
 
 **Milestone(s):** #N — Name, #M — Name
 
@@ -112,7 +119,7 @@ Output path: `docs/dev-reports/` (create if needed) or user-specified path.
 
 ## Common Mistakes
 
-- Using `--since`/`--until` instead of `--after`/`--before` (same behavior, but be consistent)
-- Forgetting the one-day offset on boundaries (git treats them as exclusive)
+- Giving `--after` / `--before` a date without a time; git then uses the current clock time and the range leaks into the neighbouring days
+- Using `git log --all` in a squash-merge repository; every change is counted twice
 - Listing every commit as a separate Change bullet instead of grouping
 - Writing management-speak summaries — keep it technical and direct

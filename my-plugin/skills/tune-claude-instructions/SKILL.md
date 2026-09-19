@@ -7,23 +7,24 @@ description: >
   flags prompts that require tools a subagent may not receive. Trigger on requests
   like "audit my CLAUDE.md for the new model", "my agents got worse on the new model",
   "make my prompts more specific", "tune my prompts", "audit my global setup",
-  or invocation via /tune-claude-instructions (optionally with --global).
-argument-hint: "[--global]"
+  or invocation via /my:tune-claude-instructions (optionally with --global or a path).
+argument-hint: "[--global] [path]"
 ---
 
 # Tune Claude Instructions
 
 Audit and tune Claude instruction files for **literal-instruction-following** models. Opus 4.7 was the first; every later model behaves the same way. These models follow prompts as written and allocate less reasoning to tasks that look simple — so vague templates that worked on older models now produce shallow output.
 
-The fix is **specificity**: enumerate scope, request reasoning explicitly, specify output format. A literal model also cannot work around a step it has no tool for, so the audit checks that every tool a prompt requires will be present. This skill applies these fixes surgically — it grades each file, proposes targeted edits, and waits for your approval before writing.
+The fix is **specificity**: enumerate scope, put reasoning before conclusions, specify output format. A literal model also cannot work around a step it has no tool for, so the audit checks that every tool a prompt requires will be present. Three more problems matter on the newest models (Fable 5.1, Opus 5): two instructions that contradict each other (the model picks one unpredictably), instructions that assume a harness feature that no longer exists, and heavy emphasis (ALL CAPS, "CRITICAL") that makes the model apply a rule too broadly. The rubric checks all three. This skill applies these fixes surgically — it grades each file, proposes targeted edits, and waits for your approval before writing.
 
-Per-file grading is rubric-driven (see `references/grading-rubric.md` — the single source of truth, used by both grading paths) and parallelizes cleanly. With **6 or more files**, step 3 fans the work out to parallel Haiku subagents; with 1–5, the main session grades inline. Discovery, table assembly, fix proposals, and edits (steps 1, 4, 5, 6) always run on the main model.
+Per-file grading is rubric-driven (see `references/grading-rubric.md` — the single source of truth, used by both grading paths) and parallelizes cleanly. With **6 or more files**, step 3 fans the work out to parallel Haiku subagents; with 1–5, the main session grades inline. Also grade inline, at any count, when the user asks for a thorough review: Haiku misses contradictions between files, because each grader sees one file. Discovery, table assembly, fix proposals, and edits (steps 1, 4, 5, 6) always run on the main model.
 
 ## Arguments
 
-`$ARGUMENTS` — parse for the `--global` flag.
+`$ARGUMENTS` — parse for the `--global` flag and an optional path. Any other words describe what the user wants from the audit; keep them as its focus.
 
 - **No flag (default)** — audit project files: the project's `CLAUDE.md` / `AGENTS.md`, agent definitions, command templates, and skill files under the current working directory.
+- **A path** — audit the files under that directory instead of the current working directory, for example a plugin that lives in another repository (`~/projects/claude-setup/my-plugin`). If the user names a plugin or folder in words instead, find its path first (`find ~ -maxdepth 4 -type d -name "<name>"`) and confirm it in one line before auditing.
 - **`--global`** — audit the user's global setup instead: `~/.claude/CLAUDE.md`, `~/.claude/agents/`, `~/.claude/commands/`, `~/.claude/skills/`. Treat the flag as the explicit consent that satisfies the global-audit anti-pattern, but still confirm before writing each edit because the blast radius covers every project on the machine.
 
 `--global` switches scope, it does not extend it. To audit both project and global in one session, run the skill twice.
@@ -45,21 +46,27 @@ Complementary skill: `claude-md-management:claude-md-improver` audits content **
 
 Branch on `$ARGUMENTS`:
 
-**Default (no `--global`)** — glob the project for prompt-template files. Skip vendored and build directories.
+**Default (no `--global`)** — glob the project (or the given path, in place of `.`) for prompt-template files. Skip vendored and build directories, and `.claude/worktrees/`, which holds copies of the same files. If the path you audit is itself inside a worktree, drop that one filter.
 
 ```bash
 # Project context
 find . -maxdepth 3 -type f \( -name "CLAUDE.md" -o -name "AGENTS.md" \) \
-  -not -path "*/node_modules/*" -not -path "*/vendor/*" -not -path "*/.git/*"
+  -not -path "*/node_modules/*" -not -path "*/vendor/*" -not -path "*/.git/*" \
+  -not -path "*/.claude/worktrees/*"
 
-# Agent definitions, command templates, skills (any depth, any plugin layout)
+# Agent definitions, command templates, skills and their supporting files
+# (any depth, any plugin layout)
 find . -type f \( \
     -path "*/agents/*.md" \
     -o -path "*/commands/*.md" \
-    -o -path "*/skills/*/SKILL.md" \
+    -o -path "*/skills/*/*.md" \
+    -o -path "*/skills/*/references/*.md" \
   \) \
-  -not -path "*/node_modules/*" -not -path "*/vendor/*" -not -path "*/.git/*"
+  -not -path "*/node_modules/*" -not -path "*/vendor/*" -not -path "*/.git/*" \
+  -not -path "*/.claude/worktrees/*"
 ```
+
+The skill's supporting files matter most. A dispatch prompt such as `code-reviewer-prompt.md` reaches its subagent whatever the agent file says (Pattern G), so grade it like an agent file.
 
 **`--global`** — audit the user's global Claude setup under `~/.claude/`.
 
@@ -79,11 +86,13 @@ Apply the rubric in `references/grading-rubric.md` to every discovered file. The
 - **1–5 files**: grade inline. Read each file, apply the rubric, hold the results in memory keyed by path.
 - **6+ files**: fan out to parallel Haiku subagents — see step 3.
 
-Either path produces the same `{path, s, r, f, severity, why}` shape, which feeds the step 4 audit table. The rubric's tool check does not add a column. It raises the severity and is named in `why`.
+Either path produces the same `{path, s, r, f, severity, why}` shape, which feeds the step 4 audit table. The rubric's tool, harness and consistency checks do not add columns. They raise the severity and are named in `why`.
 
-### 3. Dispatch (6+ files only)
+After grading each file on its own, compare the files with each other (main session only; a single-file grader cannot see this). Look for a rule stated two ways in two files, a copied block that has drifted from its source, and a skill that sends work to an agent whose own instructions disagree with it. Each such pair is a finding on both files.
 
-Skip this step entirely when grading 5 or fewer files — spawn overhead exceeds the savings, and step 5 typically re-reads the source anyway when drafting fixes. The threshold exists because parallelism only pays off once there's enough work to amortise the overhead.
+### 3. Dispatch (6+ files, unless grading inline)
+
+Skip this step entirely when grading 5 or fewer files, or when step 2 chose inline grading for a thorough review — spawn overhead exceeds the savings, and step 5 typically re-reads the source anyway when drafting fixes. The threshold exists because parallelism only pays off once there's enough work to amortise the overhead.
 
 Spawn one Agent call per file in a **single message** so they run concurrently. Use `subagent_type: "general-purpose"` and `model: "haiku"`.
 
@@ -98,11 +107,11 @@ Return ONE JSON object on a single line, no prose, no code fences:
 problem_passages: quote up to 3 short excerpts from the audited file that drove any ⚠️ or ❌ grade. The orchestrator uses these as hints when drafting fixes. Empty array `[]` for OK files.
 ```
 
-Aggregate the returned JSON rows into a single in-memory list keyed by path before assembling the step 4 table. If any subagent returns malformed JSON or fails, grade that one file inline rather than retrying — one bad row shouldn't block the rest. The fix-proposal phase (step 5) may need to re-read files for accurate diffs; `problem_passages` is a hint, not a substitute for the source.
+Wait until every subagent has returned. Then aggregate the returned JSON rows into a single in-memory list keyed by path before assembling the step 4 table. If any subagent returns malformed JSON or fails, grade that one file inline rather than retrying — one bad row shouldn't block the rest. The fix-proposal phase (step 5) may need to re-read files for accurate diffs; `problem_passages` is a hint, not a substitute for the source.
 
 ### 4. Output the audit table before any edits
 
-Match this format. One row per file. Severity comes from the ladder in step 3.
+Match this format. One row per file. Severity comes from the ladder in `references/grading-rubric.md`.
 
 ```markdown
 ## Claude Instructions Audit
@@ -128,11 +137,11 @@ Pick from the **fix-pattern catalog** below and show a diff (or, for a full rewr
 
 **Pattern A — Embed inherited standards.** Subagents do *not* inherit project `CLAUDE.md`. Any rule the agent must follow has to live in the agent file itself. When auditing an agent that references "the project's planning standards" or assumes shared context, copy the relevant standards from `CLAUDE.md` directly into the agent. *Why it works:* a subagent loads only its own definition + its tools list. If the rule is not in that file, the agent never sees it.
 
-**Pattern B — Replace vague directives with power phrases.** Phrases like "use sequential thinking", "analyze deeply", "be thorough" are ambient and literal-following models ignore them. Replace with explicit reasoning prompts:
-- "Think step by step. Show your reasoning at each numbered stage before drawing conclusions."
-- "Before assigning a verdict, write 2–4 sentences connecting your findings to the verdict."
+**Pattern B — Replace vague directives with reasoning the output must contain.** Phrases like "use sequential thinking", "analyze deeply", "be thorough" ask for nothing a reader can check, and literal-following models pass over them. Replace them with a reasoning step that appears in the output, before the conclusion:
+- "At each numbered stage, write what you checked and what it showed before moving on."
+- "Before the verdict, write 2–4 sentences connecting your findings to the verdict."
 
-*Why it works:* literal-following models allocate thinking budget to whatever the prompt explicitly asks for. "Show your reasoning" is a budget-allocation request; "be thorough" is not.
+*Why it works:* the newest models already reason internally, so a bare "think step by step" adds little. What still changes the result is making the reasoning part of the required output and placing it before the verdict: the model then cannot state a conclusion its written evidence does not support.
 
 **Pattern C — Enumerate dimensions.** When a prompt says "analyze X", the output covers whatever the model lands on first. Enumerate:
 - "Analyze for: (1) edge cases (empty/null inputs, boundary values), (2) error paths, (3) concurrency or shared-state assumptions, (4) integration points."
@@ -165,6 +174,22 @@ Check two places. The agent file is one. The dispatch prompt that a skill or com
 
 *Why it works:* a model with no tool for a step skips the step or invents a substitute, and nothing reports it. `Bash` is the one search tool that is always present.
 
+**Pattern H — Resolve contradictions and state precedence.** When two instructions cannot both be followed, a literal model picks one, and not always the same one. Worked examples count as instructions, and an example usually beats the rule it breaks, especially one labelled "follow literally". Fix the losing side so both say the same thing. Where two sources may legitimately differ (a skill's defaults and a project's `CLAUDE.md`), add one sentence that names the winner:
+- "The project's `CLAUDE.md` wins over every default here, including the bold rows of the table."
+
+*Why it works:* the model no longer has to guess which instruction the author meant.
+
+**Pattern I — Update harness assumptions.** Prompts go stale when the harness changes. Check each instruction that names a tool parameter, a command or a user interaction:
+- A parameter the tool no longer has (for example `run_in_background` on an Agent tool whose subagents always run in the background). Replace it with the outcome: "Wait for the agent's result before step 4, and do nothing else until it arrives."
+- A command that opens an editor or waits for input (`git rebase -i` without `GIT_SEQUENCE_EDITOR`, `reword`, `git commit` without `-m`). Replace it with a non-interactive form.
+- A question to the user through `AskUserQuestion` with no fallback. Add one: "If `AskUserQuestion` is not available, print the plan, say what reply runs it, and end the turn."
+
+*Why it works:* a literal model tries the stale step exactly as written; it hangs, fails, or improvises a substitute nobody reviewed.
+
+**Pattern J — Calm the emphasis.** Replace ALL CAPS, "CRITICAL", "you MUST" and "NEVER" with a plain sentence and a reason, except for the one or two rules that truly override everything else. A persona line ("You are a senior engineer with 15+ years…") adds little; replace it with the task and the standard it must meet.
+
+*Why it works:* the newest models respond strongly to emphasis. A shouted rule gets applied beyond its intended scope and crowds out the rules around it.
+
 ### 6. Apply approved edits and re-grade
 
 Use the Edit tool for surgical changes; use Write only for full rewrites of CRITICAL files. After editing each file, re-grade it inline and confirm the severity dropped.
@@ -184,7 +209,8 @@ If the user wants a durable record, offer to write the audit table plus applied-
 ## Common Mistakes
 
 - Grading files by length instead of S/R/F. A 5-line file can be specific; a 100-line file can be vague.
-- Treating "be careful", "be thorough", "think hard" as passing the Reasoning dimension. They don't — only explicit reasoning prompts do.
+- Treating "be careful", "be thorough", "think hard" as passing the Reasoning dimension. They don't — only reasoning the output must contain, before its conclusion, does.
+- Grading each file alone and missing the contradiction between two of them (Pattern H). Compare the files after grading them.
 - Forgetting to re-grade after editing. Without the re-grade, you can't tell if the fix landed.
 - Trusting an agent's `tools:` line. `Grep`, `Glob` and `LSP` rarely reach a subagent, whatever that line says. Grade what the prompt requires against what the agent will really get (Pattern G).
 - Over-fitting to the article that motivated this skill. The pattern (specificity > vagueness) is not tied to one model — apply it whenever a model behaves more literally than expected.

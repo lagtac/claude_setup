@@ -50,7 +50,7 @@ Read `spec-reviewer-prompt.md` from this skill's directory. Take everything belo
 
 ### 3. Dispatch the reviewer
 
-Use the Agent tool with `subagent_type: "my:spec-reviewer"`, `description: "Spec review"`, and the composed prompt. Do not run it in the background — the caller is waiting.
+Use the Agent tool with `subagent_type: "my:spec-reviewer"`, `description: "Spec review"`, and the composed prompt. Wait for the agent's result before step 4, and do nothing else until it arrives: the caller is waiting. If your Agent tool has a `run_in_background` parameter, leave it off; if subagents always run in the background, continue at step 4 when the completion notice arrives.
 
 ### 4. Surface the result
 

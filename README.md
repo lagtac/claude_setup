@@ -41,10 +41,12 @@ as `/my:<name>`.
   and deploy changes.
 - `my:dev-reports` — Builds a daily or weekly developer report from git history.
 - `my:git-squasher` — Squashes runs of small consecutive commits.
-- `my:clean-plans` — Renames randomly named plan files in `docs/plans/` to dated
-  names, and offers to delete trivial ones.
+- `my:clean-plans` — Gives undated plan files in `docs/plans/` dated names, updates
+  the links to them, and offers to delete files from another project, empty files
+  and duplicates.
 - `my:tune-claude-instructions` — Audits instruction files (CLAUDE.md, agents,
-  commands, skills) for vague directives and for tools a subagent will not have.
+  commands, skills and their dispatch prompts) for vague directives, tools a
+  subagent will not have, stale harness assumptions and contradictions.
 - `my:de-slop` — Rewrites text so it does not read as machine-written.
 
 ## Commands
@@ -56,10 +58,11 @@ as `/my:<name>`.
 - `/my:optimize-prompt` — Score and rewrite a prompt; saves it to
   `docs/plans/optimized-prompts/`.
 - `/my:clean-gone-branches` — Remove local branches whose remote is gone, with
-  their worktrees.
-- `/my:laravel-debug` — Laravel-specific debugging.
+  their clean worktrees, after asking.
+- `/my:laravel-debug` — Laravel-specific debugging: diagnose read-only, then
+  propose a fix.
 - `/my:laravel-migration-check` — Check Laravel migrations for safety and
-  rollback.
+  rollback, without running them.
 
 ## Agents
 

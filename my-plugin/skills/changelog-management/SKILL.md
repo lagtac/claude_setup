@@ -21,7 +21,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). For a d
 This skill works for any software project. The specifics here are **defaults**; resolve a project's real conventions in this order, and never impose one it contradicts:
 
 1. **Match what exists** — follow the format an existing `CHANGELOG.md` already uses.
-2. **Read the project's `CLAUDE.md`** — it may document a custom contract heading, file locations, and git workflow. Honour those over the defaults.
+2. **Read the project's `CLAUDE.md`** (and `CLAUDE.local.md` when present) — it may document a custom contract heading, entry format, file locations, which changes earn an entry, and git workflow. Honour those over every default in this skill, including the bold rows of the decision table and the commit rules. For example, a project may want refactors logged, or may want the entry inside the feature's own commit rather than in a separate `docs(changelog)` commit.
 3. **Fall back to the defaults** — Keep a Changelog 1.1.0, `docs/plans/` links, `docs/dev-reports/` for internal work.
 4. **Ask when ambiguous** — especially project type (below).
 
@@ -50,7 +50,7 @@ If no `CHANGELOG.md` exists and the user wants one, offer to create it with a Ke
 | Feature, route, or runtime dep removed | `### Removed` bullet | 4 |
 | Notable docs reorg (cross-referenced specs, audits) | `### Docs` bullet | 4 |
 | Major coherent shipment (multi-aspect, multi-paragraph) | `### YYYY-MM-DD — Title` dated narrative | 6 |
-| **Refactor, test, lint, formatting, internal-only docs** | **Nowhere — write to `docs/dev-reports/`** | 2 |
+| **Refactor, test, lint, formatting, internal-only docs** | **No CHANGELOG entry** (a dev report covers it) | 2 |
 
 If the change fits no row, ask the user before editing.
 
@@ -58,11 +58,11 @@ If the change fits no row, ask the user before editing.
 
 ### 1. Locate the `[Unreleased]` block
 
-Read CHANGELOG.md and find the current `## [Unreleased] — YYYY-MM-DD` block. Use the existing subsection conventions inside it — don't invent new heading shapes.
+Read CHANGELOG.md and find the current `## [Unreleased]` block. Some projects date it (`## [Unreleased] — YYYY-MM-DD`), some do not; keep whichever form the file uses. Use the existing subsection conventions inside it — don't invent new heading shapes.
 
 ### 2. Scope check — does it earn an entry?
 
-Apply the decision table. If the change is internal-only (refactor, test addition, lint config, formatting, code comments, internal docs) write to `docs/dev-reports/` instead and stop. The test: *would an operator deploying this or a user reading release notes care?* If no, it's a dev-report.
+Apply the decision table. If the change is internal-only (refactor, test addition, lint config, formatting, code comments, internal docs), make no CHANGELOG edit and stop. Tell the user in one line that it is internal work, which a dev report (`my:dev-reports`) covers. Do not write a dev report unless the user asks for one. The test: *would an operator deploying this or a user reading release notes care?* If no, it's a dev-report.
 
 ### 3. Pick a structure
 
@@ -102,11 +102,11 @@ When a single feature warrants more than three or four bullets, give it its own 
 - <details>
 ```
 
-This is the form a roadmap promotion (🚧 → ✅) usually takes. Include the roadmap reference (e.g., `Clinician-on-Phone #2b`) so a reader can locate the feature in `ROADMAP.md`.
+This is the form a roadmap promotion (🚧 → ✅) usually takes. Include the roadmap reference (e.g., `Checkout #2b`) so a reader can locate the feature in `ROADMAP.md`.
 
 ### 7. Update the `[Unreleased]` date
 
-If the existing `## [Unreleased] — YYYY-MM-DD` date is older than today, bump it to today. The date marks the most recent contribution to the unreleased window, not the start of it.
+Only when the heading carries a date: if the existing `## [Unreleased] — YYYY-MM-DD` date is older than today, bump it to today. Never add a date to an undated heading. The date marks the most recent contribution to the unreleased window, not the start of it.
 
 ### 8. Link to specs and plans
 

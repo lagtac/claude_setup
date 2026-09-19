@@ -17,6 +17,8 @@ catches what's left, and Layer 2 is usually where the tell is.
 
 **Input:** The text to clean, supplied inline in the user's message (pasted or quoted) or as a referenced file path.
 
+**Where the result goes:** print it, in the format under Output. When the input was a file, edit that file only if the user asked for the file to be changed; otherwise print the result and leave the file alone.
+
 ## The line you may not cross
 
 Sounding human tempts a rewriter to *add*. An aside, a blunt opinion, a "this

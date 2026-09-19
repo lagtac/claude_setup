@@ -37,8 +37,11 @@ write themselves. Prose mechanics and the polish pass live in **`STYLE.md`**
    Never invent a number to make a sentence flow.
 
 3. **Honesty over hype.** Movement inside the noise band is not a result — say
-   so. Name what the work does **not** fix or mean; those sections earn the
-   trust. Report your own mistakes plainly. No cheerleading, no "leverage", no
+   so. The noise band is the run-to-run variation, confidence interval or error
+   margin the source states. If the source states none, do not present a change
+   as a result: say that the variation between runs is not known. Name what
+   the work does **not** fix or mean; those sections earn the trust. Report
+   your own mistakes plainly. No cheerleading, no "leverage", no
    "comprehensive".
 
 ## What event are you briefing?
@@ -90,9 +93,16 @@ decision. Let the event decide.
 ## Polish pass (optional)
 
 Discipline 3 keeps slop out at write time; this is a safety net. After drafting,
-run a de-slop / humanizing pass if you have one. Two briefing-specific guardrails
-in `STYLE.md` — don't flatten the structured bullets/tables, and don't strip real
-caveats or numbers.
+run the `my:de-slop` skill on the draft, if it is installed. Pass it the two
+briefing-specific guardrails in `STYLE.md` — don't flatten the structured
+bullets/tables, and don't strip real caveats or numbers.
+
+## Before you hand it over
+
+Check every number in the briefing against the claim list from "Before you
+write", step 3. Each one must appear in a cited source with the same value, or
+be an honest rounding of it marked `~`. Remove or fix any that fail. This check
+runs after the polish pass, because a polish pass can change a number.
 
 ## Conventions
 

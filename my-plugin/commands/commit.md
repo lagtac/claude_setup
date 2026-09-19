@@ -6,16 +6,20 @@ description: Structured commit workflow with conventional commits
 
 Follow these steps in order. Do not skip steps. Do not bundle unrelated changes into a single commit.
 
+**Project rules first.** Read the project's `CLAUDE.md` (and `CLAUDE.local.md` when present) before step 4. Its commit rules win over the defaults below: allowed types and scopes, whether a body is required, trailers it forbids or requires, and CHANGELOG entries that must go in the same commit.
+
 1. **Inventory the changes.** Run `git status` and `git diff` (and `git diff --cached` if anything is staged). Read the actual diff — do not infer changes from filenames.
 
 2. **Refuse secrets.** If any staged or unstaged file looks like a secret (`.env`, `.env.*`, files containing API keys, tokens, private keys), stop and warn the user explicitly. Do not commit it.
 
-3. **Group changes into logical units.** One commit per coherent change (one feature, one fix, one refactor). If the diff spans unrelated concerns, propose multiple commits and stage each group with `git add <specific-files>` — do not use `git add -A` or `git add .`.
+3. **Group changes into logical units.** One commit per coherent change (one feature, one fix, one refactor). If the diff spans unrelated concerns, make multiple commits, one per group, and stage each group with `git add <specific-files>` — do not use `git add -A` or `git add .`. Print the planned groups and messages before the first commit. If a single file holds changes for two groups, stop and ask how to split it; do not use `git add -p`, which waits for input.
 
-4. **Write a Conventional Commit message** for each commit. Subject line: `<type>(<scope>): <imperative summary under 72 chars>`. Use `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `style`, `perf`, `build`, `ci`. Add a body when the *why* is non-obvious — the body should explain motivation and consequences, not restate the diff. Use a HEREDOC to preserve formatting.
+4. **Write a Conventional Commit message** for each commit. Subject line: `<type>(<scope>): <imperative summary under 72 chars>`, or `<type>: …` when the project's history uses no scopes (check `git log --oneline -20`). Use `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `style`, `perf`, `build`, `ci`. Add a body when the *why* is non-obvious — the body should explain motivation and consequences, not restate the diff. Use a HEREDOC to preserve formatting.
 
-5. **Run hooks; do not bypass.** Never use `--no-verify`, `--no-gpg-sign`, or other hook-skipping flags unless the user explicitly asked. If a pre-commit hook fails, fix the underlying issue and create a *new* commit — do not `--amend` past it.
+5. **Reread the staged diff.** Before each `git commit`, run `git diff --cached` and read it in full. Check that only this group's files are staged, that no edit dropped or garbled a character, and that the message matches what the diff does.
 
-6. **Verify.** After committing, run `git status` to confirm a clean tree and `git log --oneline -n <N>` (where N is the number of commits you created) to confirm the messages landed as intended.
+6. **Run hooks; do not bypass.** Never use `--no-verify`, `--no-gpg-sign`, or other hook-skipping flags unless the user explicitly asked. If a pre-commit hook fails, fix the underlying issue and create a *new* commit — do not `--amend` past it.
+
+7. **Verify.** After committing, run `git status` to confirm a clean tree and `git log --oneline -n <N>` (where N is the number of commits you created) to confirm the messages landed as intended.
 
 Reference: <https://www.conventionalcommits.org/en/v1.0.0/#specification>

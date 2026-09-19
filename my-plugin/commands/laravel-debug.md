@@ -2,52 +2,50 @@
 description: Laravel-specific debugging with systematic diagnostics
 ---
 
-A systematic approach for debugging Laravel application issues with comprehensive diagnostics and solution strategies.
+Find the root cause of a Laravel problem, then propose a fix. The problem: **$ARGUMENTS**
 
-## Debugging Methodology
+If no problem is given, ask the user to describe it (the symptom, where it shows, since when) and stop.
 
-Use the laravel-fullstack-expert agent. Think step by step through the Diagnostic Process below — show your reasoning at each numbered stage before drawing conclusions. Diagnose systematically rather than guessing, and verify the fix works before declaring done.
+## Process
 
-## Diagnostic Process
+Hand the diagnosis to the `my:laravel-fullstack-expert` agent: use the Agent tool with `subagent_type: "my:laravel-fullstack-expert"`. Its prompt contains, word for word: the problem above, the absolute project root (`git rev-parse --show-toplevel`), the Rules, the Diagnostic stages and the report template below, and this line: "Use the report template in this prompt instead of your default output format."
 
-1. **Issue Assessment**
-   - Reproduce the problem consistently
-   - Check Laravel logs (`storage/logs/laravel.log`)
-   - Review browser console for JavaScript errors
-   - Examine database query logs if relevant
+When the agent returns, print its report. Then ask the user whether to apply the proposed fix. Apply it only after a yes, and then run the check the report names.
 
-2. **System Health Check**
-   - Verify database connectivity and migrations status
-   - Check queue worker status if applicable
-   - Review environment configuration (`.env`)
-   - Confirm required services are running
+## Rules
 
-3. **Code Investigation**
-   - Trace through the request lifecycle
-   - Check route definitions and middleware
-   - Review controller logic and model relationships
-   - Examine view rendering and JavaScript integration
+- **Diagnose, do not change.** The agent edits no file and runs nothing that writes: no `migrate` of any kind, no `db:seed`, no `queue:work` against a real queue, no `composer update`. Read-only commands are fine: `route:list`, `migrate:status`, `config:show`, `tinker --execute` with a read-only query, `tail` on logs.
+- **Never print `.env` values**, and never paste secrets from logs. Name the key, not its value.
+- **Evidence first.** Every claim in the report cites a `file:line`, a log line, or a command and its output.
 
-4. **Testing & Validation**
-   - Create minimal test case to isolate the issue
-   - Test in different environments if available
-   - Verify related functionality still works
-   - Document the root cause and solution
+## Diagnostic stages
 
-## Common Laravel Debug Areas
-- **Routes & Controllers**: Route resolution, parameter binding, middleware execution
-- **Database**: Query issues, relationship problems, migration conflicts
-- **Authentication**: Login failures, authorization issues, session problems
-- **Views & Assets**: Blade compilation, asset loading, JavaScript integration
-- **Background Jobs**: Queue failures, job processing, error handling
-- **API Issues**: Response formatting, validation errors, CORS problems
+Work through the stages in order. At each stage, write what you checked and what it showed before moving on. Stop at the stage that explains the symptom, and say why the later stages are not needed.
 
-## Tools & Commands
-- `php artisan route:list` - Check route definitions
-- `php artisan tinker` - Interactive debugging
-- `php artisan queue:work --verbose` - Debug queue jobs
-- `composer dump-autoload` - Fix autoloading issues
-- `php artisan config:clear` - Clear configuration cache
-- `php artisan view:clear` - Clear view cache
+1. **Reproduce.** Find the exact request, command or job that fails. Read the newest entries in `storage/logs/laravel.log` (`tail -n 200`) and match the error to the symptom.
+2. **Health.** `php artisan migrate:status` (pending migrations), configuration and route cache state, required services (database, queue, cache) reachable.
+3. **Trace the request.** Route (`php artisan route:list --path=<uri>`) → middleware → controller or job → model and relationships → view or resource. Read each file on the path.
+4. **Isolate.** Name the smallest input that triggers the problem, and the one change that removes it.
 
-**Problem:** $ARGUMENTS
+Common areas, to check when the stage leads there: route model binding, middleware order, N+1 or missing eager loads, mass-assignment guards, policies and gates, stale config or view cache, queue serialization, CORS and CSRF on API routes, Vite asset paths.
+
+## Report template
+
+```markdown
+## Diagnosis
+
+**Symptom:** [one line, as the user described it]
+**Reproduced:** yes / no — [how]
+
+### What was checked
+1. [stage] — [what was checked] → [what it showed, with evidence]
+
+### Root cause
+[2–4 sentences, with `file:line`. If unsure, say so and give the two most likely causes.]
+
+### Proposed fix
+[The change, as a diff or a short code block, with the files it touches.]
+
+### How to confirm the fix
+[The exact command, request or test that shows the fix works.]
+```

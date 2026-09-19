@@ -21,7 +21,7 @@ This skill owns the roadmap. The companion `changelog-management` skill owns the
 This skill works for any software project. The paths, git workflow, and legend below are **defaults**, not law. Resolve a project's real conventions in this order, and never impose one the project contradicts:
 
 1. **Match what exists.** If `ROADMAP.md` is already present, follow its format, legend, and section scheme.
-2. **Read the project's `CLAUDE.md`.** It documents the spec/plan location, git workflow (worktrees or not, default/release branch name, squash vs PR vs direct merge), and dev-report destination. Honour those over the defaults.
+2. **Read the project's `CLAUDE.md`** (and `CLAUDE.local.md` when present). It documents the roadmap's file name and location, the spec/plan location, git workflow (worktrees or not, default/release branch name, squash vs PR vs direct merge), and dev-report destination. Honour those over every default in this skill, including the commit rules. A project may keep more than one roadmap (for example a technical one and a product one); edit the one the project names for this kind of change, and ask if it names none.
 3. **Fall back to the defaults** in this skill (`docs/plans/`, squash-merge to `main`, the legend below, `docs/dev-reports/`).
 4. **Ask when ambiguous** — e.g. project type, or where specs live if the project documents nothing. Don't guess a convention into existence.
 
@@ -29,7 +29,7 @@ If no `ROADMAP.md` exists and the user wants one, offer to create it (default le
 
 ## Files
 
-- `ROADMAP.md` — project root (default). Living index of features. Owned by this skill.
+- `ROADMAP.md` — project root by default, or the file the project's `CLAUDE.md` names (for example `docs/frontend-roadmap.md`). Everywhere below, `ROADMAP.md` means that file. Living index of features. Owned by this skill.
 - spec/plan docs — `docs/plans/` by default; use the project's documented location. Linked from roadmap rows.
 - `CHANGELOG.md` — project root. Touched only via `changelog-management` (delegated at rule 6).
 - internal-work destination — `docs/dev-reports/` by default; refactors / tests / lint / internal docs. Owned by `changelog-management` rule 2.
@@ -68,7 +68,7 @@ The rules are sequential and keyed by the decision table above.
 
 ### 1. Read ROADMAP.md before editing it
 
-Open `ROADMAP.md` and find the area section the row belongs to (Design System, Clinician-on-Phone, Admin, Marketing, etc.) plus the row's existing numbering context. Don't open `CHANGELOG.md` from this skill — if the edit pairs with a CHANGELOG entry (rule 6), `changelog-management` owns that file.
+Open `ROADMAP.md` and find the area section the row belongs to (the `##` sections the file already has) plus the row's existing numbering context. Don't open `CHANGELOG.md` from this skill — if the edit pairs with a CHANGELOG entry (rule 6), `changelog-management` owns that file.
 
 ### 2. Identify the lifecycle transition
 

@@ -111,7 +111,7 @@ Read `candidate-prompt.md` from this skill's directory. If the read fails or is 
 - `{{REPO_ROOT}}` → `REPO_ROOT`. It must be absolute: subagents do not reliably inherit the session's working directory.
 - `{{FORCES_TABLE}}` → the table after step 1, with labels.
 
-Dispatch all candidates **in one message**, so they run in parallel. Use the Agent tool with `subagent_type: "general-purpose"`, `model: "opus"`, `description: "Architecture candidate <letter>"`, and the composed prompt. Do not run them in the background.
+Dispatch all candidates **in one message**, so they run in parallel. Use the Agent tool with `subagent_type: "general-purpose"`, `model: "opus"`, `description: "Architecture candidate <letter>"`, and the composed prompt. Wait until every candidate has returned before step 5, and do nothing else meanwhile. If your Agent tool has a `run_in_background` parameter, leave it off; if subagents always run in the background, continue when the last completion notice arrives.
 
 **Failure.** A subagent that errors, times out or returns empty text is dispatched once more, alone. If it fails again, continue without it and record `Candidate <letter> missing: <error>` for the brief. If no candidate is left, stop. Print each error. Write no brief.
 

@@ -180,7 +180,7 @@ If `docs/plans/` does not exist, create it (`mkdir -p`) before dispatch — the 
 
 ### 3. Dispatch the reviewer subagent
 
-Use the Agent tool with `subagent_type: "my:code-reviewer"` and the composed prompt as the `prompt` field. Set `description: "Code review"`. Do not run the agent in the background — the user is waiting for the verdict.
+Use the Agent tool with `subagent_type: "my:code-reviewer"` and the composed prompt as the `prompt` field. Set `description: "Code review"`. Wait for the agent's result before step 4, and do nothing else until it arrives: the user is waiting for the verdict. If your Agent tool has a `run_in_background` parameter, leave it off; if subagents always run in the background, continue at step 4 when the completion notice arrives.
 
 ### 4. Surface the result
 
