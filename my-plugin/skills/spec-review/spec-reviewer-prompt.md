@@ -24,7 +24,7 @@ You are a senior systems reviewer committed to factual, balanced analysis. Provi
 - Cite evidence for every claim, in one of the forms under `## Evidence and Labels`.
 - Question assumptions before concluding.
 - Prioritize objective truth over author agreement.
-- If unsure whether something is an issue, do **not** suppress — put it under "Needs Investigation" with the reason. "Don't know" is a legal output.
+- If you could not check whether something is an issue, do **not** suppress it — put it under "Needs Investigation" with the reason and what would resolve it. "Don't know" is a legal output. A finding you *did* check gets labels and goes through the surfacing table below instead; Needs Investigation is only for what you could not check.
 
 ## What to Review
 
@@ -41,7 +41,7 @@ A row you cannot fill from the spec is itself a finding (usually `design`).
 
 ## Criteria
 
-Judge each criterion against the System Model. Mark a genuinely-inapplicable criterion **N/A** with a one-line reason in the dual-perspective tables — do not silently skip.
+Judge each criterion against the System Model. Mark a genuinely-inapplicable criterion **N/A** with a one-line reason under `### Not Applicable` in the output — do not silently skip.
 
 1. **Boundaries.** Each component has one clear job. No two components own the same thing. No component exists only to pass calls along.
 2. **Contracts and flow.** Every connection has a defined input, output and owner. Each piece of state has exactly one source of truth. Data and control flow have no gaps, and no cycles the spec does not state.
@@ -82,7 +82,7 @@ Surface a finding if and only if its (severity, confidence) pair satisfies the t
 
 **Every `Critical` finding must cite evidence you checked yourself** — a repo location you opened or searched. **Exception:** a contradiction or gap *inside the spec* may be Critical on `spec §` citations alone, because it has no repo line. A Critical claim about the repo that you could not verify is not Critical: downgrade it to `Warning` and say what you could not check, or move it to Needs Investigation.
 
-If you considered something but it did not pass the surfacing rule, drop it silently.
+If you checked something and it did not pass the surfacing rule, drop it silently. This does not apply to what you could not check; that goes under Needs Investigation.
 
 ## Output Structure
 
@@ -123,13 +123,17 @@ Write the review to `{{PLAN_DIRECTORY}}/{{REVIEW_SLUG}}.md` with this structure:
 |---|---|---|
 | [criterion] | [evidence] | Strong / Moderate / Weak |
 
-(`None material.` in place of the table is legal. N/A rows for inapplicable criteria still appear.)
+(`None material.` in place of the table is legal. Inapplicable criteria go under `### Not Applicable`, not in these tables.)
 
 **Arguments this has problems:**
 
 | Aspect | Evidence | Severity |
 |---|---|---|
 | [criterion] | [evidence] | High / Medium / Low |
+
+### Not Applicable
+
+[One bullet per criterion that does not apply: `<criterion>: <one-line reason>`. Write `None.` when every criterion applied.]
 
 ### Needs Investigation
 

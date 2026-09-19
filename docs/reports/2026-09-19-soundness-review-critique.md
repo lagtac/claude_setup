@@ -1,6 +1,6 @@
 # Critique: `my:soundness-review`, efficiency and clarity
 
-**Status:** current, 2026-09-19. Findings on how clear and how costly the skill is; no fix is planned yet.
+**Status:** current, 2026-09-19. Findings on how clear and how costly the skill is; C1 to C4 are fixed by the commit that changed this line, and the rest has no fix planned yet.
 
 ## How to read this
 

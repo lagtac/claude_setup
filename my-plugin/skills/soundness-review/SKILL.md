@@ -64,7 +64,7 @@ git ls-files --others --exclude-standard
 
 The second command lists untracked files; for each one, run `git diff --no-index /dev/null <path>` to produce canonical new-file diff output (`diff --git`, `new file mode`, `--- /dev/null`, `+++ b/<path>`, `@@`, content). Concatenate those onto the `git diff HEAD` output. (`git ls-files --others` stops listing a file once it is staged, so the two commands never cover the same file twice.) Do **not** hand-construct the diff headers — `git diff --no-index` does this correctly and consistently.
 
-If the resulting payload is empty and `PLAN_PATH` is unset, stop with a message: `No changes to review.` (working-tree mode) or `Range <RANGE> is empty.` (range mode). Otherwise, proceed to step 1a.
+Whether the payload is empty or not, proceed to step 1a. Its table decides when an empty payload stops the skill and what message to print.
 
 **Size guard.** Count the payload's lines (`wc -l`). If it exceeds **2000**, do not stop — warn and proceed, so the partial coverage is visible rather than silent:
 
@@ -75,13 +75,14 @@ If the resulting payload is empty and `PLAN_PATH` is unset, stop with a message:
 
 Let `PLAN_PATH` be from step 0 and `payload` be the captured diff. Set `MODE`:
 
-| `PLAN_PATH` | `payload` | `MODE` | Action |
-|---|---|---|---|
-| set, ends in `-spec.md` | empty | — | Stop: `This is a spec. Run my:spec-review <PLAN_PATH> instead.` Do not dispatch. |
-| set | empty | `plan-review` | Subject is the plan document; ignore `RANGE` if it was set. |
-| set | non-empty | `diff-review` | Build the Plan Alignment block (step 2). **Print the nudge below to the user.** |
-| unset | empty | — | Stop: `No changes to review.` (or `Range <RANGE> is empty.` if `RANGE` was set). |
-| unset | non-empty | `diff-review` | Plain diff review. |
+| `PLAN_PATH` | `DESCRIPTION` | `payload` | `MODE` | Action |
+|---|---|---|---|---|
+| set, ends in `-spec.md` | any | empty | — | Stop: `This is a spec. Run my:spec-review <PLAN_PATH> instead.` Do not dispatch. |
+| set | any | empty | `plan-review` | Subject is the plan document; ignore `RANGE` and `DESCRIPTION` if set, and print `(description ignored: a plan review has no diff to check it against)` when `DESCRIPTION` is set. |
+| set | any | non-empty | `diff-review` with alignment | Build the Plan Alignment block (step 2) from the plan, and the description if set. **Print the nudge below to the user.** |
+| unset | set | non-empty | `diff-review` with alignment | Build the Plan Alignment block (step 2) from the description alone. |
+| unset | unset | non-empty | `diff-review` | Plain diff review, no alignment block. |
+| unset | any | empty | — | Stop: `No changes to review.` (or `Range <RANGE> is empty.` if `RANGE` was set). When `DESCRIPTION` is set, add: `(The description was not used: there are no changes to check it against.)` |
 
 Rows are matched top to bottom; the first match wins. A spec with a non-empty payload still falls through to `diff-review`, which checks the change against the spec.
 
@@ -104,7 +105,7 @@ Substitute, by `MODE`:
   - diff-review → the **Diff criteria** block below.
   - plan-review → the **Plan criteria** block below.
 - `{{PLAN_ALIGNMENT}}`:
-  - diff-review *with* a description/plan supplied → the existing `## Plan Alignment` block.
+  - a step 1a row marked `diff-review` with alignment → the `## Plan Alignment` block built at the end of this step.
   - otherwise (including all plan-review) → empty string.
 - `{{MODE_OUTPUT_SECTION}}`:
   - diff-review with alignment → the **Plan Alignment output** block below.
@@ -119,7 +120,7 @@ Substitute, by `MODE`:
 
 **Diff criteria** (`{{CRITERIA}}` for diff-review — this is the current text, preserved):
 
-> Assess the change against these soundness dimensions — **not** a line-level bug scan. Mark genuinely-inapplicable dimensions as **N/A** with a one-line reason in the dual-perspective tables — do not silently skip.
+> Assess the change against these soundness dimensions — **not** a line-level bug scan. Mark genuinely-inapplicable dimensions as **N/A** with a one-line reason under `### Not Applicable` in the output — do not silently skip.
 >
 > 1. **Solves the stated problem.** The change accomplishes its intent (and the supplied plan, if any). Judge whether it does the right thing, not whether each line is bug-free.
 > 2. **Architecture & pattern fit.** Follows existing conventions, sits at the right abstraction level, respects layer boundaries; no new abstraction where three similar lines would do. You cannot judge this from the diff hunks alone — read every file the payload touches in full, plus a sibling file or two, before assessing this dimension or dimension 3.
@@ -131,7 +132,7 @@ Substitute, by `MODE`:
 
 **Plan criteria** (`{{CRITERIA}}` for plan-review):
 
-> Assess the plan against these dimensions — judge whether it is **ready to implement**, not whether its code snippets compile. Mark genuinely-inapplicable dimensions as **N/A** with a one-line reason in the dual-perspective tables — do not silently skip.
+> Assess the plan against these dimensions — judge whether it is **ready to implement**, not whether its code snippets compile. Mark genuinely-inapplicable dimensions as **N/A** with a one-line reason under `### Not Applicable` in the output — do not silently skip.
 >
 > 1. **Completeness & snippet self-sufficiency.** The plan covers the whole stated goal: no missing steps, unhandled cases, or undefined terms. A cold session could execute it without inventing requirements. This explicitly includes the snippets: any snippet meant to be executed must be runnable without the executor inventing imports, helpers, fixtures, or symbols the plan never establishes in an earlier step. A genuine omission — e.g. a snippet that references an import or helper the plan never defines — is a **completeness finding** (it forces the executor to guess), distinct from a *clearly-marked elision* (see dimension 6), which is fine.
 > 2. **Sequencing & atomicity.** Steps are ordered so dependencies land before dependents; each step is a coherent, single-purpose commit. Where the plan implements behaviour, it follows Red → Green → Refactor (tests before implementation), per the project's plan standard.
@@ -215,7 +216,7 @@ The example is the canonical execution trace — follow it literally for the no-
 
 ```
 0. Args: docs/plans/2026-05-28-foo.md → PLAN_PATH set; RANGE/DESCRIPTION empty.
-1. git diff / --staged / ls-files → payload EMPTY.
+1. git diff HEAD + ls-files --others → payload EMPTY.
 1a. PLAN_PATH set + payload empty → MODE = plan-review.
 2. Read code-reviewer-prompt.md. Substitute:
    MODE=plan-review; SUBJECT=```markdown <full plan text>```; CRITERIA=Plan criteria;
