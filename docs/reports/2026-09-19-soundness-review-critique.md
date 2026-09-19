@@ -1,6 +1,6 @@
 # Critique: `my:soundness-review`, efficiency and clarity
 
-**Status:** current, 2026-09-19. Findings on how clear and how costly the skill is; C1 to C4 are fixed by the commit that changed this line, and the rest has no fix planned yet.
+**Status:** current, 2026-09-19. Findings on how clear and how costly the skill is; C1 to C4, F1, V1, V2, V4, V6, E3 and F2 are fixed; E1 and E2 wait for the M1 check; V3, V5 and F3 are left as they are.
 
 ## How to read this
 

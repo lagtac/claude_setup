@@ -9,6 +9,7 @@ This file is the prompt template the `my:soundness-review` skill sends to the `m
 - `{{MODE_OUTPUT_SECTION}}` — the optional second output subsection (Plan Alignment / Grounding / empty)
 - `{{PLAN_DIRECTORY}}` — the absolute directory the review file should land in
 - `{{REVIEW_SLUG}}` — the filename stem for the review file (no `.md` suffix)
+- `{{SUBJECT_NAME}}` — what is reviewed, for the title and status line: the plan path, the range, or `working tree of <branch>`
 
 Copied rules: the Anti-Sycophancy Directives, the surfacing table and the Dual-Perspective tables are copied into `my-plugin/skills/spec-review/spec-reviewer-prompt.md`. When you edit them here, check that file too.
 
@@ -69,13 +70,17 @@ If you checked something and it didn't pass the surfacing rule, drop it silently
 Write the review to `{{PLAN_DIRECTORY}}/{{REVIEW_SLUG}}.md` with this structure:
 
 ```markdown
-### Change Summary
+# Review: {{SUBJECT_NAME}}
+
+**Status:** review of {{SUBJECT_NAME}}, <today as YYYY-MM-DD>. [One sentence: the verdict and the top finding.]
+
+## Change Summary
 
 [2–3 sentences describing what the subject is/does. Stick to facts visible in the subject.]
 
 {{MODE_OUTPUT_SECTION}}
 
-### Issues Surfaced
+## Issues Surfaced
 
 | Severity / Confidence | Issue | Evidence | Fix |
 |---|---|---|---|
@@ -83,7 +88,7 @@ Write the review to `{{PLAN_DIRECTORY}}/{{REVIEW_SLUG}}.md` with this structure:
 
 (One row per surfaced finding. Order rows by severity then confidence, both descending.)
 
-### Dual-Perspective Analysis
+## Dual-Perspective Analysis
 
 **Arguments this is sound:**
 
@@ -91,7 +96,7 @@ Write the review to `{{PLAN_DIRECTORY}}/{{REVIEW_SLUG}}.md` with this structure:
 |---|---|---|
 | [category] | `path/to/file.ext:line` | Strong / Moderate / Weak |
 
-(`None material.` in place of the table is a legal and expected answer when there is no affirmative case. Inapplicable dimensions go under `### Not Applicable`, not in these tables.)
+(`None material.` in place of the table is a legal and expected answer when there is no affirmative case. Inapplicable dimensions go under `## Not Applicable`, not in these tables.)
 
 **Arguments this has problems:**
 
@@ -99,19 +104,19 @@ Write the review to `{{PLAN_DIRECTORY}}/{{REVIEW_SLUG}}.md` with this structure:
 |---|---|---|
 | [category] | `path/to/file.ext:line` | High / Medium / Low |
 
-### Not Applicable
+## Not Applicable
 
 [One bullet per dimension that does not apply: `<dimension>: <one-line reason>`. Write `None.` when every dimension applied.]
 
-### Needs Investigation
+## Needs Investigation
 
 [Anything you couldn't fully assess. Each item: what's unclear, why it matters, what additional context would resolve it. Omit this section entirely if there's nothing to flag.]
 
-### Reasoning
+## Reasoning
 
 [2–4 sentences linking the judgment-dimension findings and dual-perspective evidence to the verdict below. Required before the Verdict block — do not skip.]
 
-### Verdict
+## Verdict
 
 **Assessment:** Sound / Problematic / Mixed
 **Confidence:** High / Medium / Low — [one-sentence justification]

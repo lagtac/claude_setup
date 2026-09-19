@@ -41,13 +41,13 @@ A row you cannot fill from the spec is itself a finding (usually `design`).
 
 ## Criteria
 
-Judge each criterion against the System Model. Mark a genuinely-inapplicable criterion **N/A** with a one-line reason under `### Not Applicable` in the output — do not silently skip.
+Judge each criterion against the System Model. Mark a genuinely-inapplicable criterion **N/A** with a one-line reason under `## Not Applicable` in the output — do not silently skip.
 
 1. **Boundaries.** Each component has one clear job. No two components own the same thing. No component exists only to pass calls along.
 2. **Contracts and flow.** Every connection has a defined input, output and owner. Each piece of state has exactly one source of truth. Data and control flow have no gaps, and no cycles the spec does not state.
 3. **Failures and interactions.** For each connection: what happens when one side fails or changes? The spec must say whether the failure stops, spreads, or is hidden. Look for behaviour that only appears in combination: loops, races, ordering needs.
 4. **Fit with what exists.** The repo does not already solve the problem. The design follows existing patterns. The rejected options were real choices with stated reasons, not options added only to be rejected.
-5. **Grounding.** Every file, symbol, command and claim about current behaviour is checked against the repo. For a symbol the spec removes or renames, run a plain text search for the name token across the whole repo — string references (route names, config keys, template names) are invisible to symbol tools. Additionally try `LSP` `findReferences` when it is in your tool list; if it is missing or errors, say the sweep was text-only. Each false claim goes under `### Grounding`.
+5. **Grounding.** Every file, symbol, command and claim about current behaviour is checked against the repo. For a symbol the spec removes or renames, run a plain text search for the name token across the whole repo — string references (route names, config keys, template names) are invisible to symbol tools. Additionally try `LSP` `findReferences` when it is in your tool list; if it is missing or errors, say the sweep was text-only. Each false claim goes under `## Grounding`.
 6. **Spec rules.** The author's standing rules for a spec:
    - The first section is "How to read this spec", listing all related documents with paths, in reading order.
    - A reader with no other context could write the implementation plan from the spec alone.
@@ -89,11 +89,15 @@ If you checked something and it did not pass the surfacing rule, drop it silentl
 Write the review to `{{PLAN_DIRECTORY}}/{{REVIEW_SLUG}}.md` with this structure:
 
 ```markdown
-### Spec Summary
+# Review: {{SPEC_PATH}}
+
+**Status:** review of {{SPEC_PATH}}, <today as YYYY-MM-DD>. [One sentence: the verdict and the top finding.]
+
+## Spec Summary
 
 [2–3 sentences: what the spec proposes. Facts visible in the spec only.]
 
-### System Model
+## System Model
 
 | Component | Owns | Depends on | New / existing (verified at) |
 |---|---|---|---|
@@ -103,11 +107,11 @@ Write the review to `{{PLAN_DIRECTORY}}/{{REVIEW_SLUG}}.md` with this structure:
 |---|---|---|
 | [A → B] | [call / file / event / shared state] | [component] |
 
-### Grounding
+## Grounding
 
 [One bullet per stale reference or false assumption: `spec §Section` ↔ `repo file:line` or "(not found)". Write "All checked references hold." when there are none.]
 
-### Issues Surfaced
+## Issues Surfaced
 
 | Severity / Confidence | Class | Issue | Evidence | Fix |
 |---|---|---|---|---|
@@ -115,7 +119,7 @@ Write the review to `{{PLAN_DIRECTORY}}/{{REVIEW_SLUG}}.md` with this structure:
 
 (One row per surfaced finding. Order by severity then confidence, both descending.)
 
-### Dual-Perspective Analysis
+## Dual-Perspective Analysis
 
 **Arguments this is sound:**
 
@@ -123,7 +127,7 @@ Write the review to `{{PLAN_DIRECTORY}}/{{REVIEW_SLUG}}.md` with this structure:
 |---|---|---|
 | [criterion] | [evidence] | Strong / Moderate / Weak |
 
-(`None material.` in place of the table is legal. Inapplicable criteria go under `### Not Applicable`, not in these tables.)
+(`None material.` in place of the table is legal. Inapplicable criteria go under `## Not Applicable`, not in these tables.)
 
 **Arguments this has problems:**
 
@@ -131,19 +135,19 @@ Write the review to `{{PLAN_DIRECTORY}}/{{REVIEW_SLUG}}.md` with this structure:
 |---|---|---|
 | [criterion] | [evidence] | High / Medium / Low |
 
-### Not Applicable
+## Not Applicable
 
 [One bullet per criterion that does not apply: `<criterion>: <one-line reason>`. Write `None.` when every criterion applied.]
 
-### Needs Investigation
+## Needs Investigation
 
 [What is unclear, why it matters, what would resolve it. Omit this section if empty.]
 
-### Reasoning
+## Reasoning
 
 [2–4 sentences linking the System Model and findings to the verdict. Required.]
 
-### Verdict
+## Verdict
 
 **Assessment:** Sound / Problematic / Mixed
 **Confidence:** High / Medium / Low — [one-sentence justification]
