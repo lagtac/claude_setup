@@ -19,7 +19,7 @@ Dispatch a fresh-context reviewer subagent to render a **soundness judgment** of
 
 This skill is deliberately **not** a bug scanner. Line-level bug-finding (secrets, injection, N+1, validation gaps, style, test coverage) and auto-fix are the built-in `/code-review`'s job — route there for those. This skill's value is the balanced judgment, the plan-alignment check, and the durable `docs/plans/` report.
 
-The methodology, judgment dimensions, and output schema are authored once here and in `code-reviewer-prompt.md`. The agent receives the full prompt at dispatch time and must not improvise the diff.
+The methodology, judgment dimensions, and output schema are authored once here and in `code-reviewer-prompt.md`. The agent receives the full prompt at dispatch time, and the diff or plan as a file it reads; it must not capture the diff itself.
 
 ## Steps
 
@@ -40,23 +40,36 @@ If args is empty, all three variables are empty — the skill runs in defaults (
 
 ### 1. Capture the diff
 
+Write the payload straight into a file with shell redirection. Do not print it, read it into the conversation, or retype it: the reviewer reads the file itself. Retyping a long diff into the dispatch prompt costs tens of thousands of output tokens and can change the diff by mistake.
+
+First make a work directory. It must be an absolute path, because the reviewer does not share your working directory:
+
+```bash
+WORK_DIR="<scratchpad>/soundness-review/$(date +%Y%m%d-%H%M%S)"   # <scratchpad> = the session's scratchpad directory from the system prompt
+mkdir -p "$WORK_DIR"                                              # no scratchpad: WORK_DIR="$(mktemp -d)"
+PAYLOAD="$WORK_DIR/payload.diff"
+```
+
 **If `RANGE` is set** (committed-range mode):
 
 Split `RANGE` on its `..` or `...` separator into `BASE` and `TIP` (an empty `TIP` means `HEAD`), then:
 
 ```bash
-git diff "$(git merge-base "$BASE" "$TIP")" "$TIP"
-git log "$RANGE" --oneline
+git diff "$(git merge-base "$BASE" "$TIP")" "$TIP" > "$PAYLOAD"
+if [ -s "$PAYLOAD" ]; then
+  printf '\n--- COMMITS IN RANGE ---\n' >> "$PAYLOAD"
+  git log "$RANGE" --oneline >> "$PAYLOAD"
+fi
 ```
 
 Use the **merge base**, not the literal range. `git diff A..B` is the two-endpoint diff — identical to `git diff A B` — so on a branch that has diverged from its base it renders base-only commits as reversions the branch never made. Only the merge base gives the branch's own changes. (`git log "$RANGE"` is correct on two dots and stays as written; the asymmetry is deliberate.)
 
-The diff is the primary payload; the log is appended after the diff under a `--- COMMITS IN RANGE ---` separator so the reviewer sees the commit boundary structure (one logical change vs many).
+The diff is the primary payload; the log is appended after the diff under a `--- COMMITS IN RANGE ---` separator so the reviewer sees the commit boundary structure (one logical change vs many). The log is appended only when the diff is non-empty, so an empty range leaves an empty file.
 
 **Otherwise** (working-tree mode, default):
 
 ```bash
-git diff HEAD
+git diff HEAD > "$PAYLOAD"
 git ls-files --others --exclude-standard
 ```
 
@@ -65,19 +78,19 @@ git ls-files --others --exclude-standard
 The second command lists untracked files. Turn all of them into new-file diffs in one Bash call:
 
 ```bash
-git ls-files --others --exclude-standard -z | while IFS= read -r -d '' f; do git diff --no-index /dev/null "$f"; done
+git ls-files --others --exclude-standard -z | while IFS= read -r -d '' f; do git diff --no-index /dev/null "$f"; done >> "$PAYLOAD"
 ```
 
-This produces canonical new-file diff output (`diff --git`, `new file mode`, `--- /dev/null`, `+++ b/<path>`, `@@`, content). Concatenate those onto the `git diff HEAD` output. (`git ls-files --others` stops listing a file once it is staged, so the two commands never cover the same file twice.) Do **not** hand-construct the diff headers — `git diff --no-index` does this correctly and consistently.
+This appends canonical new-file diff output (`diff --git`, `new file mode`, `--- /dev/null`, `+++ b/<path>`, `@@`, content) to the `git diff HEAD` output. (`git ls-files --others` stops listing a file once it is staged, so the two commands never cover the same file twice.) Do **not** hand-construct the diff headers — `git diff --no-index` does this correctly and consistently.
 
 If there are untracked files, print them before dispatch: `(Including <N> untracked files: <paths>. If any do not belong to this change, add them to .gitignore or move them, and run again.)` In a shared checkout, untracked files can be tool output or another session's drafts, and the reviewer would judge them as part of the change.
 
-Whether the payload is empty or not, proceed to step 1a. Its table decides when an empty payload stops the skill and what message to print.
+The payload is empty when `[ -s "$PAYLOAD" ]` fails. Whether it is empty or not, proceed to step 1a. Its table decides when an empty payload stops the skill and what message to print.
 
-**Size guard.** Count the payload's lines (`wc -l`). If it exceeds **2000**, do not stop — warn and proceed, so the partial coverage is visible rather than silent:
+**Size guard.** Count the payload's lines (`wc -l < "$PAYLOAD"`). If it exceeds **2000**, do not stop — warn and proceed, so the partial coverage is visible rather than silent:
 
 - Print to the user: `(Payload is <N> lines; the reviewer's coverage may be uneven. Narrow with a tighter range or a path-scoped diff for a closer read.)`
-- Prepend this line to the `{{SUBJECT}}` block at substitution time, above the fenced code block: `Note: this payload is <N> lines. If you cannot assess all of it at the same depth, say so explicitly under "Needs Investigation" and name which parts you covered shallowly — do not present uneven coverage as complete.`
+- Add this line to the `{{SUBJECT}}` block at substitution time, after its first sentence: `Note: this payload is <N> lines. If you cannot assess all of it at the same depth, say so explicitly under "Needs Investigation" and name which parts you covered shallowly — do not present uneven coverage as complete.`
 
 ### 1a. Detect review mode
 
@@ -107,9 +120,10 @@ Substitute, by `MODE`:
 
 - `{{MODE}}` → `plan-review` or `diff-review`.
 - `{{SUBJECT}}`:
-  - diff-review → ``The combined diff to review:`` followed by a fenced ```diff block with the payload.
-  - plan-review → ``The plan document to review (`<PLAN_PATH>`):`` followed by a fenced ```markdown block with the **full** contents of `PLAN_PATH`.
-  - In **either** mode, if the size guard in step 1 tripped, its `Note: this payload is <N> lines…` line goes here — between the introductory sentence and the fenced block.
+  - diff-review → ``The combined diff to review is the file `<PAYLOAD>` (<N> lines).`` with the absolute path.
+  - plan-review → first copy the plan, so the reviewer judges a fixed snapshot: `cp "$PLAN_PATH" "$WORK_DIR/plan.md"`. Then ``The plan document to review, `<PLAN_PATH>`, is copied to `<WORK_DIR>/plan.md` (<N> lines).`` with the absolute path.
+  - In **either** mode, if the size guard in step 1 tripped, its `Note: this payload is <N> lines…` line follows that sentence.
+  - Never paste the diff or the plan text itself into the prompt.
 - `{{CRITERIA}}`:
   - diff-review → the **Diff criteria** block below.
   - plan-review → the **Plan criteria** block below.
@@ -121,6 +135,7 @@ Substitute, by `MODE`:
   - plan-review → the **Grounding output** block below.
   - plain diff-review → empty string.
 - `{{PLAN_DIRECTORY}}` → `"$(git rev-parse --show-toplevel)/docs/plans"`.
+- `{{REPO_ROOT}}` → `"$(git rev-parse --show-toplevel)"`, absolute.
 - `{{SUBJECT_NAME}}`:
   - plan-review → `PLAN_PATH`.
   - diff-review in range mode → `RANGE`.
@@ -151,7 +166,7 @@ Substitute, by `MODE`:
 > 2. **Sequencing & atomicity.** Steps are ordered so dependencies land before dependents; each step is a coherent, single-purpose commit. Where the plan implements behaviour, it follows Red → Green → Refactor (tests before implementation), per the project's plan standard.
 > 3. **Test-strategy adequacy.** The planned tests actually pin the intended behaviour, at the right level (unit / feature / integration), and would fail for the right reason before the implementation exists. Flag tests that assert nothing meaningful or mock the code under test — specifically: matches-nothing filters/globs, degenerate parameters that make the assertion vacuous, assertions against assumed filenames/paths rather than the real producing code, and references to non-existent fixtures. A change to a public surface (route, relationship, serialized contract, CLI) needs at least one end-to-end test of the real surface, not only unit tests.
 > 4. **Risk & reversibility.** Hard-to-reverse steps (schema changes, API/data contracts, migrations, deletions) are identified with a mitigation or rollback note; blast radius is named. Flag unflagged irreversible steps.
-> 5. **Grounding (verify against the repo).** Use Read plus `Bash` searches (`grep -rn`, `find`) to confirm the plan's claims — use the `Grep` / `Glob` tools instead when your tool list has them: referenced files, symbols, routes, and commands exist; stated assumptions about current behaviour hold; proposed patterns match existing conventions. Every stale reference or false assumption is a finding citing `plan-section` ↔ `repo file:line` (or "(not found)"). **Reference completeness:** for any symbol the plan removes or renames, independently sweep the repo and verify every caller appears in "Files to Modify." Always run a plain text search for the name token — string-literal references (routes, DI keys, ORM eager-loads, templates) are invisible to symbol tools. Additionally try `LSP` `findReferences` **when it is in your tool list**; it may be absent entirely, or present and erroring because no language server covers the file type. In both cases report that the sweep was text-only rather than implying a symbol sweep ran. A missing caller is a completeness finding; do not trust the plan's file list.
+> 5. **Grounding (verify against the repo).** Use `Read` plus `Bash` searches (`grep -rn`, `find`) to confirm the plan's claims: referenced files, symbols, routes, and commands exist; stated assumptions about current behaviour hold; proposed patterns match existing conventions. Every stale reference or false assumption is a finding citing `plan-section` ↔ `repo file:line` (or "(not found)"). **Reference completeness:** for any symbol the plan removes or renames, independently sweep the repo and verify every caller appears in "Files to Modify." Run a plain text search for the name token — it also finds string-literal references (routes, DI keys, ORM eager-loads, templates), which symbol tools miss. Report that the sweep was text-only. A missing caller is a completeness finding; do not trust the plan's file list.
 > 6. **Snippet logic.** Inspect embedded test/implementation snippets for **logic** errors only: off-by-ones, a test asserting the wrong thing, a snippet that cannot achieve its step's stated goal, contradictory snippets across steps. **Out of scope:** snippets the plan *clearly marks as abbreviated* (`…`, "imports omitted", "sketch"), and pure formatting/style. Do **not** flag those, and do **not** run a lint/type/style pass — that is the built-in `/code-review`'s job on real code. Note the boundary with dimension 1: a *clearly-marked elision* is fine here, but a snippet presented as executable that omits an import/helper the plan never defines is a completeness finding under dimension 1 — because a cold executor would be forced to invent it. The test is "would the executor have to guess?", not "is a line missing".
 
 **Plan Alignment output** (`{{MODE_OUTPUT_SECTION}}` for diff-review with alignment):
@@ -166,18 +181,14 @@ Substitute, by `MODE`:
 >
 > State whether the plan's references and assumptions hold against the repo. Enumerate each stale reference / false assumption as a bullet citing the plan location ↔ `repo file:line` (or "(not found)"). Surface material ones as findings in the Issues table. Omit if the plan made no checkable claims.
 
-For diff-review with a description or plan supplied, **build a plan-alignment block** as follows:
+For diff-review with a description or plan supplied, **build a plan-alignment block** as follows. When `PLAN_PATH` is set, first copy the plan: `cp "$PLAN_PATH" "$WORK_DIR/plan.md"`. Keep the lines marked "if … set" only when that value is set, and drop the marker text:
 
 ```markdown
 ## Plan Alignment
 
-The work this diff implements:
+[if DESCRIPTION is set] The work this diff implements: <DESCRIPTION>
 
-<DESCRIPTION (if set, otherwise omit this paragraph)>
-
-The plan/requirements:
-
-<contents of PLAN_PATH file (if set, otherwise omit this paragraph)>
+[if PLAN_PATH is set] The plan it implements is `<PLAN_PATH>`, copied to `<WORK_DIR>/plan.md`. Read that copy in full.
 
 Apply a plan-alignment check in addition to the judgment dimensions: does the implementation match what was described? Are deviations justified or problematic? Is anything in the plan missing from the diff? Surface deviations as findings using the same severity / confidence labels.
 ```
@@ -186,7 +197,7 @@ If neither `DESCRIPTION` nor `PLAN_PATH` is set (or `MODE` is `plan-review`), th
 
 Compose the dispatch prompt by:
 1. Starting with the contents of `code-reviewer-prompt.md` (skip the header above the first `---`, take the body)
-2. Replacing `{{MODE}}`, `{{SUBJECT}}`, `{{SUBJECT_NAME}}`, `{{CRITERIA}}`, `{{PLAN_ALIGNMENT}}`, `{{MODE_OUTPUT_SECTION}}` per the substitution rules above. Remove the leading `> ` from each quoted block you substitute. When a placeholder becomes an empty string, delete its whole line and the blank line after it, so the review has no double blank lines.
+2. Replacing `{{MODE}}`, `{{SUBJECT}}`, `{{SUBJECT_NAME}}`, `{{REPO_ROOT}}`, `{{CRITERIA}}`, `{{PLAN_ALIGNMENT}}`, `{{MODE_OUTPUT_SECTION}}` per the substitution rules above. Remove the leading `> ` from each quoted block you substitute. When a placeholder becomes an empty string, delete its whole line and the blank line after it, so the review has no double blank lines.
 3. Replacing `{{PLAN_DIRECTORY}}` with the **absolute** path to the project's `docs/plans/` directory, computed as `"$(git rev-parse --show-toplevel)/docs/plans"`. Subagents do not necessarily inherit the calling session's cwd — passing a relative path can land the review in the wrong project root (especially when working inside a git worktree).
 4. Replacing `{{REVIEW_SLUG}}` per the substitution rules above (diff-review: `<YYYY-MM-DD>-<branch-or-cwd>-review`; plan-review: `<plan-basename-without-.md>-plan-review`). For diff-review, `<branch-or-cwd>` is: in range mode, `TIP` when it is a branch name; otherwise the current branch name if it isn't `main`/`master`/`HEAD`; otherwise the basename of the project root. So `main..feature-x` run from the main checkout is named after `feature-x`. Replace any `/` in the branch name with `-` so the slug stays a single filename.
 
@@ -208,31 +219,32 @@ The agent writes its review to `docs/plans/{{REVIEW_SLUG}}.md`. After dispatch r
 
 ```
 0. Args is empty — RANGE, PLAN_PATH, DESCRIPTION all empty.
-1. Bash:  git diff HEAD
+1. Bash:  mkdir -p WORK_DIR; git diff HEAD > PAYLOAD
    Bash:  git ls-files --others --exclude-standard
-   → One loop over the untracked files: git diff --no-index /dev/null <path>; print their list
-   → Concatenate into DIFF
+   → One loop over the untracked files: git diff --no-index /dev/null <path> >> PAYLOAD; print their list
+   Bash:  wc -l < PAYLOAD   (the diff itself is never read into the conversation)
 2. Read:  my-plugin/skills/soundness-review/code-reviewer-prompt.md (skip the header above the first `---`, take the body)
    Bash:  git rev-parse --show-toplevel
    → PLAN_DIRECTORY = "<that path>/docs/plans"
    Bash:  mkdir -p "$PLAN_DIRECTORY"
    Bash:  git branch --show-current
    → Substitute into REVIEW_SLUG (replace any `/` with `-`)
-   → Substitute MODE, SUBJECT, SUBJECT_NAME, CRITERIA, PLAN_DIRECTORY, REVIEW_SLUG; PLAN_ALIGNMENT = "", MODE_OUTPUT_SECTION = ""
+   → Substitute MODE, SUBJECT, SUBJECT_NAME, REPO_ROOT, CRITERIA, PLAN_DIRECTORY, REVIEW_SLUG; PLAN_ALIGNMENT = "", MODE_OUTPUT_SECTION = ""
 3. Agent: subagent_type="my:code-reviewer", description="Code review", prompt=<the composed text>
 4. Confirm <PLAN_DIRECTORY>/<REVIEW_SLUG>.md exists. Print pointer.
 ```
 
-The example is the canonical execution trace — follow it literally for the no-args case. Range mode swaps step 1 for the merge-base diff (`git diff "$(git merge-base "$BASE" "$TIP")" "$TIP"`) + `git log "$RANGE" --oneline`. Plan-alignment mode adds the substitution for `PLAN_ALIGNMENT` (otherwise empty string).
+The example is the canonical execution trace — follow it literally for the no-args case. Range mode swaps step 1 for the merge-base diff (`git diff "$(git merge-base "$BASE" "$TIP")" "$TIP" > PAYLOAD`) + `git log "$RANGE" --oneline >> PAYLOAD`. Plan-alignment mode adds the substitution for `PLAN_ALIGNMENT` (otherwise empty string).
 
 ## Worked example: plan-review (clean tree)
 
 ```
 0. Args: docs/plans/2026-05-28-foo.md → PLAN_PATH set; RANGE/DESCRIPTION empty.
-1. git diff HEAD + ls-files --others → payload EMPTY.
+1. git diff HEAD + ls-files --others > PAYLOAD → payload EMPTY.
 1a. PLAN_PATH set + payload empty → MODE = plan-review.
 2. Read code-reviewer-prompt.md. Substitute:
-   MODE=plan-review; SUBJECT=```markdown <full plan text>```; SUBJECT_NAME=docs/plans/2026-05-28-foo.md;
+   cp docs/plans/2026-05-28-foo.md WORK_DIR/plan.md
+   MODE=plan-review; SUBJECT="…copied to <WORK_DIR>/plan.md (N lines)."; SUBJECT_NAME=docs/plans/2026-05-28-foo.md;
    CRITERIA=Plan criteria;
    PLAN_ALIGNMENT=""; MODE_OUTPUT_SECTION=Grounding output;
    REVIEW_SLUG=2026-05-28-foo-plan-review.

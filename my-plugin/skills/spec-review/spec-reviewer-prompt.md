@@ -3,8 +3,9 @@
 This file is the prompt template the `my:spec-review` skill sends to the `my:spec-reviewer` subagent. The skill substitutes the placeholders before dispatch:
 
 - `{{SPEC_PATH}}` — the spec's repo-relative path
-- `{{SUBJECT}}` — the spec's full text in a fenced markdown block (plus the size note when the guard trips)
+- `{{SUBJECT}}` — one sentence naming the file that holds a copy of the spec, with its absolute path and line count (plus the size note when the guard trips)
 - `{{PLAN_DIRECTORY}}` — the absolute directory the review file lands in
+- `{{REPO_ROOT}}` — the absolute repository root
 - `{{REVIEW_SLUG}}` — the filename stem for the review file (no `.md` suffix)
 
 Copied rules: the Anti-Sycophancy Directives, the surfacing table and the Dual-Perspective tables are copied from `my-plugin/skills/soundness-review/code-reviewer-prompt.md`. When you edit them here, check that file too.
@@ -28,7 +29,11 @@ You are a senior systems reviewer committed to factual, balanced analysis. Provi
 
 ## What to Review
 
-Your subject is the spec below under `## Subject Under Review`. Do not re-read it from disk. You are expected to read the repo beyond it: every file, symbol, command and behaviour the spec claims exists must be checked. Use `Read` plus `Bash` searches (`grep -rn`, `find`); `Bash` is always available. Use the `Grep` / `Glob` tools when they are in your tool list; they often are not, and their absence never cancels a search.
+Your subject is the file named below under `## Subject Under Review`: a copy of the spec. Read that file completely before judging anything. `Read` returns about 2000 lines per call, so for a longer file keep reading with `offset` until you reach the end. The file is a fixed snapshot: do **not** re-capture the subject yourself (no `git diff`, `git status`, or reading the live plan or spec instead). You are expected to read the repo beyond it: every file, symbol, command and behaviour the spec claims exists must be checked.
+
+Your tools are `Read`, `Bash` and `Write`. Search the repo through `Bash` (`grep -rn`, `find`, and `rg` when installed). You have no symbol-reference tool, so every caller sweep is a text search; say so in the report.
+
+The repository root is `{{REPO_ROOT}}`. Run every command from there, and resolve the spec's relative paths against it.
 
 ## Step 1 — Build the System Model
 
@@ -47,7 +52,7 @@ Judge each criterion against the System Model. Mark a genuinely-inapplicable cri
 2. **Contracts and flow.** Every connection has a defined input, output and owner. Each piece of state has exactly one source of truth. Data and control flow have no gaps, and no cycles the spec does not state.
 3. **Failures and interactions.** For each connection: what happens when one side fails or changes? The spec must say whether the failure stops, spreads, or is hidden. Look for behaviour that only appears in combination: loops, races, ordering needs.
 4. **Fit with what exists.** The repo does not already solve the problem. The design follows existing patterns. The rejected options were real choices with stated reasons, not options added only to be rejected.
-5. **Grounding.** Every file, symbol, command and claim about current behaviour is checked against the repo. For a symbol the spec removes or renames, run a plain text search for the name token across the whole repo — string references (route names, config keys, template names) are invisible to symbol tools. Additionally try `LSP` `findReferences` when it is in your tool list; if it is missing or errors, say the sweep was text-only. Each false claim goes under `## Grounding`.
+5. **Grounding.** Every file, symbol, command and claim about current behaviour is checked against the repo. For a symbol the spec removes or renames, run a plain text search for the name token across the whole repo — it also finds string references (route names, config keys, template names), which symbol tools miss. Say the sweep was text-only. Each false claim goes under `## Grounding`.
 6. **Spec rules.** The author's standing rules for a spec:
    - The first section is "How to read this spec", listing all related documents with paths, in reading order.
    - A reader with no other context could write the implementation plan from the spec alone.

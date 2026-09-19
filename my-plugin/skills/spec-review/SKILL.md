@@ -17,7 +17,7 @@ Dispatch a fresh-context reviewer subagent to judge whether the system a spec de
 
 The criteria, evidence rules and report layout live in `spec-reviewer-prompt.md`. The agent receives the full prompt at dispatch time and must not improvise.
 
-This skill ignores the working tree. It reads the spec from disk and never runs `git diff`, so uncommitted files elsewhere do not change what it reviews.
+This skill ignores the working tree. It copies the spec to a work file and never runs `git diff`, so uncommitted files elsewhere do not change what it reviews. The reviewer reads the copy itself; the main session never pastes the spec into the prompt.
 
 ## Steps
 
@@ -31,18 +31,26 @@ If args is empty, names more than one path, or the file does not exist, stop and
 
 If the filename does not end in `-spec.md`, continue, and print: `(<SPEC_PATH> does not end in -spec.md; reviewing it as a spec anyway.)`
 
-### 1. Read the spec
+### 1. Copy the spec
 
-Read the full file. Count its lines (`wc -l`).
+Copy it to a work directory with an absolute path, because the reviewer does not share your working directory, and count its lines:
 
-**Size guard.** Above **2000** lines, do not stop. Print `(Spec is <N> lines; the reviewer's coverage may be uneven.)` and put this line first inside `{{SUBJECT}}`: `Note: this spec is <N> lines. If you cannot assess all of it at the same depth, say so under "Needs Investigation" and name the parts you covered shallowly.`
+```bash
+WORK_DIR="<scratchpad>/spec-review/$(date +%Y%m%d-%H%M%S)"   # <scratchpad> = the session's scratchpad directory; else WORK_DIR="$(mktemp -d)"
+mkdir -p "$WORK_DIR" && cp "$(git rev-parse --show-toplevel)/$SPEC_PATH" "$WORK_DIR/spec.md" && wc -l < "$WORK_DIR/spec.md"
+```
+
+The copy is a fixed snapshot: an edit to the spec during the review does not change what the reviewer judges. You do not need to read the spec yourself.
+
+**Size guard.** Above **2000** lines, do not stop. Print `(Spec is <N> lines; the reviewer's coverage may be uneven.)` and add this line to `{{SUBJECT}}`, after its sentence: `Note: this spec is <N> lines. If you cannot assess all of it at the same depth, say so under "Needs Investigation" and name the parts you covered shallowly.`
 
 ### 2. Build the dispatch prompt
 
 Read `spec-reviewer-prompt.md` from this skill's directory. Take everything below the first `---` line. Substitute:
 
 - `{{SPEC_PATH}}` → `SPEC_PATH`.
-- `{{SUBJECT}}` → ``The spec to review (`<SPEC_PATH>`):`` then (size note if any) then a fenced ```markdown block with the **full** spec text.
+- `{{SUBJECT}}` → ``The spec to review, `<SPEC_PATH>`, is copied to `<WORK_DIR>/spec.md` (<N> lines).`` with the absolute path, then the size note if any. Never paste the spec text itself.
+- `{{REPO_ROOT}}` → `"$(git rev-parse --show-toplevel)"`, absolute.
 - `{{PLAN_DIRECTORY}}` → the absolute path `"$(git rev-parse --show-toplevel)/docs/plans"`. Subagents do not reliably inherit the session's cwd, so never pass a relative path. Run `mkdir -p` on it first.
 - `{{REVIEW_SLUG}}` → `<spec basename without .md>-review`. Example: `docs/plans/2026-09-16-foo-spec.md` → `2026-09-16-foo-spec-review`.
 
@@ -71,11 +79,11 @@ When this skill runs as the spec flow's review step, the caller then acts on the
 
 ```text
 0. Args: docs/plans/2026-09-16-foo-spec.md → exists, ends in -spec.md → SPEC_PATH set.
-1. Read the file. wc -l → 180 (no size note).
+1. Copy to WORK_DIR/spec.md. wc -l → 180 (no size note).
 2. Read spec-reviewer-prompt.md; take the body below the first `---`.
    Bash: git rev-parse --show-toplevel → PLAN_DIRECTORY="<root>/docs/plans"; mkdir -p it.
    REVIEW_SLUG=2026-09-16-foo-spec-review; the file exists → 2026-09-16-foo-spec-review-2.
-   Substitute SPEC_PATH, SUBJECT, PLAN_DIRECTORY, REVIEW_SLUG.
+   Substitute SPEC_PATH, SUBJECT, REPO_ROOT, PLAN_DIRECTORY, REVIEW_SLUG.
 3. Agent: subagent_type="my:spec-reviewer", description="Spec review", prompt=<composed text>.
 4. Confirm <PLAN_DIRECTORY>/2026-09-16-foo-spec-review-2.md exists. Print pointer.
 ```

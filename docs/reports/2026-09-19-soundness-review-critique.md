@@ -1,6 +1,6 @@
 # Critique: `my:soundness-review`, efficiency and clarity
 
-**Status:** current, 2026-09-19. Findings on how clear and how costly the skill is; C1 to C4, F1, V1, V2, V4, V6, E3 and F2 are fixed; E1 and E2 wait for the M1 check; V3, V5 and F3 are left as they are.
+**Status:** current, 2026-09-19. Findings on how clear and how costly the skill is; C1 to C4, V1, V2, V4, V6, E1 to E3 and F1, F2 are fixed. M1 and M2 were checked: the reviewer receives only Read, Bash and Write, also when nested. V3, V5 and F3 are left as they are.
 
 ## How to read this
 

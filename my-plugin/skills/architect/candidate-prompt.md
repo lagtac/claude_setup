@@ -9,7 +9,7 @@ This file is the prompt template the `my:architect` skill sends to each `general
 - `{{REPO_ROOT}}` — the absolute repository root, or the text `none`
 - `{{FORCES_TABLE}}` — the confirmed forces table, with labels
 
-Copied rules: the search-tool wording is copied from the grounding bullet in `my-plugin/agents/spec-reviewer.md`. When you edit it there, check this file too.
+Copied rules: the search-tool wording matches the tool rule under "What to Review" in `my-plugin/skills/spec-review/spec-reviewer-prompt.md`. When you edit it there, check this file too.
 
 The body below this header is the prompt itself. Send everything below the `---` line.
 
@@ -39,7 +39,7 @@ Repository root: `{{REPO_ROOT}}`
 
 - If it is `none`, no repository exists yet. Design from the description and the forces only.
 - If it is a path, read the code that matters for the design: the stack, existing modules, data models, configuration. Use absolute paths under that root. Do not rely on the current working directory.
-- Search with `Read` plus `Bash` searches (`grep -rn`, `find`) — `Bash` is always available. Use the `Grep` / `Glob` tools, and `LSP`, only when they are in your tool list; they often are not, so never let their absence cancel a search.
+- Search with `Read` plus `Bash` (`grep -rn`, `find`, and `rg` when installed). Subagents here do not receive `Grep`, `Glob` or `LSP`, so do every search through `Bash`.
 - You are read-only. Do not write, edit or commit any file. Return your draft as text.
 
 ## Forces

@@ -3,11 +3,12 @@
 This file is the prompt template the `my:soundness-review` skill sends to the `my:code-reviewer` subagent. The skill substitutes the placeholders before dispatch:
 
 - `{{MODE}}` — `plan-review` or `diff-review`
-- `{{SUBJECT}}` — the subject body (a diff, or a plan document's full text)
+- `{{SUBJECT}}` — one or two sentences naming the file that holds the subject (the diff, or a copy of the plan), with its absolute path and line count
 - `{{CRITERIA}}` — the mode-specific judgment-dimension block
 - `{{PLAN_ALIGNMENT}}` — a `## Plan Alignment` block when a description or plan was supplied in diff-review; empty string otherwise
 - `{{MODE_OUTPUT_SECTION}}` — the optional second output subsection (Plan Alignment / Grounding / empty)
 - `{{PLAN_DIRECTORY}}` — the absolute directory the review file should land in
+- `{{REPO_ROOT}}` — the absolute repository root
 - `{{REVIEW_SLUG}}` — the filename stem for the review file (no `.md` suffix)
 - `{{SUBJECT_NAME}}` — what is reviewed, for the title and status line: the plan path, the range, or `working tree of <branch>`
 
@@ -33,10 +34,14 @@ You are a senior reviewer committed to factual, balanced analysis. Provide objec
 
 ## What to Review
 
-Your subject is below under `## Subject Under Review` — the calling skill has already assembled it; do **not** re-capture it (no `git diff`, `git status`, or re-reading a plan from disk). What you may read *beyond* the subject depends on the mode stated above:
+Your subject is the file named below under `## Subject Under Review`. Read that file completely before judging anything. `Read` returns about 2000 lines per call, so for a longer file keep reading with `offset` until you reach the end. The file is a fixed snapshot: do **not** re-capture the subject yourself (no `git diff`, `git status`, or reading the live plan or spec instead). What you may read *beyond* the subject depends on the mode stated above.
 
-- **diff-review:** the surface you *report on* is the payload, but your reading is not restricted to it. Before judging architecture & pattern fit or soundness of approach, `Read` every file the payload touches **in full**, plus one or two sibling files in the same directory — changed lines plus three lines of context cannot tell you the abstraction level, the layer boundaries, or whether a fix treats the root cause. **Required widening:** when the payload removes or renames a symbol that may be referenced elsewhere, you MUST text-search the whole repo for the name token to find orphaned callers — run `grep -rn '<token>' .` (or `rg`) through `Bash`, which is always available; the `Grep` tool is faster to read but may be absent from your tool list, so never let its absence cancel the sweep; string-literal references (route/event names, config/DI keys, ORM eager-load paths, templates) never appear in the diff. Findings must concern the payload — do not review unrelated code you opened for context.
-- **plan-review:** the plan is your subject and you are expected to **ground** it — actively use `Read` plus `Bash` searches (`grep -rn`, `find`) to verify the plan's claims against the repo (referenced files/symbols exist, assumptions hold, patterns match). Use the `Grep` / `Glob` tools instead when they are in your tool list; they often are not, and `Bash` is the fallback that always works.
+Your tools are `Read`, `Bash` and `Write`. Search the repo through `Bash` (`grep -rn`, `find`, and `rg` when installed). You have no symbol-reference tool, so every caller sweep is a text search; say so in the report.
+
+The repository root is `{{REPO_ROOT}}`. Run every command from there, and resolve the relative paths in the subject against it.
+
+- **diff-review:** the surface you *report on* is the payload, but your reading is not restricted to it. Before judging architecture & pattern fit or soundness of approach, `Read` every file the payload touches **in full**, plus one or two sibling files in the same directory — changed lines plus three lines of context cannot tell you the abstraction level, the layer boundaries, or whether a fix treats the root cause. **Required widening:** when the payload removes or renames a symbol that may be referenced elsewhere, text-search the whole repo for the name token to find orphaned callers (`grep -rn '<token>' .`); string-literal references (route/event names, config/DI keys, ORM eager-load paths, templates) never appear in the diff. Findings must concern the payload — do not review unrelated code you opened for context.
+- **plan-review:** the plan is your subject and you are expected to **ground** it — actively use `Read` plus `Bash` searches to verify the plan's claims against the repo (referenced files/symbols exist, assumptions hold, patterns match).
 
 {{PLAN_ALIGNMENT}}
 
