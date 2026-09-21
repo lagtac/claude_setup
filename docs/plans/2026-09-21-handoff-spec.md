@@ -1,7 +1,7 @@
 # Spec: `my:handoff`, hand a cycle stage to a new top-level session
 
-**Status:** draft, 2026-09-21. A skill that lets a finishing session open the
-next stage of the spec, plan and code cycle in a new tmux window.
+**Status:** approved, 2026-09-21. A skill that lets a finishing session open
+the next stage of the spec, plan and code cycle in a new tmux window.
 
 ## How to read this spec
 
@@ -98,43 +98,56 @@ If either fails, the plan session stops and notifies the user.
 Rejected: always wait for the user between plan and code (one extra message
 per feature, and it adds a gate the global rules do not define).
 
-**D4: A stopped session tells the user with `PushNotification`.** This tool
-shows a desktop notification in the terminal. It also reaches the user's phone
-when Remote Control, the feature that links a session to the Claude app, is
-connected. The tool skips the notification when the user is already at that
-session's terminal. A stage notifies at exactly three points:
+**D4: A stopped session marks its tmux window, and also sends a
+`PushNotification`.** A stage signals at exactly three points:
 
 - it hit a gate;
 - it hit an error it cannot fix;
 - the code session is ready for the squash-merge.
 
-The message leads with the window name and the action, for example
-`plan-landing-match-grade: a review finding changes spec decision D5`.
+At each point the stage does two things:
 
-The notification can be switched off: the tool depends on a remote feature
-flag and on the `agentPushNotifEnabled` setting, which the user's settings do
-not set. So at every notification point the stage also renames its own tmux
-window to `<name> ⚠` with `tmux rename-window -t "$TMUX_PANE" "<name> ⚠"`.
-Without `-t`, tmux renames the window the user is looking at, not the stage's
-own window. The mark shows in the tmux
-status bar whether or not the notification arrived.
+1. **The mark, the main signal.** It renames its own tmux window with
+   `tmux rename-window -t "$TMUX_PANE" "<name> ⚠"`. The mark shows in the tmux
+   status bar. Without `-t`, tmux renames the window the user is looking at,
+   not the stage's own window. When `$TMUX_PANE` is empty, the stage skips the
+   mark.
+2. **The notification, a bonus.** It calls `PushNotification`, which shows a
+   desktop notification and reaches the user's phone when Remote Control (the
+   feature that links a session to the Claude app) is connected. The message
+   leads with the window name and the action, for example
+   `plan-landing-match-grade: a review finding changes spec decision D5`.
+
+The mark is the main signal because the notification is often not sent. A
+probe on 2026-09-21 called `PushNotification` from a session in a separate
+tmux server that no one was attached to. The tool answered: "Not sent — this
+terminal is active, so your output here already reaches the user". It judges
+the user active from something other than that window, so it skips exactly
+when the user is working in another window. It probably reaches a user who is
+away from the machine. The tool also depends on a remote feature flag and on
+the `agentPushNotifEnabled` setting, which the user's settings do not set.
 
 Rejected: messaging the spec session, which relays to the user. The user's
 answer has to be typed in the stage's own window anyway, because the harness
 never treats a message from a peer session as the user's approval. So the
 relay adds a step and gains nothing.
 
-**D5: One skill, one short handoff line.** The skill takes
-`/my:handoff <stage> <doc>`. `<stage>` is `plan` or `code`. `<doc>` is one
-path under `docs/plans/`:
+**D5: One skill, one short handoff line.** The skill has two forms:
+
+- `/my:handoff <stage> <doc>` **launches** the stage in a new window (D7).
+- `/my:handoff run <stage> <doc>` **runs** the stage in the current session
+  (D8 and D9).
+
+`<stage>` is `plan` or `code`. `<doc>` is one path under `docs/plans/`:
 
 - for `plan`, the approved spec;
 - for `code`, the committed plan.
 
-The new window's first prompt is exactly that line. Everything else comes from
-the repo: the document, its `**Status:**` line, and the plans index when the
-project has one. So the line survives the quoting through tmux and the shell,
-and a stage can be restarted by typing the same line.
+The new window's first prompt is exactly the `run` line. The word `run` tells
+the skill which job it has; without it, one line would mean both. Everything
+else comes from the repo: the document, its `**Status:**` line, and the plans
+index when the project has one. So the line survives the quoting through tmux
+and the shell, and a stage can be restarted by typing the `run` line.
 
 Rejected: three skills, one per stage (the launch and the gate rules would be
 copied into each). Rejected: a launcher script (it adds a file, and a one-line
@@ -154,7 +167,9 @@ notifications.
    `docs/plans/2026-09-21-landing-match-grade-spec.md` and stage `plan`, the
    name is `plan-landing-match-grade`.
 2. **Refuse a duplicate.** Call `ListAgents`. If a session with that name
-   exists, tell the user and stop.
+   exists, tell the user and stop. A probe on 2026-09-21 confirmed that
+   `ListAgents` shows a session by its `-n` name. Names can change later, so
+   this check is only a first guard; the start checks in D8 are the real one.
 3. **Collect the flags.**
    - `--plugin-dir`: every `--plugin-dir <path>` in the launching session's own
      command line, read with `ps -o args= -p "$CLAUDE_PID"`. Plugins loaded
@@ -173,7 +188,7 @@ notifications.
    in a new terminal, and stop:
 
    ```bash
-   cd <repo root> && claude -n <name> <plugin-dir flags> <permission flag> '/my:handoff <stage> <doc>'
+   cd <repo root> && claude -n <name> <plugin-dir flags> <permission flag> '/my:handoff run <stage> <doc>'
    ```
 
    `<permission flag>` is `--permission-mode <mode>` when step 3 found a mode
@@ -184,7 +199,7 @@ notifications.
 
    ```bash
    tmux new-window -d -n <name> -c <repo root> \
-     "claude -n <name> <plugin-dir flags> <permission flag> '/my:handoff <stage> <doc>'"
+     "claude -n <name> <plugin-dir flags> <permission flag> '/my:handoff run <stage> <doc>'"
    ```
 
    `-d` opens it in the background, so the user's view does not move. `-c`
@@ -192,7 +207,7 @@ notifications.
 6. **Report and stop.** Print the window name. Do not wait for the new session
    and do not poll for it.
 
-**D8: The start checks.** A session started with `/my:handoff` checks the
+**D8: The start checks.** A session started with `/my:handoff run` checks the
 document before it does any work. If a check fails, it notifies the user and
 stops without writing anything.
 
@@ -308,6 +323,10 @@ session.
   default mode may wait for approval of a tool call where no one looks.
   Detection: `ListAgents` shows it as `waiting`. Mitigation: D7 opens a
   window only from `auto` or `bypassPermissions`.
+- **A stop can go unseen.** The `⚠` mark shows only in the tmux status bar,
+  and `PushNotification` skips while the user is active elsewhere (D4). A
+  user who does not glance at the status bar learns of a stop late.
+  Detection: `ListAgents` shows the stage as `idle` or `waiting`.
 - **Auto mode acts without asking.** A plan or code session in auto mode
   commits on its own. The gates in D3 and D9 are the only stops. A gate the
   skill does not name will not stop it.
@@ -336,7 +355,7 @@ Tests run headless against the worktree's plugin, as in the test precedent.
    refused.
 2. **No tmux.** Run the launch with `TMUX` unset. Check that it prints the
    command and opens nothing.
-3. **Start checks.** Start `/my:handoff plan` on a spec marked `draft`, and on
+3. **Start checks.** Start `/my:handoff run plan` on a spec marked `draft`, and on
    an approved spec that already has a plan. Check that each session notifies
    and writes nothing.
 4. **Pilot.** Run the next spec the user approves through plan and code. Record
