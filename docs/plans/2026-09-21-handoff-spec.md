@@ -8,7 +8,8 @@ next stage of the spec, plan and code cycle in a new tmux window.
 | Document | Path | Why you would read it |
 | --- | --- | --- |
 | **This spec** | `docs/plans/2026-09-21-handoff-spec.md` | What to build, why, and the trade-offs. Start here. |
-| Spec review | `docs/plans/2026-09-21-handoff-spec-review.md` | The `my:spec-review` report on this spec. |
+| Spec review | `docs/plans/2026-09-21-handoff-spec-review.md` | The first `my:spec-review` report on this spec. |
+| Spec re-review | `docs/plans/2026-09-21-handoff-spec-review-2.md` | The second report, on the spec after the first review's answers. |
 | Implementation plan | `docs/plans/2026-09-21-handoff.md` | Written after this spec is approved. Test steps and commits. |
 | Global instructions | `GLOBAL-CLAUDE.md` | The Superpowers trigger table, the "Spec → Plan two-artifact flow", "No silent reinterpretation", "Code Review Routing" and "Git Workflow". The stages follow these rules; this spec does not change them. |
 | Docs layout rule | `GLOBAL-rules/docs-layout.md` | The `**Status:**` line and its values. The start checks read it. |
@@ -48,7 +49,7 @@ A skill, `my:handoff`, with two uses:
 - **Launch.** A session that finished a stage opens the next stage in a new
   tmux window, as a new named top-level session.
 - **Run.** That new session runs its stage and stops at the gates the global
-  rules already define. It tells the user with a push notification.
+  rules and the project's rules define. It tells the user with a push notification.
 
 The cycle has three sessions: spec, plan, code. The user approves every spec
 and every squash-merge. Nothing else needs the user unless a gate is hit.
@@ -113,7 +114,9 @@ The message leads with the window name and the action, for example
 The notification can be switched off: the tool depends on a remote feature
 flag and on the `agentPushNotifEnabled` setting, which the user's settings do
 not set. So at every notification point the stage also renames its own tmux
-window to `<name> ⚠` with `tmux rename-window`. The mark shows in the tmux
+window to `<name> ⚠` with `tmux rename-window -t "$TMUX_PANE" "<name> ⚠"`.
+Without `-t`, tmux renames the window the user is looking at, not the stage's
+own window. The mark shows in the tmux
 status bar whether or not the notification arrived.
 
 Rejected: messaging the spec session, which relays to the user. The user's
@@ -158,15 +161,24 @@ notifications.
      this way come from a shell alias, and a tmux window runs no alias. Without
      this flag the new session does not have `my:handoff`.
    - `--permission-mode`: the mode the launching session is in, as its own
-     context states it. If the session cannot tell its mode, or the mode is
-     `plan` (a session in that mode cannot write), it does not open a window.
-     It prints the command from step 4 for the user to run, and stops.
+     context states it. A window opens only from `auto` or
+     `bypassPermissions`, the two modes in which a session can work unseen.
+     In every other mode, and when the session cannot tell its mode, it does
+     not open a window. It prints the command from step 4 for the user to run,
+     and stops. The reasons: in `acceptEdits` or `manual` the new session
+     waits at its first Bash command where no one looks, in `dontAsk` the call
+     is refused, and in `plan` it cannot write. None of these sends a
+     notification.
 4. **Check tmux.** If `$TMUX` is empty, print this command for the user to run
    in a new terminal, and stop:
 
    ```bash
    cd <repo root> && claude -n <name> <plugin-dir flags> <permission flag> '/my:handoff <stage> <doc>'
    ```
+
+   `<permission flag>` is `--permission-mode <mode>` when step 3 found a mode
+   it may pass. When it did not, the flag is left out, and the user picks the
+   mode in the new session.
 
 5. **Open the window.**
 
@@ -196,7 +208,8 @@ decides in that window.
 **D9: What each stage does.**
 
 **Spec stage (the user's session).** Unchanged until the end. After the user
-approves the spec and its review, and the status is set to `approved`, the
+approves the spec and its review, the session sets the status to `approved`
+and leaves that edit uncommitted: plan stage step 2 commits it. Then the
 session asks "Hand off the plan?". On yes, it runs the launch with
 `plan <spec path>`. The user can also type `/my:handoff plan <spec>` in any
 session.
@@ -204,8 +217,10 @@ session.
 **Plan stage.**
 
 1. Run `superpowers:writing-plans` on the spec.
-2. Commit the plan, following the project's rules for docs commits and the
-   index. The plan is then no longer an uncommitted file.
+2. Commit the plan, together with the spec's `approved` status edit from the
+   spec stage, following the project's rules for docs commits and the index.
+   The status change goes into the commit that causes it, so no commit only
+   changes a status. After this commit neither file is uncommitted.
 3. Run `git status --porcelain`. If the output is not empty, stop and notify
    `<name>: main has uncommitted files; plan review would ask`. The reason:
    `my:soundness-review` asks the user what to review when a plan meets a
@@ -291,9 +306,8 @@ session.
 
 - **A window blocked on a permission prompt cannot notify.** A session in the
   default mode may wait for approval of a tool call where no one looks.
-  Detection: `ListAgents` shows it as `waiting`. Mitigation: D7 passes the
-  launching session's mode, and never opens a window when that mode is unknown
-  or `plan`.
+  Detection: `ListAgents` shows it as `waiting`. Mitigation: D7 opens a
+  window only from `auto` or `bypassPermissions`.
 - **Auto mode acts without asking.** A plan or code session in auto mode
   commits on its own. The gates in D3 and D9 are the only stops. A gate the
   skill does not name will not stop it.
