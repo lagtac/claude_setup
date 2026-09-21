@@ -13,7 +13,7 @@ description: >
   against a spec still belongs here.
 ---
 
-# Code Review
+# Soundness Review
 
 Dispatch a fresh-context reviewer subagent to render a **soundness judgment** of the diff specified by the caller — the working-tree diff by default, or a committed range (`BASE..HEAD`) when invoked pre-merge. The reviewer produces dual-perspective output (arguments for *and* against) with severity-conditioned confidence labels and a reasoning paragraph before its verdict — no rubber-stamping — and an optional plan-alignment check.
 
@@ -25,16 +25,20 @@ The methodology, judgment dimensions, and output schema are authored once here a
 
 ### 0. Classify the freeform args string
 
-The skill's args field is a single freeform string. Classify each whitespace-separated token (or sub-token) by content shape:
+The skill's args field is a single freeform string. Split it on whitespace and classify each token by its shape. Match the rows top to bottom; the first match wins:
 
 | Token shape | Variable |
 |---|---|
-| `<ref>..<ref>` literal (e.g. `main..HEAD`, `abc1234..def5678`) | `RANGE` |
-| Two SHA-shaped tokens (`[0-9a-f]{7,40}`) appearing together | `RANGE` (joined with `..`) |
-| A path ending in `.md` that exists on disk | `PLAN_PATH` |
+| `<ref>..<ref>` or `<ref>...<ref>` (e.g. `main..HEAD`, `abc1234..def5678`) | `RANGE` |
+| Two tokens next to each other that each match `^[0-9a-f]{7,40}$` | `RANGE`, joined with `..` |
+| A path ending in `.md` that exists on disk and sits under a `docs/plans/` directory | `PLAN_PATH` |
 | Anything else (free prose) | append to `DESCRIPTION` |
 
-If a token is ambiguous (e.g., a `.md` path that doesn't exist), prefer `DESCRIPTION` and surface a one-line note: `(arg "<token>" treated as description; expected file but not found)`.
+Some tokens need a note to the user, printed before step 1:
+
+- One SHA-shaped token on its own: add it to `DESCRIPTION` and print `(arg "<token>" looks like a commit; treated as description. Pass <token>..HEAD for a range.)`
+- A `.md` path that does not exist, or exists outside `docs/plans/` (such as `README.md`): add it to `DESCRIPTION` and print `(arg "<token>" treated as description; expected an existing plan under docs/plans/.)`
+- Two or more tokens that qualify as `PLAN_PATH`: stop with `Pass one plan file; got <first> and <second>.` Do not dispatch.
 
 If args is empty, all three variables are empty — the skill runs in defaults (working-tree diff, no plan-alignment block).
 
@@ -213,7 +217,7 @@ The agent writes its review to `docs/plans/{{REVIEW_SLUG}}.md`. After dispatch r
 
 1. Confirm the file exists at that path. If not, surface the agent's text output verbatim and flag that the file write did not happen.
 2. Print a one-line pointer to the file: `Review written to docs/plans/<filename>.`
-3. If the review's verdict is `Problematic` or contains any `Critical` issues, also print a two-line summary of the top finding.
+3. Read the verdict from the review file's `**Assessment:**` line, not from the agent's summary. If it is `Problematic`, or the Issues table has any `Critical` row, also print a two-line summary of the top finding.
 
 ## Worked example: default invocation, no args
 

@@ -12,7 +12,7 @@ This file is the prompt template the `my:soundness-review` skill sends to the `m
 - `{{REVIEW_SLUG}}` — the filename stem for the review file (no `.md` suffix)
 - `{{SUBJECT_NAME}}` — what is reviewed, for the title and status line: the plan path, the range, or `working tree of <branch>`
 
-Copied rules: the Anti-Sycophancy Directives, the surfacing table and the Dual-Perspective tables are copied into `my-plugin/skills/spec-review/spec-reviewer-prompt.md`. When you edit them here, check that file too.
+Copied rules: the Anti-Sycophancy Directives, the surfacing table, the Dual-Perspective tables and the Assessment definitions are copied into `my-plugin/skills/spec-review/spec-reviewer-prompt.md`. When you edit them here, check that file too.
 
 The body below this header is the prompt itself. Send everything below the `---` line.
 
@@ -123,10 +123,16 @@ Write the review to `{{PLAN_DIRECTORY}}/{{REVIEW_SLUG}}.md` with this structure:
 
 ## Verdict
 
-**Assessment:** Sound / Problematic / Mixed
+**Assessment:** Sound / Mixed / Problematic
 **Confidence:** High / Medium / Low — [one-sentence justification]
 **Recommendation:** [specific actionable next step]
 ```
+
+Pick the Assessment by the most severe finding in the Issues table:
+
+- **Sound** — no `Critical` and no `Warning` row. `Suggestion` rows are allowed.
+- **Mixed** — no `Critical` row, and at least one `Warning` row. The approach itself is right.
+- **Problematic** — at least one `Critical` row, or the approach itself is wrong and needs rework, not fixes.
 
 ## Subject Under Review
 

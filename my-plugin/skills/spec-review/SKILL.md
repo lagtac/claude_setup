@@ -64,7 +64,7 @@ Use the Agent tool with `subagent_type: "my:spec-reviewer"`, `description: "Spec
 
 1. Confirm `{{PLAN_DIRECTORY}}/{{REVIEW_SLUG}}.md` exists. If not, print the agent's text output verbatim and say the file write did not happen.
 2. Print: `Review written to docs/plans/<filename>.`
-3. If the verdict is `Problematic` or any `Critical` finding exists, print the top finding in two lines, including its class.
+3. Read the verdict from the review file's `**Assessment:**` line, not from the agent's summary. If it is `Problematic` or any `Critical` finding exists, print the top finding in two lines, including its class.
 
 ### 5. Inside the Spec → Plan flow
 
