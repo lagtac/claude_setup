@@ -55,7 +55,7 @@ If implementation research (reading code, checking library behavior, running a p
 
 Three reviewers, complementary — route by what you want:
 
-- **`my:soundness-review`** = soundness *judgment* + plan-alignment, durable report to `docs/plans/`. No args = working tree; `BASE..HEAD` = committed range; pass a `.md` plan to add alignment (dirty tree) or review a plan itself (clean tree; specs go to `my:spec-review`). Use for "is this sound?", a for/against verdict, or plan-match.
+- **`my:soundness-review`** = soundness *judgment* + plan-alignment, durable report to `docs/plans/`. No args = working tree; `BASE..HEAD` = committed range; pass a `.md` plan to review the plan itself (clean tree; specs go to `my:spec-review`) or to check a range against it; with a dirty tree and no range, it asks which. Use for "is this sound?", a for/against verdict, or plan-match.
 - **`my:spec-review`** = *system-thinking* review of one `-spec.md`: builds a component/connection model, judges boundaries, contracts, state ownership, failure spread, fit and the spec rules; labels findings `editorial` or `design`; report to `docs/plans/`. Required step 2 of the Spec → Plan flow.
 - built-in **`/code-review`** = *bug-finder* (correctness/efficiency); `--fix` applies fixes, `ultra` is the deep multi-agent sweep. Use to find or fix bugs.
 - Want both → `my:soundness-review` first, then `/code-review --fix`. Explicit security sweep → `/security-review`. An *open* PR/MR → `/review`. Both committed + uncommitted work present → run `my:soundness-review` twice (no-args, then the range).

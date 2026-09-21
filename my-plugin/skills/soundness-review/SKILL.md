@@ -8,7 +8,8 @@ description: >
   diff; pass a `BASE..HEAD` range for a committed range, and a `docs/plans/*.md` path to enable
   plan-alignment. NOT a bug scanner — low-level bug-finding, `--fix`, and deep `ultra` review are
   delegated to the built-in `/code-review`. Pointing it at a `.md` plan with a clean working tree
-  reviews the plan itself (grounded against the repo + snippet-logic check) instead of a diff.
+  reviews the plan itself (grounded against the repo + snippet-logic check) instead of a diff;
+  with uncommitted changes and no range, it asks which of the two to review.
   Specs (`*-spec.md`) are not reviewed on their own here — use `my:spec-review`; checking a diff
   against a spec still belongs here.
 ---
@@ -105,16 +106,29 @@ Let `PLAN_PATH` be from step 0 and `payload` be the captured diff. Set `MODE`:
 | any, with `RANGE` set | any | empty | — | Stop: `Range <RANGE> is empty.` This row is checked first, so a mistyped range never turns into a plan review. |
 | set, ends in `-spec.md` | any | empty | — | Stop: `This is a spec. Run my:spec-review <PLAN_PATH> instead.` Do not dispatch. |
 | set | any | empty | `plan-review` | Subject is the plan document; ignore `DESCRIPTION` if set, and print `(description ignored: a plan review has no diff to check it against)` when `DESCRIPTION` is set. |
-| set | any | non-empty | `diff-review` with alignment | Build the Plan Alignment block (step 2) from the plan, and the description if set. **Print the nudge below to the user.** |
+| set, with `RANGE` unset | any | non-empty | ask | The args do not say whether to review the plan or the changes. **Ask the question below**, then continue with the row the answer picks. |
+| set | any | non-empty | `diff-review` with alignment | Build the Plan Alignment block (step 2) from the plan, and the description if set. |
 | unset | set | non-empty | `diff-review` with alignment | Build the Plan Alignment block (step 2) from the description alone. |
 | unset | unset | non-empty | `diff-review` | Plain diff review, no alignment block. |
 | unset | any | empty | — | Stop: `No changes to review.` When `DESCRIPTION` is set, add: `(The description was not used: there are no changes to check it against.)` |
 
 Rows are matched top to bottom; the first match wins. A spec with a non-empty payload still falls through to `diff-review`, which checks the change against the spec.
 
-Nudge (print to the user, not into the dispatch prompt), when `PLAN_PATH` is set and `payload` is non-empty:
+**The question.** Ask it with the `AskUserQuestion` tool, one question, header `Subject`:
 
-> `(Working tree is dirty, so I'm reviewing the diff against <PLAN_PATH>. Commit or stash to review the plan document itself.)`
+- Question: `The working tree has uncommitted changes (<N> changed files, <U> of them untracked). What should I review?` Count `<N>` with `grep -c '^diff --git' "$PAYLOAD"`, and take `<U>` from the untracked list in step 1.
+- Option 1: `The plan itself` — description `Review <PLAN_PATH> as a plan, grounded against the repo. The changes are ignored.` When `PLAN_PATH` ends in `-spec.md`, use `The spec itself` with description `Stop here and run my:spec-review <PLAN_PATH>.`
+- Option 2: `Changes against the plan` — description `Review the uncommitted diff and check it against <PLAN_PATH>.`
+
+The answer decides the row:
+
+- **The plan itself:** continue as the `plan-review` row above, as if the payload were empty. For a spec, stop with `This is a spec. Run my:spec-review <PLAN_PATH> instead.`
+- **Changes against the plan:** continue as the `diff-review` with alignment row.
+- **A typed answer:** if it clearly means one of the two options, use that option. Otherwise stop and print it back; do not guess a mode.
+
+If `AskUserQuestion` is not in your tool list (for example in a non-interactive `claude -p` run, or inside a subagent), do not stop. Use **Changes against the plan**, and print: `(Working tree is dirty, so I'm reviewing the diff against <PLAN_PATH>. Commit or stash to review the plan document itself.)`
+
+With `RANGE` set, the range already says what to review, so there is no question: the diff of the range is checked against the plan.
 
 ### 2. Build the dispatch prompt
 
