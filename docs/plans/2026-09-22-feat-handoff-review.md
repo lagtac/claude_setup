@@ -1,6 +1,6 @@
 # Review: main..feat/handoff
 
-**Status:** review of main..feat/handoff, 2026-09-22. Sound: the skill follows the approved spec step by step, and the top finding is a small gap: the new `GLOBAL-CLAUDE.md` line does not tell the spec session to leave its `approved` edit uncommitted, as spec D9 says.
+**Status:** review of main..feat/handoff, 2026-09-22. Sound: the skill follows the approved spec step by step, and the top finding is a small gap: the new `GLOBAL-CLAUDE.md` line does not tell the spec session to leave its `approved` edit uncommitted, as spec D9 says. Answered in 88afd8a.
 
 ## Change Summary
 

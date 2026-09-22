@@ -1,7 +1,6 @@
 # Spec: `my:handoff`, hand a cycle stage to a new top-level session
 
-**Status:** approved, 2026-09-21. A skill that lets a finishing session open
-the next stage of the spec, plan and code cycle in a new tmux window.
+**Status:** done, 2026-09-22. Shipped in 88afd8a.
 
 ## How to read this spec
 
