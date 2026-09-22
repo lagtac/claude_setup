@@ -111,7 +111,9 @@ At each point the stage does two things:
    `tmux rename-window -t "$TMUX_PANE" "<name> ⚠"`. The mark shows in the tmux
    status bar. Without `-t`, tmux renames the window the user is looking at,
    not the stage's own window. When `$TMUX_PANE` is empty, the stage skips the
-   mark.
+   mark. When the user next replies in the window, the stage renames it back to
+   `<name>` before it acts on the reply, so the mark means only "waiting for
+   the user". (Added 2026-09-22, from the branch's code review.)
 2. **The notification, a bonus.** It calls `PushNotification`, which shows a
    desktop notification and reaches the user's phone when Remote Control (the
    feature that links a session to the Claude app) is connected. The message

@@ -33,6 +33,9 @@ as `/my:<name>`.
 - `my:soundness-review` — Gives a for/against verdict on a diff, or checks a
   diff or plan against its plan. Output: a review in `docs/plans/`. Bug-finding
   goes to the built-in `/code-review`.
+- `my:handoff` — Hands the plan or code stage to a new top-level session in a
+  tmux window, which stops at fixed gates and marks its window `⚠`.
+  `/my:handoff <stage> <doc>` launches; `/my:handoff run <stage> <doc>` runs.
 - `my:briefing` — Writes a plain-English, decision-focused briefing for
   non-technical readers, in `docs/briefings/`.
 - `my:roadmap-management` — Edits `ROADMAP.md`: adds rows and moves them between
