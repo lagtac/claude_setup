@@ -113,6 +113,8 @@ A feature leaves four commits on `main`: the spec with its review, the plan with
 
 Two more commits are allowed. `my:architect` commits the architecture brief on its own, before step 1. An edit to another document that the spec forces, such as a glossary or a data model, is its own commit, not a fixup of the spec.
 
+**Before step 1 in a project for the first time,** check that the project's instructions name four things: the plans index (or that there is none), the commit scopes, the test command for each code commit, and whether there is a remote. If any is missing, find it from the repo: scopes from `git log`, the test command from `package.json` or a `Makefile`. Then propose a short "Git workflow" section for `CLAUDE.md`, and ask about anything the repo does not show. Write the section only after the user approves it. If the project forbids editing `CLAUDE.md`, propose `CLAUDE.local.md` instead.
+
 1. Write the spec on `main`.
 2. Write the spec review on `main`.
 3. Commit the spec and the review together.
