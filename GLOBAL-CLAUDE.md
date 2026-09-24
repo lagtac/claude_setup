@@ -62,7 +62,7 @@ Three reviewers, complementary — route by what you want:
 
 **Before any review:** map changed symbols with the built-in `LSP` tool (`findReferences`, `incomingCalls`, `documentSymbol`) first, then a plain `Grep` for the name token — string-literal refs are invisible to symbol tools. Never review line-by-line without caller/callee context. Never invoke `feature-dev:code-reviewer` or `superpowers:requesting-code-review` — both superseded by `my:code-reviewer` (which `my:soundness-review` dispatches).
 
-**When to review:** once, at the end of the branch. Run the reviews in parallel on the whole range (`BASE..HEAD`). Before each commit, only reread `git diff --cached`. Reviewing every commit and then the whole branch again only adds waits.
+**When to review:** once, at the end of the branch. Run the reviews in parallel on the whole range (`BASE..HEAD`): one message with one `Agent` call per review, each subagent running one review skill. Two skills called directly load into the current turn and run one after another. Each subagent's prompt says: "Do not write commit IDs from this branch. Name the change in words, like 'the fix round' or 'the branch head'." Subagents do not read CLAUDE.md, and branch IDs in a review break the "cite only commits on `main`" rule. Before each commit, only reread `git diff --cached`. Reviewing every commit and then the whole branch again only adds waits.
 
 **One fix round per review.** A finding about input that today's code never produces goes into the plan's **Risk** section as a known limit, not into a fix. A fix gets one re-review, and that re-review is final. Without this limit, each fix invites a new edge case and the rounds do not end.
 
@@ -106,6 +106,33 @@ We use **GitLab** unless stated otherwise in the project. There are no "pull req
 - Use `glab` CLI (not `gh`) for MR operations when you do open an MR
 - Use `glab mr create` instead of `gh pr create`
 - Read `git diff --cached` before every commit. The Edit tool has silently dropped a character, and a trailer the project forbids has slipped into a commit.
+
+### One feature, four commits on `main`
+
+A feature leaves four commits on `main`: the spec with its review, the plan with its review, the squash-merged code, and the `done` mark. Without this rule, most commits are small edits to one spec or plan: on zitamu, 44 of 52 commits by 2026-09-18 were `docs:`. Docs are written in the main checkout, because an `@` mention cannot reach `.claude/worktrees/`. Code is written in a worktree, because sessions often run in parallel. A project's own file names only what differs: its plans index, its scopes, its test commands.
+
+Two more commits are allowed. `my:architect` commits the architecture brief on its own, before step 1. An edit to another document that the spec forces, such as a glossary or a data model, is its own commit, not a fixup of the spec.
+
+1. Write the spec on `main`.
+2. Write the spec review on `main`.
+3. Commit the spec and the review together.
+4. Fixup any later spec and review edits, with `git commit --fixup <hash>`.
+5. Write the plan on `main`.
+6. Write the plan review on `main`.
+7. Commit the plan and the plan review together.
+8. Fixup any later plan and plan-review edits.
+9. Fold the fixups: `GIT_SEQUENCE_EDITOR=true git rebase -i --autosquash <oldest-target>^`. `<oldest-target>` is the oldest commit that a `fixup!` commit names. Only the interactive form folds fixups. Without `-i`, the rebase reports success and leaves every `fixup!` commit in place. So check that `git log --oneline` shows no `fixup!`, and that `git diff <pre-rebase-HEAD> HEAD` is empty. The target's parent works with or without a remote, and the rebase gives new hashes only to the target and the commits after it. The rebase needs a clean main checkout, so run it when no other session has uncommitted edits there.
+10. Create the worktree, and write the code there.
+11. Make doc edits in the worktree as required, but never edit the project's plans index there. While the worktree exists, edit this feature's spec and plan only in the worktree.
+12. Squash-merge the branch into `main`, and commit.
+13. Mark the spec and plan `done` on `main`, citing the squash commit.
+14. The user pushes at their own pace.
+
+- **Before every fixup** (steps 4 and 8), run `git branch --contains <sha>`, where `<sha>` is the target commit. If it lists a branch marked `+`, a worktree has that branch checked out, so make a normal commit instead. Merged branches without a worktree do not count. A rebase gives new hashes to the target and every later commit, so an open branch built on them would conflict at its squash-merge. Always name the target by hash, never `--fixup HEAD`: a parallel session may have committed in between.
+- **Before every rebase** (step 9), run the same check on every pending `fixup!` target. A worktree opened after the fixup may now sit on top of it. If one does, wait until that branch is merged and its worktree removed.
+- **No commit only changes a status.** There is no "in progress" commit. A status change goes into the commit that causes it.
+- **A `docs:` commit runs no tests and no code reviews.** This covers every commit that touches only `.md` files: specs, plans, their reviews, fixups, index rows and the `done` marks of step 13. The only checks are the Markdown linter and a reread of `git diff --cached`. The spec review (step 2) and the plan review (step 6) still run, because they are the content of the commit, not a check on it. A code branch that also edits docs is reviewed as a code branch.
+- **Cite only commits on `main`.** Never cite a commit that lives only on a local branch. A review names the decisions and sections it read, like "D12 to D16", not a hash, because later fixups fold the answers into the reviewed commit. zitamu (`real-estate-webapp`) has uncommitted `pre-commit` and `pre-push` hooks that enforce this rule and refuse a push with `fixup!` commits.
 
 ### Splitting scope before branching
 
