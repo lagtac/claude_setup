@@ -9,7 +9,7 @@ This file is the prompt template the `my:architect` skill sends to each `general
 - `{{REPO_ROOT}}` — the absolute repository root, or the text `none`
 - `{{FORCES_TABLE}}` — the confirmed forces table, with labels
 
-Copied rules: the search-tool wording matches the tool rule under "What to Review" in `my-plugin/skills/spec-review/spec-reviewer-prompt.md`. When you edit it there, check this file too.
+Copied rules: the search-tool wording matches the tool rule under "What to Review" in `plugins/my/skills/spec-review/spec-reviewer-prompt.md`. When you edit it there, check this file too.
 
 The body below this header is the prompt itself. Send everything below the `---` line.
 

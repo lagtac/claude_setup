@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-setup",
+  "description": "My local Claude Code plugins",
+  "owner": {
+    "name": "Dimitris Chrysomalis"
+  },
+  "plugins": [
+    {
+      "name": "my",
+      "description": "Personal Claude Code skills, commands, agents and hooks for development workflows.",
+      "source": "./plugins/my",
+      "category": "development"
+    },
+    {
+      "name": "vue-lsp",
+      "description": "TypeScript language server with @vue/typescript-plugin, so LSP also covers .vue files. Replaces typescript-lsp.",
+      "source": "./plugins/vue-lsp",
+      "category": "development"
+    }
+  ]
+}

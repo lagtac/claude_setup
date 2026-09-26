@@ -4,7 +4,9 @@ A Claude Code plugin (`my`) providing reusable slash commands, subagent definiti
 
 ## Architecture
 
-- **`.claude-plugin/plugin.json`** — Plugin manifest (name, version, description). Commands and agents are auto-discovered.
+The repo is a plugin marketplace (`.claude-plugin/marketplace.json`, which must stay at the repo root). Each plugin lives in `plugins/<name>/`. The paths below are inside `plugins/my/`.
+
+- **`.claude-plugin/plugin.json`** — Plugin manifest (name, description, author). No `version` field: the marketplace uses the commit hash, so each commit is a new version. Commands and agents are auto-discovered.
 - **`settings.json`** — Plugin-scoped deny-list safety defaults.
 - **`commands/`** — Slash commands. Each `.md` file is a prompt template; `$ARGUMENTS` is replaced with user input.
 - **`agents/`** — Subagent definitions with frontmatter (`name`, `description`, `tools`, `model`). Commands reference agents by name.

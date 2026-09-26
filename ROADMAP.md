@@ -29,7 +29,7 @@ Make the harness reusable in new projects without forking copies. Spec:
   on them. Rule of three: don't crystallize the `harness.json` schema on n=1, and
   adoption ⚠ rewrites safety machinery → re-run the live e2e rehearsal first.
 
-## my-plugin hygiene
+## `my` plugin hygiene
 
 Follow-ups spawned by the planner retirement. Spec:
 [`docs/plans/2026-09-11-retire-planner-path-spec.md`](docs/plans/2026-09-11-retire-planner-path-spec.md)

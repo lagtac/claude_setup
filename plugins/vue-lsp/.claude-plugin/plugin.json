@@ -1,0 +1,33 @@
+{
+  "name": "vue-lsp",
+  "description": "TypeScript language server with @vue/typescript-plugin, so LSP also covers .vue files. Replaces typescript-lsp.",
+  "author": {
+    "name": "Dimitris Chrysomalis"
+  },
+  "lspServers": {
+    "typescript": {
+      "command": "typescript-language-server",
+      "args": ["--stdio"],
+      "extensionToLanguage": {
+        ".ts": "typescript",
+        ".tsx": "typescriptreact",
+        ".js": "javascript",
+        ".jsx": "javascriptreact",
+        ".mts": "typescript",
+        ".cts": "typescript",
+        ".mjs": "javascript",
+        ".cjs": "javascript",
+        ".vue": "vue"
+      },
+      "initializationOptions": {
+        "plugins": [
+          {
+            "name": "@vue/typescript-plugin",
+            "location": "/home/dchris/.nvm/versions/node/v22.17.0/lib/node_modules/@vue/typescript-plugin",
+            "languages": ["vue"]
+          }
+        ]
+      }
+    }
+  }
+}

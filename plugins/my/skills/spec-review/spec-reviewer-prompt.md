@@ -8,7 +8,7 @@ This file is the prompt template the `my:spec-review` skill sends to the `my:spe
 - `{{REPO_ROOT}}` — the absolute repository root
 - `{{REVIEW_SLUG}}` — the filename stem for the review file (no `.md` suffix)
 
-Copied rules: the Anti-Sycophancy Directives, the surfacing table, the Dual-Perspective tables and the Assessment definitions are copied from `my-plugin/skills/soundness-review/code-reviewer-prompt.md`. When you edit them here, check that file too.
+Copied rules: the Anti-Sycophancy Directives, the surfacing table, the Dual-Perspective tables and the Assessment definitions are copied from `plugins/my/skills/soundness-review/code-reviewer-prompt.md`. When you edit them here, check that file too.
 
 The body below this header is the prompt itself. Send everything below the `---` line.
 

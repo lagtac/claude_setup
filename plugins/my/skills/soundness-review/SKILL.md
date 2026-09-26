@@ -241,7 +241,7 @@ The agent writes its review to `docs/plans/{{REVIEW_SLUG}}.md`. After dispatch r
    Bash:  git ls-files --others --exclude-standard
    → One loop over the untracked files: git diff --no-index /dev/null <path> >> PAYLOAD; print their list
    Bash:  wc -l < PAYLOAD   (the diff itself is never read into the conversation)
-2. Read:  my-plugin/skills/soundness-review/code-reviewer-prompt.md (skip the header above the first `---`, take the body)
+2. Read:  plugins/my/skills/soundness-review/code-reviewer-prompt.md (skip the header above the first `---`, take the body)
    Bash:  git rev-parse --show-toplevel
    → PLAN_DIRECTORY = "<that path>/docs/plans"
    Bash:  mkdir -p "$PLAN_DIRECTORY"

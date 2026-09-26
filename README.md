@@ -1,25 +1,55 @@
 # claude-setup
 
-My Claude Code setup. It has two parts:
+My Claude Code setup. The repo is also a plugin marketplace, named
+`claude-setup`. It has two parts:
 
-- **`my-plugin/`** — the `my` plugin: skills, commands, agents and hooks for
-  development workflows.
+- **`plugins/`** — my local plugins. Every local plugin goes here and gets a
+  row in `.claude-plugin/marketplace.json` at the repo root.
+  - **`plugins/my/`** — the `my` plugin: skills, commands, agents and hooks
+    for development workflows.
+  - **`plugins/vue-lsp/`** — the `vue-lsp` plugin: the TypeScript language
+    server with `@vue/typescript-plugin`, so LSP also covers `.vue` files. Its
+    README lists the npm packages it needs.
 - **`GLOBAL-*`** — global instructions, rules and output styles. Files in
   `~/.claude/` are symlinks into these, so edit them here.
 
+`marketplace.json` stays at the repo root. There, the plugin version is the
+commit hash. In a subfolder, Claude Code cannot read the hash, so every version
+is `unknown` and an update copies uncommitted edits too.
+
 ## Installation
 
-Load the plugin from its folder with the `--plugin-dir` flag:
+Add the repo as a marketplace once, then install the plugins:
 
-```bash
-claude --plugin-dir ~/projects/claude-setup/my-plugin
+```text
+/plugin marketplace add ~/projects/claude-setup
+/plugin install my@claude-setup
+/plugin install vue-lsp@claude-setup
+/plugin disable typescript-lsp@claude-plugins-official
 ```
 
-To load it in every session, add an alias to `~/.bash_aliases`:
+`vue-lsp` replaces `typescript-lsp`, so disable that one. Otherwise two servers
+both claim `.ts` files.
+
+## Updating
+
+Claude Code runs a copy of each plugin from `~/.claude/plugins/cache/`, not the
+files in this repo. The plugins have no `version` field, so the version is the
+commit hash. After you commit a change, copy it into the cache and restart:
 
 ```bash
-alias claude='claude --plugin-dir ~/projects/claude-setup/my-plugin'
+claude plugin update my@claude-setup
 ```
+
+Uncommitted edits never reach the cache. So a skill you are halfway through
+editing cannot break other sessions. To try an uncommitted edit, start one
+session with the plugin folder instead:
+
+```bash
+claude --plugin-dir ~/projects/claude-setup/plugins/my
+```
+
+Do not also keep this flag in a shell alias, or every session loads `my` twice.
 
 ## Skills
 
@@ -79,7 +109,7 @@ as `/my:<name>`.
 
 ## Hooks
 
-Defined in `my-plugin/hooks/hooks.json`:
+Defined in `plugins/my/hooks/hooks.json`:
 
 - **SessionStart** — `check-orphan-plans.sh` warns about files in `docs/plans/`
   or `docs/reports/` that are untracked or not named `YYYY-MM-DD-<slug>`.

@@ -24,7 +24,7 @@ Per-file grading is rubric-driven (see `references/grading-rubric.md` — the si
 `$ARGUMENTS` — parse for the `--global` flag and an optional path. Any other words describe what the user wants from the audit; keep them as its focus.
 
 - **No flag (default)** — audit project files: the project's `CLAUDE.md` / `AGENTS.md`, agent definitions, command templates, and skill files under the current working directory.
-- **A path** — audit the files under that directory instead of the current working directory, for example a plugin that lives in another repository (`~/projects/claude-setup/my-plugin`). If the user names a plugin or folder in words instead, find its path first (`find ~ -maxdepth 4 -type d -name "<name>"`) and confirm it in one line before auditing.
+- **A path** — audit the files under that directory instead of the current working directory, for example a plugin that lives in another repository (`~/projects/claude-setup/plugins/my`). If the user names a plugin or folder in words instead, find its path first (`find ~ -maxdepth 4 -type d -name "<name>"`) and confirm it in one line before auditing.
 - **`--global`** — audit the user's global setup instead: `~/.claude/CLAUDE.md`, `~/.claude/agents/`, `~/.claude/commands/`, `~/.claude/skills/`. Treat the flag as the explicit consent that satisfies the global-audit anti-pattern, but still confirm before writing each edit because the blast radius covers every project on the machine.
 
 `--global` switches scope, it does not extend it. To audit both project and global in one session, run the skill twice.
