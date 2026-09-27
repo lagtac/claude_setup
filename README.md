@@ -81,6 +81,11 @@ as `/my:<name>`.
   commands, skills and their dispatch prompts) for vague directives, tools a
   subagent will not have, stale harness assumptions and contradictions.
 - `my:de-slop` — Rewrites text so it does not read as machine-written.
+- `my:md-tables` — Turns a Markdown table into one section per row, or
+  sections back into a table, with the two filters in `plugins/my/bin/`
+  (`md-expand-table.py`, `md-collapse-sections.py`). Claude Code puts that
+  folder on PATH in its sessions only; your shell finds them through symlinks
+  in `~/bin`. Tests: `cd plugins/my && python3 -m unittest discover tests`.
 
 ## Commands
 
