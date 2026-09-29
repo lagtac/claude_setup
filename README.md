@@ -65,8 +65,10 @@ as `/my:<name>`.
 - `my:soundness-review` — Gives a for/against verdict on a diff, or checks a
   diff or plan against its plan. Output: a review in `docs/plans/`. Bug-finding
   goes to the built-in `/code-review`.
-- `my:handoff` — Hands the plan or code stage to a new top-level session in a
-  tmux window, which stops at fixed gates and marks its window `⚠`.
+- `my:handoff` — Hands the plan, code or review stage to a new top-level
+  session in a tmux window, which stops at fixed gates and marks its window
+  `⚠`. The review stage runs the end-of-branch checks and reviews with a fixed
+  prompt, one fix round, and the squash-merge after the user's yes.
   `/my:handoff <stage> <doc>` launches; `/my:handoff run <stage> <doc>` runs.
 - `my:briefing` — Writes a plain-English, decision-focused briefing for
   non-technical readers, in `docs/briefings/`.

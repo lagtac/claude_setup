@@ -57,9 +57,10 @@ Follow-ups spawned by the planner retirement. Spec:
   brainstorming for new systems and contract changes. Spec:
   [`docs/plans/2026-09-17-architect-skill-spec.md`](docs/plans/2026-09-17-architect-skill-spec.md),
   plan: [`docs/plans/2026-09-17-architect-skill.md`](docs/plans/2026-09-17-architect-skill.md).
-- ✅ **`my:handoff`** — the plan and code stages run in their own top-level
-  sessions, opened in tmux windows, so each stage reads the real `CLAUDE.md`
-  rules. Shipped in `88afd8a`. Spec:
+- ✅ **`my:handoff`** — the plan, code and review stages run in their own
+  top-level sessions, opened in tmux windows, so each stage reads the real
+  `CLAUDE.md` rules. Shipped in `88afd8a`; the review stage was added on
+  2026-09-29. Spec:
   [`docs/plans/2026-09-21-handoff-spec.md`](docs/plans/2026-09-21-handoff-spec.md),
   plan: [`docs/plans/2026-09-21-handoff.md`](docs/plans/2026-09-21-handoff.md).
   💭 Follow-up: a `--plan-only` argument for `my:soundness-review`, so a busy
