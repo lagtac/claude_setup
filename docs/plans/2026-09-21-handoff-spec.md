@@ -50,8 +50,9 @@ A skill, `my:handoff`, with two uses:
 - **Run.** That new session runs its stage and stops at the gates the global
   rules and the project's rules define. It tells the user with a push notification.
 
-The cycle has three sessions: spec, plan, code. The user approves every spec
-and every squash-merge. Nothing else needs the user unless a gate is hit.
+The cycle has four sessions: spec, plan, code, review (three until
+2026-09-29; see D2). The user approves every spec and every squash-merge.
+Nothing else needs the user unless a gate is hit.
 
 ## Decisions
 
@@ -66,19 +67,31 @@ kept only as the fallback in D7). Rejected: a standing worker session per
 stage (it carries context from one feature into the next, which is what this
 skill exists to avoid).
 
-**D2: Three sessions, cut at spec | plan | code.**
+**D2: Four sessions, cut at spec | plan | code | review.** (Amended
+2026-09-29. It was three sessions, cut at spec | plan | code.)
 
 - The spec session is the user's own session. Brainstorming is an interview,
   so it cannot run alone.
 - The plan session writes the plan and its review, and commits them on `main`.
-- The code session implements in a worktree, runs the end-of-branch reviews as
-  parallel subagents, does the one fix round, and stops before the
-  squash-merge.
+- The code session implements in a worktree, tests each task, and stops when
+  the tasks are committed.
+- The review session runs the end-of-branch checks and the reviews as
+  parallel subagents, does the one fix round, and squash-merges after the
+  user's yes.
 
-Rejected: a fourth session for review and merge (the reviews already run as
-fresh subagents, so a separate session adds no independence, and the fix round
-would happen away from the context that wrote the code). Rejected: two
-sessions, spec | plan-and-code (the plan context would carry into the code).
+Why the fourth session: the first version rejected it, because the reviews
+already run as fresh subagents, and because the fix round would happen away
+from the context that wrote the code. In use, the code session dropped parts
+of the end-of-branch rules. That happened after a long implementation, when
+those rules lived only in `CLAUDE.md` text. zitamu merged three branches with
+no recorded e2e run. Review subagents wrote branch commit IDs, which blocked a
+push. A new session starts with those rules at the top of a clean context, and
+the skill writes them out as fixed steps. The cost stays: the fix round runs
+in a session that did not write the code. It reads the plan, the review
+reports and the diff instead.
+
+Rejected: two sessions, spec | plan-and-code (the plan context would carry
+into the code).
 
 **D3: The plan session starts the code session on its own when the plan is
 clean.** "Clean" means both of these hold:
@@ -98,11 +111,15 @@ Rejected: always wait for the user between plan and code (one extra message
 per feature, and it adds a gate the global rules do not define).
 
 **D4: A stopped session marks its tmux window, and also sends a
-`PushNotification`.** A stage signals at exactly three points:
+`PushNotification`.** A stage signals at these points:
 
 - it hit a gate;
 - it hit an error it cannot fix;
-- the code session is ready for the squash-merge.
+- the review session is ready for the squash-merge (the code session until
+  2026-09-29).
+
+The code session also signals when the project's rules or the plan end its
+work before the branch is done, for example in a batch.
 
 At each point the stage does two things:
 
@@ -217,6 +234,11 @@ stops without writing anything.
 | `plan` | a spec whose status is `approved` | a plan for that spec (a file with the same slug and no `-spec`) |
 | `code` | a plan committed on `main` | a branch `<type>/<slug>` for any type, or a worktree `.claude/worktrees/<slug>` |
 
+`main` in this spec means the base branch. (Added 2026-09-29.) The skill
+calls it `<base>`: the branch the project's rules name for the work, else the
+branch checked out in the main checkout. So the skill also works in a repo
+whose main branch is `master` or `develop`.
+
 A document with no `**Status:**` line fails the check. When something already
 exists, the session does not guess whether to resume or restart; the user
 decides in that window.
@@ -257,17 +279,22 @@ session.
    the Conventional Commits type of the work, taken from the plan: `feat`,
    `fix`, `refactor` and so on. `<slug>` is the one from D7. Implement the plan
    with the skill the plan names, else `superpowers:executing-plans`.
-2. Test and review as the project's rules define. Under the global rules the
-   reviews run once at the end of the branch, in parallel subagents, with one
-   fix round. When to run tests and e2e comes from the project, for example
-   zitamu's `CLAUDE.local.md`.
+2. Test each task as the project's rules define before its commit. After
+   each task, read `git diff` for the test files it touched. Run no code
+   reviews: the review stage runs them. (Changed 2026-09-29, see D2.)
 3. Stop and notify on any gate: a new dependency, a change outside the
    project's scope, a test failure that survives
-   `superpowers:systematic-debugging`, or a review finding that needs a change
-   to a decision (the test in D3).
-4. Otherwise notify `<name>: ready to squash-merge <branch>` and stop.
-5. After the user's yes, typed in that window, squash-merge the branch into
-   `main` and set the `done` marks, as the project's rules say. Never push.
+   `superpowers:systematic-debugging`, or a removed or weakened assertion.
+4. Otherwise run the launch with `review <plan path>` and stop.
+
+**Review stage.** (Added 2026-09-29, see D2.) The skill holds the steps. In
+short: run the project's end-of-branch checks from the worktree, map the
+changed symbols, start the reviews in parallel with one fixed prompt block
+(explicit range, spec, plan, Risk, map, no branch commit IDs), rerun a review
+that read the wrong range, do one fix round, notify
+`<name>: ready to squash-merge <branch>`, and after the user's yes, typed in
+that window, squash-merge and set the `done` marks. Never push. Every command
+runs inside the worktree, because the session opens in the main checkout.
 
 **D10: Rules for every stage.**
 
@@ -282,7 +309,7 @@ session.
   message back.
 - Running the spec stage without the user.
 - The push. It stays with the user. The squash-merge needs the user's yes,
-  typed in the code session's window.
+  typed in the review session's window.
 - Changing what the global rules require. The stages follow them as they
   are. The one edit to `GLOBAL-CLAUDE.md` (see Files) only adds the offer to
   hand off.

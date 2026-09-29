@@ -36,6 +36,14 @@ plan). Any other args: stop and print
 `-spec.md` or `.md`. Example: `docs/plans/2026-09-21-landing-match-grade-spec.md`
 → `landing-match-grade`. `<name>` is `<stage>-<slug>`.
 
+`<base>` is the branch that specs and plans are committed on and that work
+branches squash-merge into. Take it from the project's rules when they name
+one for this work. Otherwise it is the branch checked out in the main
+checkout: `git -C <repo root> branch --show-current`, with `<repo root>` as in
+Launch step 3. It is often `main`, but can be `master`, `develop` or another
+name. If that command prints nothing (a detached HEAD), signal
+`<name>: start check failed: no base branch` and stop.
+
 ## Signal
 
 "Signal" means these three actions, in this order, then stop and wait:
@@ -54,8 +62,9 @@ window and `$TMUX_PANE` is set, first run
 mark means "waiting for the user" and nothing else. A Launch never renames a
 window.
 
-Signal at exactly three points: a gate, an error you cannot fix, and "ready to
-squash-merge". Any question you would ask the user is a gate: signal first,
+Signal at exactly four points: a gate, an error you cannot fix, "ready to
+squash-merge", and the code stage's "done" when the work ends before the
+branch does. Any question you would ask the user is a gate: signal first,
 then ask.
 
 ## Launch
@@ -113,8 +122,9 @@ Before any other work, check the doc. If a check fails, signal
     longer slug that ends in the same words does not match:
     `ls docs/plans/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-<slug>.md`.
 - `code` stage:
-  - the plan is committed on `main`: `git log -1 --format=%h main -- <doc>`
-    prints a hash, and `git status --porcelain -- <doc>` prints nothing;
+  - the plan is committed on `<base>`:
+    `git log -1 --format=%h <base> -- <doc>` prints a hash, and
+    `git status --porcelain -- <doc>` prints nothing;
   - no branch `*/<slug>` exists: `git branch --list '*/<slug>'` prints
     nothing;
   - no directory `.claude/worktrees/<slug>` exists.
@@ -125,13 +135,13 @@ Before any other work, check the doc. If a check fails, signal
     `git -C <worktree> status --porcelain` prints nothing. An existing
     worktree is expected there: an earlier plan of the batch opened it.
 - `review` stage:
-  - the plan is committed on `main`, checked as for the `code` stage;
-  - the branch and its worktree exist: `<type>/<slug>` in
-    `.claude/worktrees/<slug>`, or the names the project's rules or the plan
-    give;
+  - the plan is committed on `<base>`, checked as for the `code` stage;
+  - the branch and its worktree exist: `git branch --list '*/<slug>'` prints
+    exactly one branch, and `git worktree list` shows it checked out in
+    `.claude/worktrees/<slug>`. When the project's rules or the plan name the
+    worktree and branch, check those names instead;
   - `git -C <worktree> status --porcelain` prints nothing;
-  - `git log --oneline <base>..<branch>` prints at least one commit. `<base>`
-    is `main`, or the base branch the project's rules name for this work.
+  - `git log --oneline <base>..<branch>` prints at least one commit.
 
 When something already exists, do not guess whether to resume or restart. The
 user decides.
@@ -152,7 +162,8 @@ user decides.
    the project's rules for docs commits and the plans index. The status change
    goes into the commit that causes it.
 4. Run `git status --porcelain`. If it prints anything, signal
-   `<name>: main has uncommitted files; plan review would ask` and stop.
+   `<name>: the main checkout has uncommitted files; plan review would ask`
+   and stop.
 5. Run the project's plan review. Under the global rules that is
    `my:soundness-review <plan path>`.
 6. For each finding, ask: would the fix change what a component owns, a
@@ -172,15 +183,17 @@ user decides.
    `git worktree add .claude/worktrees/<slug> -b <type>/<slug>`.
    When the project's rules or the plan name the worktree and branch, use
    those names instead. If that worktree already exists, work in it, and
-   first rebase its branch onto `main` when the project's rules say so.
+   first rebase its branch onto `<base>` when the project's rules say so.
    Implement the plan with the one skill its header names, else
    `superpowers:executing-plans`. Where the project's review rules differ
    from that skill's own reviews, the project's rules win.
-2. Test each task as the project's rules define before its commit. Run no
+2. Test each task as the project's rules define before its commit. After
+   each task, read `git diff` for the test files the task touched. Run no
    code reviews and no end-of-branch checks: the review stage runs them.
 3. Signal and stop on any gate: a new dependency, a change outside the
-   project's scope, or a test failure that survives
-   `superpowers:systematic-debugging`.
+   project's scope, a test failure that survives
+   `superpowers:systematic-debugging`, or a test assertion that the task
+   removed or weakened.
 4. When the project's rules or the plan end this work before the branch is
    done, for example because a batch squash-merges only after its last plan,
    signal `<name>: done; <the stop point the plan names>` and stop.
@@ -191,20 +204,39 @@ user decides.
 The reviews run once, at the end of the branch. Everything a review subagent
 must know goes into its prompt: a subagent reads no `CLAUDE.md`.
 
-1. **Range.** The range is `<base>..<branch>`, with `<base>` from the start
-   checks. Never use `origin/main`: it can lag the local `main`. The plans are
+This session opened in the main checkout, which is on `<base>`. The branch
+lives in `<worktree>`, the worktree from the start checks. Run every command
+of this stage as `cd <worktree> && …`, so that tests, review reports and fixes
+all land on the branch, and the main checkout stays clean.
+
+1. **Range.** The range is `<base>..<branch>`. Never use a remote branch
+   such as `origin/<base>`: it can lag the local `<base>`. The plans are
    `<doc>`, plus, in a batch, every other plan in `docs/plans/` whose header
    names the same branch. For each plan, note its spec and its **Risk**
    section.
 2. **Checks before the reviews.** Run the checks the project's rules list
-   for the end of a branch, for example an e2e suite, from the worktree.
-   Keep the passed and failed counts and the name of each failed test: the
-   `done` mark records them. A failed test is a gate: signal and let the user
-   decide whether it blocks the merge.
-3. **Map.** Map the changed symbols with the `LSP` tool (`findReferences`,
-   `incomingCalls`, `documentSymbol`), then `Grep` each name token, because
-   string-literal references are invisible to symbol tools. Write the map to
-   a file in the scratchpad.
+   for the end of a branch, for example an e2e suite, from the worktree, the
+   way the rules say to run them from a worktree. Rules may name them
+   without the words "end of a branch", for example "run e2e before pushing
+   UI changes". Keep the passed and failed counts and the name of each
+   failed test: the `done` mark records them. A failed test is a gate:
+   signal and let the user decide whether it blocks the merge. When the
+   rules name no such check, that is a gate too: signal and ask which checks
+   to run. If the user says none, the `done` mark says
+   `no end-of-branch checks run`.
+3. **Map.** List the changed files and symbols with
+   `git diff --stat <range>` and `git diff <range>`. For each symbol, find
+   its callers:
+   - Load the `LSP` tool with `ToolSearch("select:LSP")`, then call
+     `findReferences`, `incomingCalls` or `documentSymbol` with the
+     absolute path of the file inside `<worktree>`. LSP resolves against the
+     main checkout, so when it returns nothing for a symbol the branch adds,
+     rely on the next step.
+   - Search each name token with `grep -rn '<token>' <worktree>` through
+     `Bash`, because string-literal references are invisible to symbol tools
+     and the `Grep` tool may be absent.
+
+   Write the map to a file in the scratchpad.
 4. **Reviews.** Send one message with one `Agent` call per review, so they run
    in parallel. Each subagent runs one review skill. The list comes from the
    project's rules. Without one, it is `/code-review high` and
@@ -213,7 +245,9 @@ must know goes into its prompt: a subagent reads no `CLAUDE.md`.
    Every prompt contains this block, filled in:
 
    ```text
-   Review the range <range>, exactly this range. Do not use origin/main.
+   Work in <worktree>. Run every command as `cd <worktree> && …`, so that
+   any report lands in <worktree>/docs/plans/.
+   Review the range <range>, exactly this range. Do not use origin/<base>.
    Spec: <spec path>. Plan: <plan path>. The plan's Risk section lists known
    limits; a known limit in Risk is not a finding.
    Map of the changed symbols and their callers: <map file>.
@@ -221,19 +255,27 @@ must know goes into its prompt: a subagent reads no `CLAUDE.md`.
    "the fix round" or "the branch head".
    ```
 
+   In a batch, the `Spec:` and `Plan:` lines list every spec and plan of the
+   batch, each plan with its spec. Each `my:soundness-review` subagent still
+   gets its own plan as the skill's argument.
+
 5. **Scope check.** Read each report's scope note. Run a review again when it
    read another range than `<range>`.
-6. **One fix round.** For each finding, apply the test in plan step 6. A
-   finding whose fix would change a decision is a gate. A finding about input
-   that today's code never produces goes into the plan's **Risk** section as
-   a known limit. Fix the rest, test and commit as the project's rules say.
+6. **One fix round.** For each finding, apply the test in Plan stage, step 6.
+   A finding whose fix would change a decision is a gate. A finding about
+   input that today's code never produces goes into the plan's **Risk**
+   section as a known limit. Fix the rest, test and commit as the project's
+   rules say. Commit the review reports and the **Risk** edits on the branch,
+   in the worktree: while the worktree exists, the plan is edited only
+   there.
    Then run each review that led to a fix once more, with the same prompt
    block. That re-review is final: a new Critical finding is a gate, and a
    lesser one goes into **Risk**.
 7. Signal `<name>: ready to squash-merge <branch>` and stop.
 8. After the user's yes, typed in this window, squash-merge into `<base>` and
    set the `done` marks as the project's rules say, with the counts from
-   step 2. Never push.
+   step 2. Then run `git worktree remove <worktree>`. Keep the branch: never
+   run `git branch -d` or `-D` on it. Never push.
 
 ## Rules for every stage
 
