@@ -116,6 +116,12 @@ Before any other work, check the doc. If a check fails, signal
   - no branch `*/<slug>` exists: `git branch --list '*/<slug>'` prints
     nothing;
   - no directory `.claude/worktrees/<slug>` exists.
+  - When the project's rules or the plan name the worktree and branch for
+    this work, for example one worktree shared by a batch of plans, the two
+    checks above do not apply. Check instead that the named worktree either
+    does not exist, or exists on the named branch and
+    `git -C <worktree> status --porcelain` prints nothing. An existing
+    worktree is expected there: an earlier plan of the batch opened it.
 
 When something already exists, do not guess whether to resume or restart. The
 user decides.
@@ -125,20 +131,27 @@ user decides.
 1. Run `superpowers:writing-plans` on the spec. Write the plan to
    `docs/plans/<spec date>-<slug>.md`. Skip that skill's closing question about
    how to execute: the code stage is the execution.
-2. Commit the plan together with the spec's `approved` status edit, following
+2. Name one execution skill in the plan's header. Replace the header's
+   "subagent-driven-development (recommended) or executing-plans" with one of
+   them. Use the project's rule when it names one. Otherwise pick
+   `superpowers:subagent-driven-development` when the plan has several
+   independent tasks, and `superpowers:executing-plans` when the tasks build
+   on each other or are small. The header also says that the project's review
+   rules replace the skill's own reviews, when the project has such rules.
+3. Commit the plan together with the spec's `approved` status edit, following
    the project's rules for docs commits and the plans index. The status change
    goes into the commit that causes it.
-3. Run `git status --porcelain`. If it prints anything, signal
+4. Run `git status --porcelain`. If it prints anything, signal
    `<name>: main has uncommitted files; plan review would ask` and stop.
-4. Run the project's plan review. Under the global rules that is
+5. Run the project's plan review. Under the global rules that is
    `my:soundness-review <plan path>`.
-5. For each finding, ask: would the fix change what a component owns, a
+6. For each finding, ask: would the fix change what a component owns, a
    contract, the chosen option, or the scope? If no, fix it. If yes, it is a
    gate. Commit the review and the fixes together.
-6. Signal and stop on any gate: a finding whose fix would change a decision,
+7. Signal and stop on any gate: a finding whose fix would change a decision,
    a spec decision that turns out to rest on a false premise, or a failed
    pre-rebase check from the project's rules.
-7. Otherwise finish the project's docs steps (for example a rebase of fixups),
+8. Otherwise finish the project's docs steps (for example a rebase of fixups),
    then run "Launch" with `code <plan path>`.
 
 ### Code stage
@@ -147,16 +160,23 @@ user decides.
    (`feat`, `fix`, `refactor` and so on). Create the worktree from the main
    checkout's root:
    `git worktree add .claude/worktrees/<slug> -b <type>/<slug>`.
-   Implement the plan with the skill its header names, else
-   `superpowers:executing-plans`.
+   When the project's rules or the plan name the worktree and branch, use
+   those names instead. If that worktree already exists, work in it, and
+   first rebase its branch onto `main` when the project's rules say so.
+   Implement the plan with the one skill its header names, else
+   `superpowers:executing-plans`. Where the project's review rules differ
+   from that skill's own reviews, the project's rules win.
 2. Test and review as the project's rules define. Under the global rules the
    reviews run once at the end of the branch, in parallel subagents, with one
    fix round.
 3. Signal and stop on any gate: a new dependency, a change outside the
    project's scope, a test failure that survives
    `superpowers:systematic-debugging`, or a review finding whose fix would
-   change a decision (the test in plan step 5).
+   change a decision (the test in plan step 6).
 4. Otherwise signal `<name>: ready to squash-merge <type>/<slug>` and stop.
+   When the project's rules or the plan end this work earlier, for example
+   because a batch squash-merges only after its last plan, signal
+   `<name>: done; <the stop point the plan names>` instead, and stop.
 5. After the user's yes, typed in this window, squash-merge into `main` and set
    the `done` marks as the project's rules say. Never push.
 
