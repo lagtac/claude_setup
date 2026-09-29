@@ -3,7 +3,7 @@
 **Important:**
 
 - Always write designs, specs, plans and reviews to `<project-root>/docs/plans/YYYY-MM-DD-<slug>.md` unless explicitly instructed otherwise. Determine `<project-root>` from the nearest `.git` directory, `composer.json`, `package.json`, or similar project marker. **This overrides Superpowers' default plan/spec paths** — Superpowers must also write to `docs/plans/`.
-- Reports (critiques and audits: findings about a whole product or area on one day) go to `<project-root>/docs/reports/` instead. Their findings become work through one `-action-plan.md` in `docs/plans/`, with one section per phase, never one file per phase. Reviews of one spec, plan or diff stay in `docs/plans/`. Details, the status line and the optional index: `GLOBAL-rules/docs-layout.md` (symlinked to `~/.claude/rules/`).
+- Reports (critiques and audits: findings about a whole product or area on one day) go to `<project-root>/docs/reports/` instead. Their findings become work through one `-action-plan.md` in `docs/plans/`, with one section per phase, never one file per phase. Reviews of one spec, plan or diff stay in `docs/plans/`. Details, the status line and the optional index: `global/rules/docs-layout.md` (symlinked to `~/.claude/rules/`).
 - Always use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages
 - The full format is `type(scope): sentence`. The scope is the part of the codebase affected; each project defines its own scopes. Projects that already use `type:` without a scope keep that format.
 - Common types: `feat:`, `fix:`, `refactor:`, `test:`, `chore:`, `docs:`
@@ -68,7 +68,7 @@ Three reviewers, complementary — route by what you want:
 
 ## Communication
 
-- Write to be understood — short sentences, terms defined at first use, no idioms. The full ruleset is the `plain` output style (`GLOBAL-output-styles/plain.md`, symlinked to `~/.claude/output-styles/`), which is enabled via `"outputStyle": "plain"` in `~/.claude/settings.json`. **Edit the style file, not this line** — this line is only a fallback for when the style is not loaded (it does not reach subagents, which run their own system prompt).
+- Write to be understood — short sentences, terms defined at first use, no idioms. The full ruleset is the `plain` output style (`global/output-styles/plain.md`, symlinked to `~/.claude/output-styles/`), which is enabled via `"outputStyle": "plain"` in `~/.claude/settings.json`. **Edit the style file, not this line** — this line is only a fallback for when the style is not loaded (it does not reach subagents, which run their own system prompt).
 - Challenge assumptions — propose the best solution, not just a solution
 
 ## UI Design
@@ -238,13 +238,13 @@ For any non-trivial decision, present alternatives:
 
 ### Plan Output Format
 
-Plans use these sections (Superpowers may substitute its own format): **Context · Files to Modify/Create · Step-by-Step Implementation · Trade-Offs/Alternatives · Dependencies · Risk · Testing Strategy · Open Questions**. The full template with per-section field prompts lives in `GLOBAL-rules/plan-format.md` (symlinked to `~/.claude/rules/`), which loads automatically when a `docs/plans/*.md` file is touched — edit it there.
+Plans use these sections (Superpowers may substitute its own format): **Context · Files to Modify/Create · Step-by-Step Implementation · Trade-Offs/Alternatives · Dependencies · Risk · Testing Strategy · Open Questions**. The full template with per-section field prompts lives in `global/rules/plan-format.md` (symlinked to `~/.claude/rules/`), which loads automatically when a `docs/plans/*.md` file is touched — edit it there.
 
 <!--
 Language-specific command cheatsheets (PHP/Laravel, Docker, Markdown, JS/TS, Python)
-were moved to path-scoped rules in GLOBAL-rules/ (symlinked to ~/.claude/rules/).
+were moved to path-scoped rules in global/rules/ (symlinked to ~/.claude/rules/).
 They load only when Claude reads a matching file type, keeping this file's always-loaded
-context lean. See GLOBAL-rules/<lang>.md.
+context lean. See global/rules/<lang>.md.
 -->
 
 ## HTTP Requests

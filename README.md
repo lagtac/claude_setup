@@ -10,8 +10,10 @@ My Claude Code setup. The repo is also a plugin marketplace, named
   - **`plugins/vue-lsp/`** — the `vue-lsp` plugin: the TypeScript language
     server with `@vue/typescript-plugin`, so LSP also covers `.vue` files. Its
     README lists the npm packages it needs.
-- **`GLOBAL-*`** — global instructions, rules and output styles. Files in
-  `~/.claude/` are symlinks into these, so edit them here.
+- **`global/`** — global instructions (`CLAUDE.md`), path-scoped rules
+  (`rules/`) and output styles (`output-styles/`). `~/.claude/CLAUDE.md`,
+  `~/.claude/rules` and `~/.claude/output-styles` are symlinks into this
+  folder, so edit the files here.
 
 `marketplace.json` stays at the repo root. There, the plugin version is the
 commit hash. In a subfolder, Claude Code cannot read the hash, so every version

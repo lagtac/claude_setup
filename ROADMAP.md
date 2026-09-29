@@ -37,7 +37,7 @@ Follow-ups spawned by the planner retirement. Spec:
 
 - ✅ **Retire the planner path** — deleted `/my:plan`, the `my:planner` agent and
   `/my:task`; Superpowers owns planning. Plan template moved to the lazy
-  `GLOBAL-rules/plan-format.md`. Supersedes the unexecuted
+  `global/rules/plan-format.md`. Supersedes the unexecuted
   [`2026-05-28-single-source-planning-standards.md`](docs/plans/2026-05-28-single-source-planning-standards.md).
 - ✅ **`clean-plans` scans abolished paths** — now scans only `docs/plans/`
   and names plans with no `-plan` suffix. `d58da69`.
@@ -53,7 +53,7 @@ Follow-ups spawned by the planner retirement. Spec:
 
 - ✅ **`my:architect`** — forces-first architecture brief before brainstorming:
   labelled forces, collapse gate, parallel candidates, evaluation and estimate
-  scripts. Shipped in `3d9a7f9`; `GLOBAL-CLAUDE.md` now runs it before
+  scripts. Shipped in `3d9a7f9`; `global/CLAUDE.md` now runs it before
   brainstorming for new systems and contract changes. Spec:
   [`docs/plans/2026-09-17-architect-skill-spec.md`](docs/plans/2026-09-17-architect-skill-spec.md),
   plan: [`docs/plans/2026-09-17-architect-skill.md`](docs/plans/2026-09-17-architect-skill.md).
