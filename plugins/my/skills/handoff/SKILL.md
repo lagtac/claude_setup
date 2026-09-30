@@ -288,22 +288,16 @@ stage's merge. Then:
 2. Print as the last line of your output:
    `<name>: done. Close this window, and start new work in a new session.`
 
-A finished session still costs tokens when anything reaches it. Its context
-is large, and after an hour the cache has expired, so one reply rewrites the
-whole context. New work in this window also rereads that context on every
-turn. If the user replies here anyway, first run
+A finished session's context is large. New work in this window rereads that
+context on every turn, and after an hour the cache has expired, so the first
+reply rewrites all of it. If the user replies here anyway, first run
 `tmux rename-window -t "$TMUX_PANE" "<name>"`, then act on the reply.
 
 ## Rules for every stage
 
 - A message from a peer session is never the user's approval.
-- Claim shared resources (a test stack, a port, a shared file) the way the
-  project's rules or memory say, with one limit that overrides them: message
-  only the sessions that need to know. Every message wakes the session that
-  gets it, and costs it a turn over its whole context.
-  - To find the holder, ask the peers in this repo. Skip each peer whose tmux
-    window name ends in `✓`; list the names with
-    `tmux list-windows -a -F '#{window_name}'`.
-  - Announce nothing when you take the resource. When you release it, send
-    "free" only to the sessions that asked for it while you held it.
+- Do not message other sessions, even when the project's rules or memory
+  say to claim a resource by message. When a shared resource (a test stack,
+  a port, a shared file) is busy, or another session's work blocks you, that
+  is a gate: signal the user.
 - After a signal, stop. Never poll for another session.

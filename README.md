@@ -67,8 +67,10 @@ as `/my:<name>`.
   goes to the built-in `/code-review`.
 - `my:handoff` — Hands the plan, code or review stage to a new top-level
   session in a tmux window, which stops at fixed gates and marks its window
-  `⚠`. The review stage runs the end-of-branch checks and reviews with a fixed
-  prompt, one fix round, and the squash-merge after the user's yes.
+  `⚠`, and marks it `✓` when it is done. The review stage runs the
+  end-of-branch checks and reviews with a fixed prompt, one fix round, and the
+  squash-merge after the user's yes. How it works:
+  `plugins/my/skills/handoff/README.md`.
   `/my:handoff <stage> <doc>` launches; `/my:handoff run <stage> <doc>` runs.
 - `my:briefing` — Writes a plain-English, decision-focused briefing for
   non-technical readers, in `docs/briefings/`.
