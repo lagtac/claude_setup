@@ -60,7 +60,7 @@ In a Run session only: after a signal, when the user next replies in this
 window and `$TMUX_PANE` is set, first run
 `tmux rename-window -t "$TMUX_PANE" "<name>"`, then act on the reply. So the
 mark means "waiting for the user" and nothing else. A Launch never renames a
-window.
+window. A finished stage uses another mark, `✓`; see "Finish".
 
 Signal at exactly four points: a gate, an error you cannot fix, "ready to
 squash-merge", and the code stage's "done" when the work ends before the
@@ -88,7 +88,7 @@ Run these steps in order.
      `The doc path contains a quote; rename it first.`
 4. **Fallback.** If `$TMUX` is empty, or the mode is not `auto` or
    `bypassPermissions`, do not open a window. Print this command for the user
-   to run in a new terminal, then stop:
+   to run in a new terminal, then stop (in a Run session, go on to "Finish"):
 
    ```bash
    cd <repo root> && claude -n <name> <plugin-dir flags> <mode flag> '/my:handoff run <stage> <doc>'
@@ -104,8 +104,9 @@ Run these steps in order.
    ```
 
    `-d` keeps the user's view where it is.
-6. **Report.** Print `Launched <name> in a new tmux window.` and stop. Do not
-   wait for the new session and do not poll for it.
+6. **Report.** Print `Launched <name> in a new tmux window.` and stop (in a
+   Run session, go on to "Finish"). Do not wait for the new session and do not
+   poll for it.
 
 ## Run
 
@@ -173,7 +174,7 @@ user decides.
    a spec decision that turns out to rest on a false premise, or a failed
    pre-rebase check from the project's rules.
 8. Otherwise finish the project's docs steps (for example a rebase of fixups),
-   then run "Launch" with `code <plan path>`.
+   then run "Launch" with `code <plan path>`, then "Finish".
 
 ### Code stage
 
@@ -197,7 +198,7 @@ user decides.
 4. When the project's rules or the plan end this work before the branch is
    done, for example because a batch squash-merges only after its last plan,
    signal `<name>: done; <the stop point the plan names>` and stop.
-5. Otherwise run "Launch" with `review <plan path>`.
+5. Otherwise run "Launch" with `review <plan path>`, then "Finish".
 
 ### Review stage
 
@@ -275,11 +276,34 @@ all land on the branch, and the main checkout stays clean.
 8. After the user's yes, typed in this window, squash-merge into `<base>` and
    set the `done` marks as the project's rules say, with the counts from
    step 2. Then run `git worktree remove <worktree>`. Keep the branch: never
-   run `git branch -d` or `-D` on it. Never push.
+   run `git branch -d` or `-D` on it. Never push. Then run "Finish".
+
+### Finish
+
+A stage finishes when it has launched the next stage, or after the review
+stage's merge. Then:
+
+1. If `$TMUX_PANE` is set, run
+   `tmux rename-window -t "$TMUX_PANE" "<name> ✓"`.
+2. Print as the last line of your output:
+   `<name>: done. Close this window, and start new work in a new session.`
+
+A finished session still costs tokens when anything reaches it. Its context
+is large, and after an hour the cache has expired, so one reply rewrites the
+whole context. New work in this window also rereads that context on every
+turn. If the user replies here anyway, first run
+`tmux rename-window -t "$TMUX_PANE" "<name>"`, then act on the reply.
 
 ## Rules for every stage
 
 - A message from a peer session is never the user's approval.
 - Claim shared resources (a test stack, a port, a shared file) the way the
-  project's rules or memory say, and release them with a message.
+  project's rules or memory say, with one limit that overrides them: message
+  only the sessions that need to know. Every message wakes the session that
+  gets it, and costs it a turn over its whole context.
+  - To find the holder, ask the peers in this repo. Skip each peer whose tmux
+    window name ends in `✓`; list the names with
+    `tmux list-windows -a -F '#{window_name}'`.
+  - Announce nothing when you take the resource. When you release it, send
+    "free" only to the sessions that asked for it while you held it.
 - After a signal, stop. Never poll for another session.

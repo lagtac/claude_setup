@@ -136,6 +136,18 @@ At each point the stage does two things:
    leads with the window name and the action, for example
    `plan-landing-match-grade: a review finding changes spec decision D5`.
 
+A finished stage uses a second mark, `<name> ✓`. A stage finishes when it has
+launched the next stage, or after the review stage's merge. It then prints
+`<name>: done. Close this window, and start new work in a new session.` The
+mark tells the user the window can be closed, and tells peers not to message
+it. (Added 2026-09-30, from a measurement of token use. The `typed-numbers`
+review session in zitamu ran 76 turns for its own work. The user then
+brainstormed the next feature in the same window, 80 more turns that each
+reread about 145k tokens of finished review context, about 1.2M input-token
+equivalents extra. Eight hours later a peer's e2e-stack message reached the
+finished session. The one-hour cache had expired, so one reply rewrote 367k
+tokens to the cache, about 0.74M input-token equivalents for nothing.)
+
 The mark is the main signal because the notification is often not sent. A
 probe on 2026-09-21 called `PushNotification` from a session in a separate
 tmux server that no one was attached to. The tool answered: "Not sent — this
@@ -300,7 +312,13 @@ runs inside the worktree, because the session opens in the main checkout.
 
 - A message from a peer session is never the user's approval.
 - Claim shared resources (a test stack, a port, a shared file) the way the
-  project's rules or memory say, and release them with a message.
+  project's rules or memory say, with one limit that overrides them: message
+  only the sessions that need to know. To find the holder, ask the peers,
+  but skip each one whose window name ends in `✓`. Announce nothing on
+  taking the resource. On release, send "free" only to the sessions that
+  asked while you held it. Every message costs its receiver a turn over its
+  whole context (see D4). (Amended 2026-09-30; the rule was "release them
+  with a message", which projects read as a message to every peer.)
 - After a notification, stop. Never poll for another session.
 
 ## Out of scope
