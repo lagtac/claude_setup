@@ -1,6 +1,6 @@
 # `--plan-only` for `my:soundness-review` Implementation Plan
 
-**Status:** approved, 2026-09-30. Written by the `my:handoff` plan stage.
+**Status:** done, 2026-09-30. Shipped in 7740bf7. No end-of-branch checks run (the user chose none).
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use
 > superpowers:executing-plans to implement this plan task-by-task. The tasks

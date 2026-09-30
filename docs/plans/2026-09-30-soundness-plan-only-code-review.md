@@ -1,7 +1,7 @@
 # Code review: soundness-review --plan-only
 
 **Status:** review of `feat/soundness-plan-only`, 2026-09-30. Bug-finder pass on
-the branch; findings below, none fixed yet.
+the branch; findings below. The fix round fixed or moved each one; see the `-code-review-2.md` re-review. Shipped in 7740bf7.
 
 ## Scope
 

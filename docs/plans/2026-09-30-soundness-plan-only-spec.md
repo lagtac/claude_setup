@@ -1,6 +1,6 @@
 # Spec: `--plan-only` for `my:soundness-review`, and a plan stage that works on a busy `main`
 
-**Status:** approved, 2026-09-30. Approved by the user; the plan is next.
+**Status:** done, 2026-09-30. Shipped in 7740bf7. No end-of-branch checks run (the user chose none).
 
 ## How to read this spec
 
