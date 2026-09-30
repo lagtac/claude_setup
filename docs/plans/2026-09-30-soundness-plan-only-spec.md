@@ -1,6 +1,6 @@
 # Spec: `--plan-only` for `my:soundness-review`, and a plan stage that works on a busy `main`
 
-**Status:** draft, 2026-09-30. Waiting for the user's approval.
+**Status:** approved, 2026-09-30. Approved by the user; the plan is next.
 
 ## How to read this spec
 
