@@ -38,6 +38,9 @@ headless `claude -p` runs for tests, `markdownlint-cli2`.
   (spec, Out of scope).
 - The code and review stages of `my:handoff` keep their behavior. The review
   stage's text changes in one place: its reference to the finding test (D5).
+  Changed in the review stage, 2026-09-30, by the user's choice: the review
+  stage's merge step also folds the deferred fixups, before the `done`
+  marks.
 - Read `git diff --cached` before every commit.
 - Markdown lint: the error count of each touched file must not rise above its
   count on `main` on 2026-09-30. The two files that use one long line per
@@ -811,6 +814,57 @@ None. No new packages. The tests use `claude`, `git`, `jq` and
   `claude -p`, so the tests see the old code's fallback note, not its
   question. The note is the Red signal. An interactive check of the question
   is not needed: D1 leaves the question's code path unchanged.
+- **The headless tests depend on the model's reading.** Found in the code
+  stage, 2026-09-30. The old skill guessed that `--plan-only` means "review
+  the plan", so `r-dirty` wrote a plan review and was not Red. `r-spec`
+  already printed the spec message, because step 1a's table holds it, so
+  `g-spec` has no Red. The runs were therefore judged on exact messages,
+  with backticks stripped before the `grep`, and `g-dirty` and `g-extra`
+  also check that the answer has no "not a flag" guess note. An `r-missing`
+  run was added. The model paraphrased a stop message once, so the D3
+  paragraph now says a stop prints its message word for word. Every run
+  had one or more Bash denials from `acceptEdits` mode, the old code
+  included; a run counts when no `Write` or `Agent` call was denied.
+- **Found in the review stage, 2026-09-30. Known limits:**
+  - An older `-plan-review.md` of the same plan stays untracked when a
+    second review writes `-plan-review-2.md`. Today a rerun stops at the
+    start check first, because the plan exists, so the plan stage never
+    reaches a second review.
+  - A review that writes no file prints no `Review written to` line. With
+    `--plan-only` and one existing plan, the skill's only stops are the
+    mixed-argument stops, which the plan stage never triggers. A failed
+    subagent is the remaining case, and step 7's `git add` of the missing
+    path then fails loudly.
+  - The spec-stop and description-ignored messages appear in more than one
+    place in `my:soundness-review`. Each copy sits in the step the model
+    reads at that point, so they stay. An edit to one must edit all.
+- **Found in the final re-reviews, 2026-09-30. Known limits, not fixed:**
+  - **Medium: the review-stage fold rewrites other features' hashes.** The
+    fold rebases from the spec commit's parent, so every later commit on
+    `main` gets a new hash. A feature merged while this one ran then has
+    `done` marks that cite a commit no longer on `main`. The pre-rebase
+    check looks only at worktrees, so it does not catch this. A possible
+    follow-up: fold in a temporary worktree and move `main` with
+    `git update-ref`, at plan-stage step 8.
+  - The review stage's step 6 commits the first round's reports, but no
+    step names the re-review reports. Uncommitted, they make step 8's
+    `git worktree remove` fail. Commit them with the Risk edits.
+  - The review stage says "run every command as `cd <worktree> && …`", but
+    review step 8 runs in the main checkout: the merge needs it, and the
+    fold and the `done` marks come after the worktree is removed.
+  - Plan-stage step 7 checks `git show --stat HEAD`. `--stat` shortens long
+    paths, and on a busy `main` another commit can land first. Use
+    `git show --name-only --format= <hash of the plan commit>`.
+  - Review step 8.3 prints "wait for a clean `<base>`" also when the
+    pre-rebase check is what failed, and offers no path for a user who does
+    not want to wait.
+  - The handoff README's plan-stage step 6 leaves out the plans-index row.
+  - The fixup search finds only `fixup! <spec subject>`, not `amend!`,
+    `squash!` or `fixup! fixup!`. The global rules create none of these.
+  - The spec's Out of scope and D5 still say the review stage changes in
+    one place, and the handoff spec's D9 review paragraph has no dated
+    change note. Plan-stage step 8 has two sentences between the `git log`
+    test and "If one does".
 - **Hard to reverse:** nothing. All changes are prompt text and docs.
 
 ## Testing Strategy

@@ -63,8 +63,9 @@ as `/my:<name>`.
 - `my:spec-review` — Reviews one `*-spec.md` as a system: components, contracts,
   state ownership, failure spread. Output: a review in `docs/plans/`.
 - `my:soundness-review` — Gives a for/against verdict on a diff, or checks a
-  diff or plan against its plan. Output: a review in `docs/plans/`. Bug-finding
-  goes to the built-in `/code-review`.
+  diff or plan against its plan. `--plan-only <plan>` reviews the plan and
+  never asks, even when the tree is dirty. Output: a review in `docs/plans/`.
+  Bug-finding goes to the built-in `/code-review`.
 - `my:handoff` — Hands the plan, code or review stage to a new top-level
   session in a tmux window, which stops at fixed gates and marks its window
   `⚠`, and marks it `✓` when it is done. The review stage runs the

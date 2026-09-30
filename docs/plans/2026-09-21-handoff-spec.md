@@ -259,30 +259,35 @@ decides in that window.
 
 **Spec stage (the user's session).** Unchanged until the end. After the user
 approves the spec and its review, the session sets the status to `approved`
-and leaves that edit uncommitted: plan stage step 2 commits it. Then the
+and leaves that edit uncommitted: plan stage step 7 commits it. Then the
 session asks "Hand off the plan?". On yes, it runs the launch with
 `plan <spec path>`. The user can also type `/my:handoff plan <spec>` in any
 session.
 
-**Plan stage.**
+**Plan stage.** (Changed 2026-09-30, see the soundness plan-only spec.)
 
-1. Run `superpowers:writing-plans` on the spec.
-2. Commit the plan, together with the spec's `approved` status edit from the
-   spec stage, following the project's rules for docs commits and the index.
-   The status change goes into the commit that causes it, so no commit only
-   changes a status. After this commit neither file is uncommitted.
-3. Run `git status --porcelain`. If the output is not empty, stop and notify
-   `<name>: main has uncommitted files; plan review would ask`. The reason:
-   `my:soundness-review` asks the user what to review when a plan meets a
-   dirty tree, and that question would wait unseen in a background window.
-4. Run the project's plan review. Under the global rules that is
-   `my:soundness-review <plan>`.
-5. Fix the findings whose fix changes no decision (the test in D3). Commit
-   the review and the fixes together.
-6. Stop and notify on any gate: a finding that needs a change to a decision,
-   or a failed pre-rebase check.
-7. Otherwise finish the project's docs steps (for example a rebase of fixups)
-   and run the launch with `code <plan path>`.
+1. Run `superpowers:writing-plans` on the spec. Do not commit the plan yet.
+2. Name one execution skill in the plan's header.
+3. Run the project's plan review on the uncommitted plan. Under the global
+   rules that is `my:soundness-review --plan-only <plan>`. It never asks,
+   so other sessions' uncommitted files on `main` do not stop the stage.
+4. For each finding, fix it or treat it as a gate, with the test in D3.
+5. Stop and notify on any gate: a finding that needs a change to a decision,
+   or a spec decision that rests on a false premise. The message names the
+   files left uncommitted: the plan, the review and the spec.
+6. Add the plan's row to the plans index, when the project has one. Then
+   check with `git diff HEAD -- <paths>` that the stage's paths (the plan,
+   the review, the spec and the plans index) hold only its own changes.
+   Stop and notify when one holds another session's edit.
+7. Commit these paths, and only these, in one commit:
+   `git add -- <paths>`, then `git commit -- <paths>`. The status change goes
+   into this commit, so no commit only changes a status.
+8. Fold the spec's waiting fixups only when `git status --porcelain` prints
+   nothing, after the project's pre-rebase check. A failed check is a gate.
+   On a busy `main`, leave them and name them; the review stage folds them
+   after the squash-merge, before the `done` marks.
+9. Finish the project's other docs steps and run the launch with
+   `code <plan path>`.
 
 **Code stage.**
 
@@ -305,7 +310,9 @@ changed symbols, start the reviews in parallel with one fixed prompt block
 (explicit range, spec, plan, Risk, map, no branch commit IDs), rerun a review
 that read the wrong range, do one fix round, notify
 `<name>: ready to squash-merge <branch>`, and after the user's yes, typed in
-that window, squash-merge and set the `done` marks. Never push. Every command
+that window, squash-merge, remove the worktree, fold waiting fixups of the
+spec and the plan (a busy `main` is a gate), and set the `done` marks with
+the squash hash after the fold. Never push. Every command
 runs inside the worktree, because the session opens in the main checkout.
 
 **D10: Rules for every stage.**
@@ -382,11 +389,6 @@ runs inside the worktree, because the session opens in the main checkout.
 - **Parallel sessions on one checkout.** A plan session commits on `main` while
   other sessions work there. The project's rules on claims and clean-tree
   checks are the protection; the skill adds none.
-- **A busy `main` stops the plan stage.** Step 3 of the plan stage stops
-  whenever any session has an uncommitted file on `main`. This is a known
-  limit. A later change to `my:soundness-review`, an argument such as
-  `--plan-only` that reviews the plan and never asks, would remove it. That
-  change belongs to the soundness-review skill, not to this one.
 - **`ps` output format.** The `--plugin-dir` scan depends on the launching
   session's command line. If a plugin loads another way, the flag is missing
   and the new session lacks `my:handoff`. Detection: the new session answers

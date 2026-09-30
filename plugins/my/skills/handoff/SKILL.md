@@ -151,7 +151,8 @@ user decides.
 
 1. Run `superpowers:writing-plans` on the spec. Write the plan to
    `docs/plans/<spec date>-<slug>.md`. Skip that skill's closing question about
-   how to execute: the code stage is the execution.
+   how to execute: the code stage is the execution. Do not commit the plan
+   yet: step 7 commits it with its review.
 2. Name one execution skill in the plan's header. Replace the header's
    "subagent-driven-development (recommended) or executing-plans" with one of
    them. Use the project's rule when it names one. Otherwise pick
@@ -159,22 +160,55 @@ user decides.
    independent tasks, and `superpowers:executing-plans` when the tasks build
    on each other or are small. The header also says that the project's review
    rules replace the skill's own reviews, when the project has such rules.
-3. Commit the plan together with the spec's `approved` status edit, following
-   the project's rules for docs commits and the plans index. The status change
-   goes into the commit that causes it.
-4. Run `git status --porcelain`. If it prints anything, signal
-   `<name>: the main checkout has uncommitted files; plan review would ask`
-   and stop.
-5. Run the project's plan review. Under the global rules that is
-   `my:soundness-review <plan path>`.
-6. For each finding, ask: would the fix change what a component owns, a
+3. Run the project's plan review on the uncommitted plan. Under the global
+   rules that is `my:soundness-review --plan-only <plan path>`. The
+   `--plan-only` token reviews the plan even when other sessions have
+   uncommitted files on `<base>`. Take the review's path from the line it
+   prints, `Review written to docs/plans/<filename>.`: an older review of the
+   same plan makes the name end in `-plan-review-2.md`.
+4. For each finding, ask: would the fix change what a component owns, a
    contract, the chosen option, or the scope? If no, fix it. If yes, it is a
-   gate. Commit the review and the fixes together.
-7. Signal and stop on any gate: a finding whose fix would change a decision,
-   a spec decision that turns out to rest on a false premise, or a failed
-   pre-rebase check from the project's rules.
-8. Otherwise finish the project's docs steps (for example a rebase of fixups),
-   then run "Launch" with `code <plan path>`, then "Finish".
+   gate.
+5. Signal and stop on any gate: a finding whose fix would change a decision,
+   or a spec decision that turns out to rest on a false premise. The signal
+   names the files this stage wrote or edited and left uncommitted on
+   `<base>`: the plan, the review (when step 3 wrote one) and the spec.
+6. The stage's paths are the plan, the review, the spec (with its `approved`
+   status edit) and the project's plans index when the project has one.
+   When the project has a plans index, first add or update this plan's row
+   in it, as the project's rules say. Then check that they hold only this
+   stage's changes. Run `git diff HEAD -- <paths>` and read every hunk. The
+   plan and the review are new files, which `git diff HEAD` does not show;
+   this stage wrote them whole. So the hunks come from the spec and the plans
+   index. If a hunk is
+   not this stage's own change, for example another session's row in the
+   plans index, signal `<name>: <file> holds another session's edit` and
+   stop.
+7. Commit these paths, and only these, in one commit, following the
+   project's rules for docs commits: `git add -- <paths>`, then
+   `git commit -m "<message>" -- <paths>`. The `-- <paths>` on `git commit`
+   commits only those paths, even when another session has staged files of
+   its own. Then check that `git show --stat --format= HEAD` lists only
+   these paths. A path with no change, such as an index that needed no
+   edit, is not listed, and that is correct. If it lists another path,
+   signal `<name>: the plan commit holds <path>` and stop.
+8. Fold waiting fixups only when `<base>` is clean. The spec has fixups
+   waiting when `git log --format='%h %s' <spec commit>..<base>` shows a
+   commit whose subject is `fixup!`, a space, then the spec commit's
+   subject.
+   `git commit --fixup` writes the target's subject there, not its hash.
+   `<spec commit>` is the commit that added the spec:
+   `git log --diff-filter=A --format=%h -1 <base> -- <spec path>`. If one
+   does and `git status --porcelain` prints nothing, run the project's
+   pre-rebase check, then the fold. A failed pre-rebase check is a gate:
+   signal and stop. If `git status --porcelain` prints anything, skip the
+   fold. The review stage folds them after the squash-merge, before its
+   `done` marks (Review stage, step 8).
+9. Finish the project's other docs steps, then run "Launch" with
+   `code <plan path>`, then "Finish". When step 8 skipped a fold, print
+   `<name>: fixups left unfolded: <their hashes>. The review stage folds
+   them after the merge.` just before Finish's last line, so that line stays
+   last.
 
 ### Code stage
 
@@ -262,7 +296,7 @@ all land on the branch, and the main checkout stays clean.
 
 5. **Scope check.** Read each report's scope note. Run a review again when it
    read another range than `<range>`.
-6. **One fix round.** For each finding, apply the test in Plan stage, step 6.
+6. **One fix round.** For each finding, apply the test in Plan stage, step 4.
    A finding whose fix would change a decision is a gate. A finding about
    input that today's code never produces goes into the plan's **Risk**
    section as a known limit. Fix the rest, test and commit as the project's
@@ -273,10 +307,21 @@ all land on the branch, and the main checkout stays clean.
    block. That re-review is final: a new Critical finding is a gate, and a
    lesser one goes into **Risk**.
 7. Signal `<name>: ready to squash-merge <branch>` and stop.
-8. After the user's yes, typed in this window, squash-merge into `<base>` and
-   set the `done` marks as the project's rules say, with the counts from
-   step 2. Then run `git worktree remove <worktree>`. Keep the branch: never
-   run `git branch -d` or `-D` on it. Never push. Then run "Finish".
+8. After the user's yes, typed in this window, run these in order. Keep the
+   branch: never run `git branch -d` or `-D` on it. Never push.
+   1. Squash-merge into `<base>` as the project's rules say.
+   2. Run `git worktree remove <worktree>`. The fold's pre-rebase check
+      waits while a worktree holds a branch on top of the fold's target.
+   3. Fold waiting fixups of the spec and the plan, found as in Plan stage,
+      step 8. The fold gives new hashes to every later commit, the squash
+      commit included, so it runs before the `done` marks cite that commit.
+      Fold only when `git status --porcelain` in the main checkout prints
+      nothing and the project's pre-rebase check passes. Otherwise signal
+      `<name>: merged; fixups <their hashes> wait for a clean <base>` and
+      stop. After the user's reply, check again, then fold.
+   4. Set the `done` marks as the project's rules say. They cite the squash
+      commit's hash as it is after the fold, and the counts from step 2.
+   Then run "Finish".
 
 ### Finish
 

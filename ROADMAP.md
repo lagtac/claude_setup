@@ -63,8 +63,9 @@ Follow-ups spawned by the planner retirement. Spec:
   2026-09-29. Spec:
   [`docs/plans/2026-09-21-handoff-spec.md`](docs/plans/2026-09-21-handoff-spec.md),
   plan: [`docs/plans/2026-09-21-handoff.md`](docs/plans/2026-09-21-handoff.md).
-  💭 Follow-up: a `--plan-only` argument for `my:soundness-review`, so a busy
-  `main` does not stop the plan stage.
+  `my:soundness-review --plan-only` shipped on 2026-09-30, so a busy `main`
+  no longer stops the plan stage. Spec:
+  [`docs/plans/2026-09-30-soundness-plan-only-spec.md`](docs/plans/2026-09-30-soundness-plan-only-spec.md).
 
 ## Other
 

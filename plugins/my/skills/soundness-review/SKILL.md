@@ -10,6 +10,7 @@ description: >
   delegated to the built-in `/code-review`. Pointing it at a `.md` plan with a clean working tree
   reviews the plan itself (grounded against the repo + snippet-logic check) instead of a diff;
   with uncommitted changes and no range, it asks which of the two to review.
+  `--plan-only` reviews the plan and never asks.
   Specs (`*-spec.md`) are not reviewed on their own here — use `my:spec-review`; checking a diff
   against a spec still belongs here.
 ---
@@ -30,6 +31,7 @@ The skill's args field is a single freeform string. Split it on whitespace and c
 
 | Token shape | Variable |
 |---|---|
+| The exact token `--plan-only` | `PLAN_ONLY` is set. Two copies act as one. |
 | `<ref>..<ref>` or `<ref>...<ref>` (e.g. `main..HEAD`, `abc1234..def5678`) | `RANGE` |
 | Two tokens next to each other that each match `^[0-9a-f]{7,40}$` | `RANGE`, joined with `..` |
 | A path ending in `.md` that exists on disk and sits under a `docs/plans/` directory | `PLAN_PATH` |
@@ -41,7 +43,16 @@ Some tokens need a note to the user, printed before step 1:
 - A `.md` path that does not exist, or exists outside `docs/plans/` (such as `README.md`): add it to `DESCRIPTION` and print `(arg "<token>" treated as description; expected an existing plan under docs/plans/.)`
 - Two or more tokens that qualify as `PLAN_PATH`: stop with `Pass one plan file; got <first> and <second>.` Do not dispatch.
 
-If args is empty, all three variables are empty — the skill runs in defaults (working-tree diff, no plan-alignment block).
+**Mixed arguments with `--plan-only`.** When `PLAN_ONLY` is set, run these checks after the notes above, in this order. The first match wins. A stop prints its message word for word, then dispatches nothing and writes no file.
+
+| Arguments | Result |
+| --- | --- |
+| `--plan-only` and a `RANGE` | Stop: `--plan-only reviews a plan; it takes no range. Drop one of them.` |
+| `--plan-only` and no `PLAN_PATH` | Stop: `--plan-only needs a plan under docs/plans/.` |
+| `--plan-only` and a `PLAN_PATH` that ends in `-spec.md` | Stop: `This is a spec. Run my:spec-review <PLAN_PATH> instead.` |
+| `--plan-only`, a `PLAN_PATH` and a `DESCRIPTION` | Continue. Step 1a prints `(description ignored: a plan review has no diff to check it against)`. |
+
+If args is empty, `RANGE`, `PLAN_PATH` and `DESCRIPTION` are empty and `PLAN_ONLY` is unset — the skill runs in defaults (working-tree diff, no plan-alignment block).
 
 ### 1. Capture the diff
 
@@ -54,6 +65,8 @@ WORK_DIR="<scratchpad>/soundness-review/$(date +%Y%m%d-%H%M%S)"   # <scratchpad>
 mkdir -p "$WORK_DIR"                                              # no scratchpad: WORK_DIR="$(mktemp -d)"
 PAYLOAD="$WORK_DIR/payload.diff"
 ```
+
+**If `PLAN_ONLY` is set**, stop step 1 here and go to step 1a. `WORK_DIR` exists, and the plan copy in step 2 needs it. Skip everything else in this step: the diff commands, the untracked-file list and its note, and the size guard. `PAYLOAD` is never written, so do not read or count it.
 
 **If `RANGE` is set** (committed-range mode):
 
@@ -100,6 +113,8 @@ The payload is empty when `[ -s "$PAYLOAD" ]` fails. Whether it is empty or not,
 ### 1a. Detect review mode
 
 Let `PLAN_PATH` be from step 0 and `payload` be the captured diff. Set `MODE`:
+
+**If `PLAN_ONLY` is set**, `MODE` is `plan-review`. Skip the table and the question below, and continue as the `plan-review` row: print `(description ignored: a plan review has no diff to check it against)` when `DESCRIPTION` is set. The working tree's changes are never captured as a diff, so a dirty tree changes nothing. The reviewer still reads files from the working tree when it grounds the plan against the repo.
 
 | `PLAN_PATH` | `DESCRIPTION` | `payload` | `MODE` | Action |
 |---|---|---|---|---|
@@ -268,4 +283,14 @@ The example is the canonical execution trace — follow it literally for the no-
    REVIEW_SLUG=2026-05-28-foo-plan-review.
 3. Agent: subagent_type="my:code-reviewer", prompt=<composed text>.
 4. Confirm docs/plans/2026-05-28-foo-plan-review.md exists. Print pointer.
+```
+
+## Worked example: plan-review with `--plan-only` (dirty tree)
+
+```text
+0. Args: --plan-only docs/plans/2026-05-28-foo.md → PLAN_ONLY set, PLAN_PATH set; RANGE/DESCRIPTION empty.
+   Mixed-argument checks: no RANGE, PLAN_PATH set, not a spec → continue.
+1. mkdir -p WORK_DIR. Nothing else: no diff, no untracked list, no size guard.
+1a. PLAN_ONLY set → MODE = plan-review. No question, whatever the working tree holds.
+2-4. As in the plan-review (clean tree) example above.
 ```

@@ -109,9 +109,11 @@ The plan stage in `plugins/my/skills/handoff/SKILL.md` becomes:
    scope? If no, fix it. If yes, it is a gate.
 5. Signal and stop on any gate. The gates are: a finding whose fix would
    change a decision, and a spec decision that turns out to rest on a false
-   premise. The signal names the files left uncommitted on `main`: the plan,
-   the review and the spec.
-6. Check that the stage's files hold only its own changes. Run
+   premise. The signal names the files this stage wrote or edited and left
+   uncommitted on `main`: the plan, the review (when one was written) and the
+   spec.
+6. When the project has a plans index, add or update this plan's row in
+   it first. Then check that the stage's files hold only its own changes. Run
    `git diff HEAD -- <paths>`. The paths are the plan, the review, the spec
    (with its `approved` status edit) and the project's plans index when the
    project has one. If a hunk is not this stage's own change, for example
@@ -125,9 +127,10 @@ The plan stage in `plugins/my/skills/handoff/SKILL.md` becomes:
    commits waiting and `git status --porcelain` prints nothing, run the
    project's pre-rebase check, then the fold. A failed pre-rebase check is a
    gate: signal and stop. If `git status --porcelain` prints anything, skip
-   the fold. Name the waiting fixups in the "Finish" message. They are folded
-   later, after the code branch is merged, as the global rule "Before every
-   rebase" already says.
+   the fold. Name the waiting fixups in the "Finish" message. The review
+   stage folds them after the squash-merge and before its `done` marks,
+   because a fold gives the squash commit a new hash (decided in the review
+   stage, 2026-09-30).
 9. Finish the project's other docs steps, then run "Launch" with
    `code <plan path>`, then "Finish".
 
@@ -177,7 +180,10 @@ in Plan stage, step 6" becomes "apply the test in Plan stage, step 4".
 - **Deferred fold (D4 step 8).** On a busy `main`, the spec's waiting fixups
   stay unfolded until after the code branch is merged. A push in that time
   carries `fixup!` commits, which zitamu's pre-push hook refuses. In return a
-  busy `main` never stops the stage.
+  busy `main` never stops the stage. The fold rewrites every later hash, the
+  squash commit included, so the review stage folds right after the merge
+  and before the `done` marks cite the squash hash. A busy `main` at that
+  point is a gate of the review stage.
 
 ## Dependencies
 

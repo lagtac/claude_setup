@@ -89,13 +89,21 @@ the stage does not guess whether to continue or start over. You decide.
 
 ### Plan stage
 
-1. Writes the plan with `superpowers:writing-plans`.
+1. Writes the plan with `superpowers:writing-plans`. It does not commit it
+   yet.
 2. Names one execution skill in the plan's header.
-3. Commits the plan together with the spec's `approved` status.
-4. Reviews the plan with `my:soundness-review`.
-5. Fixes the findings that do not change a decision. A finding that would
-   change a decision stops the stage, and you decide.
-6. Launches the code stage.
+3. Reviews the uncommitted plan with `my:soundness-review --plan-only`. Other
+   sessions' uncommitted files on the main checkout do not stop it.
+4. Fixes the findings that do not change a decision. A finding that would
+   change a decision stops the stage, and you decide. The plan, the review
+   and the spec then stay uncommitted, and the stop message names them.
+5. Adds the plan's row to the plans index, when the project has one. Then
+   checks that the spec and the plans index hold only its own edits.
+6. Commits the plan, the review and the spec's `approved` status in one
+   commit, and nothing else, even when other files are staged.
+7. Folds waiting fixups of the spec only when the main checkout is clean.
+   Otherwise it names them, and the review stage folds them after the merge.
+8. Launches the code stage.
 
 ### Code stage
 
@@ -120,8 +128,11 @@ It works inside the worktree, so the main checkout stays clean.
    goes into the plan's **Risk** section instead.
 5. Runs each review that led to a fix once more. That second review is final.
 6. Asks you: ready to squash-merge?
-7. After your yes, squash-merges into the base branch, marks the spec and plan
-   `done`, and removes the worktree. It keeps the branch and never pushes.
+7. After your yes, squash-merges into the base branch and removes the
+   worktree. Then it folds waiting fixups of the spec and the plan, when the
+   main checkout is clean; otherwise it stops and asks you. Last, it marks
+   the spec and plan `done` with the squash commit's hash after the fold. It
+   keeps the branch and never pushes.
 
 ## When a stage stops for you
 
