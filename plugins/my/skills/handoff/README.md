@@ -46,6 +46,11 @@ Each arrow is a new session in a new tmux window. The spec stage is not part
 of the skill: you write the spec with Claude in your own session. You then
 start the chain with `/my:handoff plan <spec path>`.
 
+A spec with its own **Tasks** section (a Medium change) has no plan. Commit
+its `approved` status as a fixup of the spec commit, fold the fixup, then
+start the chain with `/my:handoff code <spec path>`. The code stage refuses a
+spec whose status is not committed as `approved`.
+
 ## Two ways to call it
 
 - **Launch:** `/my:handoff <stage> <doc>` opens a new tmux window with a
@@ -56,8 +61,9 @@ start the chain with `/my:handoff plan <spec path>`.
 `<stage>` is `plan`, `code` or `review`. `<doc>` is one file in `docs/plans/`:
 
 - `plan`: the approved spec.
-- `code`: the committed plan.
-- `review`: the plan the branch carries out.
+- `code`: the committed task doc. That is a plan, or a spec with a
+  **Tasks** section.
+- `review`: the task doc the branch carries out.
 
 You normally type only the first launch. Each stage launches the next.
 

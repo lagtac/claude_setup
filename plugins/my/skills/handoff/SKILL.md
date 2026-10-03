@@ -3,12 +3,14 @@ name: handoff
 description: >
   Hand the next stage of the spec, plan, code and review cycle to a new
   top-level session in a tmux window, or run a stage that was handed off. Use
-  after the user approves a spec ("hand off the plan"), when a plan or code
-  stage finishes, or when a session starts with "/my:handoff run <stage> <doc>".
+  after the user approves a spec ("hand off the plan", or "hand off the
+  code" for a spec with its own Tasks section), when a plan or code stage
+  finishes, or when a session starts with "/my:handoff run <stage> <doc>".
   Stages: plan (writes and reviews the plan from an approved spec), code
-  (implements a committed plan in a worktree) and review (runs the
-  end-of-branch checks and reviews, one fix round, then the squash-merge after
-  the user's yes). NOT for dispatching subagents inside one session.
+  (implements a committed plan, or a spec with a Tasks section, in a
+  worktree) and review (runs the end-of-branch checks and reviews, one fix
+  round, then the squash-merge after the user's yes). NOT for dispatching
+  subagents inside one session.
 ---
 
 # Handoff
@@ -27,9 +29,26 @@ The args are one of:
 - `run <stage> <doc>` — **run**: this session is the stage. Go to "Run".
 
 `<stage>` is `plan`, `code` or `review`. `<doc>` is one path under
-`docs/plans/`: for `plan`, the approved spec; for `code`, the committed plan;
-for `review`, the plan the branch executes (in a batch, the batch's last
-plan). Any other args: stop and print
+`docs/plans/`. Each stage reads `<doc>` by the role it plays, not by its
+file name:
+
+- `plan` stage: `<doc>` is the **design doc**, an approved spec.
+- `code` and `review` stages: `<doc>` is the **task doc**, the committed
+  document that lists the tasks this branch carries out. It is either a
+  plan, or a spec with a **Tasks** section. In a batch, `review` gets the
+  batch's last task doc.
+
+A file whose name ends in `-spec.md` is a spec; any other file is a plan.
+A spec used as the task doc is its own design doc. A plan's design doc is
+the spec that its header names. In the code and review
+stages, "the plan" in the steps below means the task doc, and "the spec"
+means its design doc.
+
+When the task doc lacks something a step reads from it, such as the commit
+type or the execution skill, use the fallback the step names. Where a step
+names no fallback, signal and ask. Never guess silently.
+
+Any other args: stop and print
 `Usage: /my:handoff [run] <plan|code|review> <docs/plans/…md>`.
 
 `<slug>` is the doc's filename without the `YYYY-MM-DD-` prefix and without
@@ -126,6 +145,9 @@ Before any other work, check the doc. If a check fails, signal
   - the plan is committed on `<base>`:
     `git log -1 --format=%h <base> -- <doc>` prints a hash, and
     `git status --porcelain -- <doc>` prints nothing;
+  - when the task doc is a spec: its status is `approved`, it has a section
+    titled Tasks (at any heading level, numbered or not), and no plan exists
+    for its slug (the `ls` check of the `plan` stage lists nothing);
   - no branch `*/<slug>` exists: `git branch --list '*/<slug>'` prints
     nothing;
   - no directory `.claude/worktrees/<slug>` exists.
@@ -213,8 +235,10 @@ user decides.
 ### Code stage
 
 1. Take `<type>` from the plan: the Conventional Commits type of the work
-   (`feat`, `fix`, `refactor` and so on). Create the worktree from the main
-   checkout's root:
+   (`feat`, `fix`, `refactor` and so on). If the plan does not state it,
+   infer it from the tasks, and state your choice in the output just before
+   the Finish line.
+   Create the worktree from the main checkout's root:
    `git worktree add .claude/worktrees/<slug> -b <type>/<slug>`.
    When the project's rules or the plan name the worktree and branch, use
    those names instead. If that worktree already exists, work in it, and
