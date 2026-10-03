@@ -11,7 +11,7 @@
 
 ### Superpowers Integration
 
-Auto-dispatch of skills is unreliable on Opus 4.7+, so invoke the relevant `superpowers:` skill via the Skill tool **before** starting work. Treat the table below as explicit triggers, not suggestions — the corresponding skill must run first, even if the task looks small enough to handle inline.
+Auto-dispatch of skills is unreliable on Opus 4.7+, so invoke the relevant `superpowers:` skill via the Skill tool **before** starting work. Treat the table below as explicit triggers, not suggestions — once the size below is picked, the corresponding skill must run first, even if the task looks small enough to handle inline.
 
 #### Size the process to the change
 
@@ -26,14 +26,22 @@ turns out larger than its size, stop and say so before going on.
 | **Medium** | A feature or a fix across several files, with none of the Large triggers. | One spec, with a **Tasks** section in place of a separate plan. | `my:spec-review` on the spec; the end-of-branch reviews. No plan review. | Three: the spec with its review, the code, the `done` mark. |
 | **Large** | Any change to stored data or its shape, permissions, a message or public contract, or something hard to reverse; a new subsystem. | Everything as below: architecture brief where the table asks for one, spec, plan. | All reviews as below. | Four, as in "One feature, four commits". |
 
-- **Small** skips brainstorming and the spec. A bug still starts with
-  `superpowers:systematic-debugging`, and every code change still starts with a
-  failing test. It still runs in a worktree.
+- **Small** skips the brainstorming, writing-plans and executing-plans rows.
+  A bug still starts with `superpowers:systematic-debugging`, and every code
+  change still starts with a failing test. It still runs in a worktree. Known
+  limits from its review go into the squash commit message, because there is
+  no **Risk** section to hold them.
 - **Medium** writes the Tasks section by the rules of
   `superpowers:writing-plans` "What a Step Contains": test names and assertions
-  as code, signatures and files for code steps, no code bodies. There is no
-  plan stage to commit the `approved` status, so commit it as a fixup of the
-  spec commit, then run `/my:handoff code <spec path>`.
+  as code, signatures and files for code steps, no code bodies. It runs the
+  brainstorming row and skips the writing-plans row. There is no plan stage to
+  commit the `approved` status, so commit it as a fixup of the spec commit,
+  fold it (Git Workflow step 9), then run `/my:handoff code <spec path>`. Fold
+  before the hand-off: once the worktree sits on the `fixup!` commit, the
+  fold must wait until the branch is merged. Where the project keeps a plans
+  index, its row goes into the spec commit. Wherever this file says "the
+  plan" for a Medium change, read "the spec": its **Tasks** section and its
+  **Risk** section play the plan's part.
 - **Large** follows the rest of this file unchanged.
 
 | Task class | Invoke first |
@@ -87,7 +95,7 @@ Three reviewers, complementary — route by what you want:
 
 **When to review:** once, at the end of the branch. This is enough because the spec and the plan were reviewed before any code, and every code commit runs the tests. It also needs a small branch, because a review of a very large diff misses things. If a branch grows past what one review can read carefully, split the plan into batches, and give each batch its own branch, review round and squash-merge. Run the reviews in parallel on the whole range (`BASE..HEAD`): one message with one `Agent` call per review, each subagent running one review skill. Two skills called directly load into the current turn and run one after another. Each subagent's prompt says: "Do not write commit IDs from this branch. Name the change in words, like 'the fix round' or 'the branch head'." Subagents do not read CLAUDE.md, and branch IDs in a review break the "cite only commits on `main`" rule. Before each commit, only reread `git diff --cached`. Reviewing every commit and then the whole branch again only adds waits.
 
-**The end-of-branch reviews are the only reviews, so each one gets what it needs.** Pass the explicit range `main..<branch>` to every review. Some review skills diff against `origin/main` by default, which can lag local `main`, so check each review's scope note and rerun a review that read the wrong range. Name the `/code-review` level every time (`high` unless the project says otherwise). Without a level it reuses the last one typed, which may be `low`. Each subagent's prompt names the spec, the plan, the plan's **Risk** section and the map from "Before any review", and says that a known limit in **Risk** is not a finding. When a plan runs through `superpowers:subagent-driven-development` or `superpowers:executing-plans`, skip the skill's own reviews: its pre-flight plan review, its per-task reviewer and fix loop, and its final `requesting-code-review` pass. The plan review already covered the plan, and these end-of-branch reviews replace the rest. Two checks replace the per-task reviewer. First, after each task, the controller reads `git diff` for the test files the task touched, and stops if an assertion was removed or weakened, because `npm test`-style runs still pass then. Second, `my:soundness-review` gets the plan, not the spec, as its document (`main..<branch> <plan>`), so it checks that each task did what the plan said. The plan links the spec, and the skill takes one document only. A project can set its own level or review list, but never a default range.
+**The end-of-branch reviews are the only reviews, so each one gets what it needs.** Pass the explicit range `main..<branch>` to every review. Some review skills diff against `origin/main` by default, which can lag local `main`, so check each review's scope note and rerun a review that read the wrong range. Name the `/code-review` level every time (`high` unless the project says otherwise). Without a level it reuses the last one typed, which may be `low`. Each subagent's prompt names the spec, the plan, the plan's **Risk** section and the map from "Before any review", and says that a known limit in **Risk** is not a finding. When a plan runs through `superpowers:subagent-driven-development` or `superpowers:executing-plans`, skip the skill's own reviews: its pre-flight plan review, its per-task reviewer and fix loop, and its final `requesting-code-review` pass. The plan review already covered the plan, and these end-of-branch reviews replace the rest. Two checks replace the per-task reviewer. First, after each task, the controller reads `git diff` for the test files the task touched, and stops if an assertion was removed or weakened, because `npm test`-style runs still pass then. Second, `my:soundness-review` gets the plan, not the spec, as its document (`main..<branch> <plan>`), so it checks that each task did what the plan said. A Medium change has no plan, so it gets the spec. The plan links the spec, and the skill takes one document only. A project can set its own level or review list, but never a default range.
 
 **One fix round per review.** A finding about input that today's code never produces goes into the plan's **Risk** section as a known limit, not into a fix. A fix gets one re-review, and that re-review is final. The one exception is a new Critical finding in the re-review: bring it to the user before the merge. A lesser finding goes into **Risk**. Without this limit, each fix invites a new edge case and the rounds do not end.
 
