@@ -13,6 +13,29 @@
 
 Auto-dispatch of skills is unreliable on Opus 4.7+, so invoke the relevant `superpowers:` skill via the Skill tool **before** starting work. Treat the table below as explicit triggers, not suggestions — the corresponding skill must run first, even if the task looks small enough to handle inline.
 
+#### Size the process to the change
+
+Before any skill in the table runs, pick a size and state it in one line with
+the reason, for example "Small: a fix in one file, no stored data changes". The
+user can change it. If unsure between two sizes, pick the larger. If the work
+turns out larger than its size, stop and say so before going on.
+
+| Size | When | Documents | Reviews | Commits on `main` |
+|---|---|---|---|---|
+| **Small** | A bug fix or a small behaviour change in one or two files. No change to stored data, permissions, a message or public contract, or the build. | None. The reason goes in the commit message and, where the project keeps them, the roadmap row and the changelog. | `/code-review high` on the branch. | One: the squash-merged code. |
+| **Medium** | A feature or a fix across several files, with none of the Large triggers. | One spec, with a **Tasks** section in place of a separate plan. | `my:spec-review` on the spec; the end-of-branch reviews. No plan review. | Three: the spec with its review, the code, the `done` mark. |
+| **Large** | Any change to stored data or its shape, permissions, a message or public contract, or something hard to reverse; a new subsystem. | Everything as below: architecture brief where the table asks for one, spec, plan. | All reviews as below. | Four, as in "One feature, four commits". |
+
+- **Small** skips brainstorming and the spec. A bug still starts with
+  `superpowers:systematic-debugging`, and every code change still starts with a
+  failing test. It still runs in a worktree.
+- **Medium** writes the Tasks section by the rules of
+  `superpowers:writing-plans` "What a Step Contains": test names and assertions
+  as code, signatures and files for code steps, no code bodies. There is no
+  plan stage to commit the `approved` status, so commit it as a fixup of the
+  spec commit, then run `/my:handoff code <spec path>`.
+- **Large** follows the rest of this file unchanged.
+
 | Task class | Invoke first |
 |---| ---|
 | New project, new subsystem, or change to a data model, storage choice or public contract | `my:architect`, then `superpowers:brainstorming` |
@@ -25,7 +48,7 @@ Auto-dispatch of skills is unreliable on Opus 4.7+, so invoke the relevant `supe
 | Branch is feature-complete and ready to integrate | `superpowers:finishing-a-development-branch` |
 | Major work needs review before merge | `superpowers:requesting-code-review` |
 
-Skip the table only for: single-line fixes, typo/comment edits, doc-only changes, config tweaks.
+Skip the table only for: single-line fixes, typo/comment edits, doc-only changes, config tweaks. For Small and Medium changes, the size table above says which rows apply.
 
 **Precedence:** these project instructions are the highest authority — when plan mode, a skill, or any system default conflicts, follow this file. Superpowers may override **only** plan output format and simplicity rules (announce when it does). Everything else here is non-overridable: `docs/plans/` output path, Git Workflow (GitLab/worktrees/squash-merge), Conventional Commits, no new deps without approval, Critical Thinking + Risk + Trade-Off Analysis, and that plans include **Dependencies** + **Risk** sections and follow **Red → Green → Refactor** (tests before implementation).
 
@@ -39,7 +62,7 @@ If brainstorming upgrades a task to architectural partway through, and the task 
 
 #### Spec → Plan two-artifact flow
 
-When `superpowers:brainstorming` produces a deliverable, keep spec and plan as **separate files**:
+When `superpowers:brainstorming` produces a deliverable, keep spec and plan as **separate files** (Large changes only; a Medium change keeps its tasks in the spec):
 
 1. **Spec** → `docs/plans/YYYY-MM-DD-<slug>-spec.md` — product-level (what/why, design decisions, architecture, trade-offs, risk; new UI gets a **Visual Language** section mapping elements to design-system primitives/semantic classes/motion). Self-contained: a cold reader could write the plan from it alone. First section is **"How to read this spec"** — all related docs (specs, plans, ROADMAP, CHANGELOG, sources, skills) with paths, in reading order. When an architecture brief exists, it is listed first.
 2. Self-review the spec (placeholders, consistency, scope, ambiguity, self-containment). Then run `my:spec-review <spec path>` and act on its report: fix every `editorial` finding — but first check whether the fix changes what a component owns, a contract, the chosen option, or the scope, and if it does treat it as `design`; never fix a `design` finding — ask the user in the "No silent reinterpretation" form below; list rejected findings with one line of reasoning each. Then ask the user to review the spec, the report and the open design questions before proceeding.
@@ -111,7 +134,7 @@ We use **GitLab** unless stated otherwise in the project. There are no "pull req
 
 ### One feature, four commits on `main`
 
-A feature leaves four commits on `main`: the spec with its review, the plan with its review, the squash-merged code, and the `done` mark. Without this rule, most commits are small edits to one spec or plan: on zitamu, 44 of 52 commits by 2026-09-18 were `docs:`. Docs are written in the main checkout, because an `@` mention cannot reach `.claude/worktrees/`. Code is written in a worktree, because sessions often run in parallel. A project's own file names only what differs: its plans index, its scopes, its test commands.
+A Large feature leaves four commits on `main` (Small and Medium leave fewer, as the size table says): the spec with its review, the plan with its review, the squash-merged code, and the `done` mark. Without this rule, most commits are small edits to one spec or plan: on zitamu, 44 of 52 commits by 2026-09-18 were `docs:`. Docs are written in the main checkout, because an `@` mention cannot reach `.claude/worktrees/`. Code is written in a worktree, because sessions often run in parallel. A project's own file names only what differs: its plans index, its scopes, its test commands.
 
 Two more commits are allowed. `my:architect` commits the architecture brief on its own, before step 1. An edit to another document that the spec forces, such as a glossary or a data model, is its own commit, not a fixup of the spec.
 
