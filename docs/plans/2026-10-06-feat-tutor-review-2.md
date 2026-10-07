@@ -1,6 +1,6 @@
 # Review: main..feat/tutor
 
-**Status:** review of main..feat/tutor, 2026-10-06. Final re-review after the fix round. Sound: the four earlier findings are answered and the code matches the approved spec. The top finding is new: the `progress.md` template still calls **Review** "oldest first" (`templates.md:91`), which the approved D7 queue rule no longer holds.
+**Status:** review of main..feat/tutor, 2026-10-06. Final re-review after the fix round. Sound: the four earlier findings are answered and the code matches the approved spec. The top finding is new: the `progress.md` template still calls **Review** "oldest first" (`templates.md:91`), which the approved D7 queue rule no longer holds. Answered by the fix round and the Risk section; shipped in 1e69584.
 
 ## Change Summary
 

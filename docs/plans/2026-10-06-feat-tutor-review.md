@@ -1,6 +1,6 @@
 # Review: main..feat/tutor
 
-**Status:** review of main..feat/tutor, 2026-10-06. Sound: the branch builds what the spec's Tasks ask for, and the top finding is a false reason in a setup red-flag row (`SKILL.md:134` says the hook relies on the clone and branch names, but it checks only the marker file).
+**Status:** review of main..feat/tutor, 2026-10-06. Sound: the branch builds what the spec's Tasks ask for, and the top finding is a false reason in a setup red-flag row (`SKILL.md:134` says the hook relies on the clone and branch names, but it checks only the marker file). Answered by the fix round and the Risk section; shipped in 1e69584.
 
 ## Change Summary
 

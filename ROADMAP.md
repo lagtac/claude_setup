@@ -67,6 +67,11 @@ Follow-ups spawned by the planner retirement. Spec:
   no longer stops the plan stage. Spec:
   [`docs/plans/2026-09-30-soundness-plan-only-spec.md`](docs/plans/2026-09-30-soundness-plan-only-spec.md),
   plan: [`docs/plans/2026-09-30-soundness-plan-only.md`](docs/plans/2026-09-30-soundness-plan-only.md).
+- ✅ **`my:tutor`** — a learning mode: the student writes the code, the tutor
+  sets exercises, gives hints and keeps notes in `docs/learning/`, with the
+  `tutor` output style. Shipped in `1e69584`; known limits are in the spec's
+  Risk section. Spec:
+  [`docs/plans/2026-10-06-tutor-spec.md`](docs/plans/2026-10-06-tutor-spec.md).
 
 ## Other
 

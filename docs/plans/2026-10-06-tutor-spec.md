@@ -1,9 +1,8 @@
 # Spec: `my:tutor`, a learning mode with a tutor that keeps notes
 
-**Status:** approved, 2026-10-06. Size: Medium (a new skill, a new output style, one
-section in `global/CLAUDE.md` and two hook checks; no stored data,
-permissions or build change). Trade-offs, "Size Medium versus Large", gives
-the reason.
+**Status:** done, 2026-10-07. Shipped in 1e69584. End-of-branch checks: the
+hook checks, 10 passed, 0 failed. Size: Medium; Trade-offs, "Size Medium
+versus Large", gives the reason.
 
 ## How to read this spec
 
