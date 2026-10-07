@@ -7,7 +7,7 @@
           {
             "type": "command",
             "if": "Bash(git merge --squash *)",
-            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); case \"$cmd\" in 'git merge --squash '*|'git merge --squash') printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"squash-merge detected. Invoke the my:roadmap-management skill — it owns the 🚧 → ✅ promotion and delegates the CHANGELOG half to my:changelog-management. Both edits land in the same integration commit.\"}}' ;; esac"
+            "command": "top=$(cd \"${CLAUDE_PROJECT_DIR:-.}\" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null); [ -n \"$top\" ] && [ -f \"$top/docs/learning/curriculum.md\" ] && exit 0; cmd=$(jq -r '.tool_input.command // \"\"'); case \"$cmd\" in 'git merge --squash '*|'git merge --squash') printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"squash-merge detected. Invoke the my:roadmap-management skill — it owns the 🚧 → ✅ promotion and delegates the CHANGELOG half to my:changelog-management. Both edits land in the same integration commit.\"}}' ;; esac"
           }
         ]
       }
@@ -20,6 +20,16 @@
             "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/check-orphan-plans.sh\"",
             "timeout": 10,
             "statusMessage": "Checking for orphaned plans"
+          }
+        ]
+      },
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "top=$(cd \"${CLAUDE_PROJECT_DIR:-.}\" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null); if [ -n \"$top\" ] && [ -f \"$top/docs/learning/curriculum.md\" ]; then printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"This is a learning workspace. Invoke `my:tutor` before your first reply.\"}}'; fi",
+            "timeout": 10
           }
         ]
       }

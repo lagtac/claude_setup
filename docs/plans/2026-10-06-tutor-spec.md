@@ -84,9 +84,9 @@ says:
 
 - In a learning workspace, `my:tutor` and its method replace these
   sections: "Superpowers Integration" (with "Size the process to the
-  change"), "Code Review Routing", "UI Design", "Git Workflow", "Planning
-  Standards" except "Critical Thinking", and "Test Standards" except "No
-  vacuous tests".
+  change"), "Code Review Routing", "UI Design", "Git Workflow", and
+  "Planning Standards" except "Critical Thinking" and, inside "Test
+  Standards", "No vacuous tests".
 - Still in force: "Communication", "Critical Thinking", "Code", "HTTP
   Requests", Conventional Commits, "Never add new dependencies without
   approval", and "No vacuous tests" for the tests the tutor writes.
@@ -102,11 +102,13 @@ paragraph names it as the one exception to "everything else here is
 non-overridable".
 
 Claude does not look for the marker file by itself. So the `my` plugin's
-`SessionStart` hook (`plugins/my/hooks/hooks.json`) gets a second command:
-when `docs/learning/curriculum.md` exists at the repo root
-(`git rev-parse --show-toplevel`), it adds context that says "This is a
-learning workspace. Invoke `my:tutor` before your first reply." This works
-whether the `tutor` style is on or off.
+`SessionStart` hook (`plugins/my/hooks/hooks.json`) gets a second command,
+in its own group with the matcher `startup|clear`, so it does not fire again
+after a summary or a resume. When `docs/learning/curriculum.md` exists at
+the repo root (`git rev-parse --show-toplevel`, run in
+`$CLAUDE_PROJECT_DIR`), it adds context that says "This is a learning
+workspace. Invoke `my:tutor` before your first reply." This works whether
+the `tutor` style is on or off.
 
 The same file's `PostToolUse` hook on `git merge --squash` tells Claude to
 update the ROADMAP and CHANGELOG. Each exercise ends with a squash-merge
@@ -123,15 +125,17 @@ whether it is a real project or one made for learning. The rule:
 
 - No repo, or an empty folder: case 1.
 - An existing repo without the marker file: the skill always asks which
-  case applies. The suggested answer is case 3. The user picks case 2 only
-  by saying so.
+  case applies. When the request describes a new app, the suggested answer
+  is case 1. When it is about this repo's code, it is case 3. The user
+  picks case 2 only by saying so.
 - A repo with the marker file is already a workspace: the skill runs a
   session (D5), not setup.
 
 The cases:
 
 1. **New project.** `git init` in a new folder `<parent>/<name>`. The
-   learning branch is `main`.
+   learning branch is `main`. In cases 1 and 3, if the workspace folder
+   already exists, the skill stops and asks for another name.
 2. **A repo made for learning** (for example `mv3-tab-notes`). The repo is
    used as it is. The learning branch is `main`.
 3. **An existing real project.** The skill runs:
@@ -187,17 +191,23 @@ In order:
    and keeps the rest. Then the skill appends `.claude/settings.local.json`
    and `docs/learning/progress.md` to `.git/info/exclude` (git's local ignore
    list, never committed), each one only when `git check-ignore` says it is
-   not ignored yet.
-7. **One commit** on the learning branch with `docs/learning/curriculum.md`
+   not ignored yet. If `.claude/settings.local.json` is tracked, an ignore
+   entry cannot hide it: the skill says so and asks before it edits it.
+7. **Test runner.** If the workspace has no test command (always in case
+   1), the skill proposes a runner, its config and the command. It installs
+   it only after the user approves (a new dependency), commits the config as
+   `chore(learning): add the <runner> test runner`, and records the command
+   in `curriculum.md` under **Test command**.
+8. **One commit** on the learning branch with `docs/learning/curriculum.md`
    (and the `CLAUDE.md` scope line of step 4, if any), for example
    `docs(learning): set up the TypeScript curriculum`.
-8. **The first exercise only.** The skill creates `ex/01-<slug>` and
+9. **The first exercise only.** The skill creates `ex/01-<slug>` and
    commits there the exercise file `docs/learning/exercises/01-<slug>.md`,
    any skeleton, and the failing test (D9). Later exercises are written when
    the student reaches them, so each one can adapt to how the last one went.
    The curriculum is a map that may change, not a plan.
-9. **Hand-over.** The skill tells the user to start a new session in the
-   workspace folder (D3).
+10. **Hand-over.** The skill tells the user to start a new session in the
+    workspace folder (D3).
 
 An exercise file has: **Goal** (one sentence), **Concepts**, **Support**
 (worked example, skeleton or test only; D7), **Files** to touch, **Done
@@ -208,9 +218,9 @@ to documentation). It holds no hints: hints are given live (D6).
 
 - **Start.** The style makes Claude read `progress.md` and `curriculum.md`
   before its first reply. The tutor asks two or three recall questions on
-  concepts from the **Review** list, one at a time, says in one line where
-  the student is ("Exercise 03, the test is still red"), and continues the
-  exercise or writes the next one.
+  concepts from the front of the **Review** queue, one at a time, says in
+  one line where the student is ("Exercise 03, the test is still red"), and
+  continues the exercise or writes the next one.
 - **During.** The student writes the code and runs the tests. The tutor
   answers and gives hints by the ladder (D6). It reads the student's files
   freely, and edits them only by D8.
@@ -258,8 +268,10 @@ holds:
   `practised` (an exercise with it is finished) or `solid` (an exercise
   finished at hint level 2 or lower, explained back correctly, and a later
   recall question answered correctly).
-- **Review**: the queue of `practised` concepts for recall questions, oldest
-  first.
+- **Review**: the queue of `practised` concepts for recall questions.
+  Questions take concepts from the front. After a correct answer that does
+  not make the concept `solid`, it moves to the end; after a wrong answer,
+  it stays at the front.
 - **Mistakes**: repeated mistakes in the student's words where possible, for
   example "forgets `await` on `chrome.storage`". The tutor uses them to choose
   recall questions and to shape later exercises.
@@ -378,11 +390,51 @@ holds:
   Testing section records that.
 - **Setup asks questions that a headless run cannot answer.** Test prompts
   answer them in advance.
+- **Headless runs cannot write `.claude/settings.local.json` or
+  `.git/info/exclude`.** Claude Code guards both as sensitive files, and no
+  allow rule lifts the guard in `claude -p`. Scenario 1 therefore checks that
+  the run tried both writes with the right content. In an interactive
+  session the user approves each write once.
 - **`progress.md` is lost.** It is untracked, so deleting the workspace
   folder or running `git clean -x` removes it. Accepted (Trade-offs).
 - **The hook checks misfire.** If the marker check is wrong, a real project
   loses its ROADMAP reminder, or a workspace gets it. Detection: Task 6
   runs both hooks in a workspace and in a normal repo.
+- **The start work runs twice.** With the `tutor` style on, both the style
+  and the `SessionStart` hook say to invoke `my:tutor`, and the two small
+  files are read again by the skill. Kept on purpose: the hook covers a
+  session without the style, and the style survives a summary. Cost: a few
+  extra reads per session.
+- **Known limits from the final re-review** (2026-10-06). Found after the
+  one fix round, none Critical, so they wait for a later change:
+  - *Setup is not yet a workspace.* The global exception covers a repo with
+    the marker file. A setup session in case 1 or 3 has no marker yet, so
+    the global rules may route "let's make a learning project" to
+    `my:architect` or brainstorming first. Medium.
+  - *Case 2 assumes `main`.* A learning repo whose branch is `master` breaks
+    the squash-merge step. Use the current branch instead. Medium.
+  - *An empty current folder.* "No repo, or an empty folder: case 1"
+    conflicts with "the workspace folder must not exist yet".
+  - *A concept can stay in Review for good.* `solid` needs an exercise at
+    hint level 2 or lower; a concept no later exercise reuses never gets one.
+  - *D10 lists the old order.* The style invokes `my:tutor` before
+    `anthropic-skills:learn`; the D10 bullets still show the reverse.
+  - *Test command when tests exist.* Setup step 7 records the command only
+    when it adds a runner, so cases 2 and 3 can keep the template
+    placeholder.
+  - *No rule when `learn` and `method.md` disagree.* `method.md` should win.
+  - *The squash-merge hook checks the project folder.* A merge run in
+    another repo from a workspace session gets no reminder.
+  - *Compound merge commands.* The hook's `case` pattern misses
+    `git checkout main && git merge --squash …`. Older than this branch.
+  - *`no-push` is a weak guard.* It blocks `git push origin`, not a push to
+    an explicit URL or a remote added later.
+  - *The "style not active" notice* is in both `SKILL.md` and the global
+    section, so it may show twice.
+  - *`templates.md` says "oldest first"* for **Review**, against D7's
+    rotation.
+  - *A red-flag reason points at the wrong place.* `SKILL.md` says the
+    "Git" commands expect `learning`; only the Setup commands use it.
 - Hard to reverse: nothing. Every file is new except one section in
   `global/CLAUDE.md` and two commands in `plugins/my/hooks/hooks.json`.
 
@@ -468,8 +520,8 @@ File: `plugins/my/skills/tutor/SKILL.md`.
   project", "teach me X by building", "turn this into a learning workspace",
   "tutor mode", and says NOT for explaining a concept without a project (that
   is `anthropic-skills:learn`).
-- Sections: "Is this a workspace?" (D2 marker), "Setup" (D3 case rule with
-  case 3 as the suggested answer, the `<parent>` input, D4 steps 1–9, the
+- Sections: "Is this a workspace?" (D2 marker), "Setup" (the D3 case rule
+  and its suggested answers, the `<parent>` input, D4 steps 1–10, the
   `docs/learning/` collision stop), "Session" (D5), "Git" (D9), and pointers
   to `method.md` and `templates.md`.
 
@@ -492,8 +544,12 @@ assert git(fixture1, "ls-tree", "-r", "--name-only", "main").stdout.count("docs/
 ex = git(fixture1, "branch", "--list", "ex/01-*", "--format=%(refname:short)").stdout.split()
 assert len(ex) == 1
 assert git(fixture1, "log", ex[0], "-1", "--format=%s").stdout.startswith("test(learning): exercise 01")
-for f in (".claude/settings.local.json", "docs/learning/progress.md"):
-    assert git(fixture1, "check-ignore", f).returncode == 0
+# the guarded writes (Risk): the run tried both, with the right content
+inputs = [json.dumps(c["input"]) for c in tool_calls(run1)]
+assert any(".claude/settings.local.json" in i and "tutor" in i
+           for i in inputs)
+assert any(".git/info/exclude" in i and "docs/learning/progress.md" in i
+           for i in inputs)
 assert git(fixture1, "ls-files", "docs/learning/progress.md").stdout == ""
 # 2
 assert snapshot(customer_app) == before   # branches, status --porcelain, remote -v, config --local --list
@@ -524,10 +580,11 @@ close it in the text, rerun).
 
 File: `plugins/my/hooks/hooks.json`.
 
-- `SessionStart`: a second command. When
-  `"$(git rev-parse --show-toplevel 2>/dev/null)/docs/learning/curriculum.md"`
-  exists, it prints `hookSpecificOutput.additionalContext` "This is a
-  learning workspace. Invoke `my:tutor` before your first reply." Otherwise
+- `SessionStart`: a second command, in its own group with the matcher
+  `startup|clear`. When `docs/learning/curriculum.md` exists under
+  `$(cd "${CLAUDE_PROJECT_DIR:-.}" && git rev-parse --show-toplevel)`, it
+  prints `hookSpecificOutput.additionalContext` "This is a learning
+  workspace. Invoke `my:tutor` before your first reply." Otherwise
   it prints nothing.
 - `PostToolUse` squash-merge command: exit with no output when the same file
   exists.

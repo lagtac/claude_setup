@@ -13,7 +13,8 @@ My Claude Code setup. The repo is also a plugin marketplace, named
 - **`global/`** — global instructions (`CLAUDE.md`), path-scoped rules
   (`rules/`) and output styles (`output-styles/`). `~/.claude/CLAUDE.md`,
   `~/.claude/rules` and `~/.claude/output-styles` are symlinks into this
-  folder, so edit the files here.
+  folder, so edit the files here. There are two output styles: `plain`, the
+  default, and `tutor`, which a learning workspace sets (see `my:tutor`).
 
 `marketplace.json` stays at the repo root. There, the plugin version is the
 commit hash. In a subfolder, Claude Code cannot read the hash, so every version
@@ -73,6 +74,11 @@ as `/my:<name>`.
   squash-merge after the user's yes. How it works:
   `plugins/my/skills/handoff/README.md`.
   `/my:handoff <stage> <doc>` launches; `/my:handoff run <stage> <doc>` runs.
+- `my:tutor` — A learning mode. Sets up a learning workspace (a new repo, a
+  repo made for learning, or a clone of a real project that cannot push), and
+  runs the sessions: the student writes the code, the tutor sets exercises,
+  gives hints and keeps notes in `docs/learning/`. Say "let's make a learning
+  project for …" to start.
 - `my:briefing` — Writes a plain-English, decision-focused briefing for
   non-technical readers, in `docs/briefings/`.
 - `my:roadmap-management` — Edits `ROADMAP.md`: adds rows and moves them between
@@ -127,8 +133,12 @@ Defined in `plugins/my/hooks/hooks.json`:
   or `docs/reports/` that are untracked or not named `YYYY-MM-DD-<slug>`.
   If `docs/plans/README.md` contains `<!-- plans-index: strict -->`, it also
   warns about plans missing from that index or missing a `**Status:**` line.
+- **SessionStart** (on startup and `/clear`) — in a learning workspace, a repo
+  with `docs/learning/curriculum.md`, tells Claude to invoke `my:tutor`
+  before its first reply.
 - **PostToolUse** — after `git merge --squash`, reminds Claude to update the
-  roadmap with `my:roadmap-management`.
+  roadmap with `my:roadmap-management`. It stays silent in a learning
+  workspace, where each exercise ends with a squash-merge.
 
 ## Settings
 
