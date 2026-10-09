@@ -82,7 +82,7 @@ Rows are unordered unless a row says what it waits for.
 - ✅ **Trigger table contradictions** — fix: the "Invoke first" rows for
   integrating and reviewing now name the Git Workflow steps and the
   end-of-branch reviews. Report C1, C2.
-- 💭 **UI rule has a Small case** — a Small change that adds no screen or state
+- ✅ **UI rule has a Small case** — a Small change that adds no screen or state
   needs no design canvas. Report S1.
 - 💭 **Fold script for docs fixups** — the fixup, `branch --contains` and
   autosquash steps become one script that refuses with a reason. Report G1.

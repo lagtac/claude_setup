@@ -140,6 +140,9 @@ writing a prose description or a table of class names:
   not read as templated defaults.
 - **`artifact-diagramming`** — when the point is a mechanism rather than a screen.
 
+A Small change (see the size table) that adds no screen and no state, such as
+a label, a colour or a spacing value, needs no canvas.
+
 Prose may summarise a design that has been drawn. It may not stand in for one.
 
 This does not replace the **Visual Language** section a spec requires: that
