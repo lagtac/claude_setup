@@ -73,6 +73,29 @@ Follow-ups spawned by the planner retirement. Spec:
   Risk section. Spec:
   [`docs/plans/2026-10-06-tutor-spec.md`](docs/plans/2026-10-06-tutor-spec.md).
 
+## Workflow efficiency
+
+Findings of
+[`docs/reports/2026-10-09-workflow-efficiency-critique.md`](docs/reports/2026-10-09-workflow-efficiency-critique.md).
+Rows are unordered unless a row says what it waits for.
+
+- 💭 **Trigger table contradictions** — fix: two rows of the "Invoke first"
+  table name Superpowers skills that later sections forbid or override.
+  Report C1, C2.
+- 💭 **UI rule has a Small case** — a Small change that adds no screen or state
+  needs no design canvas. Report S1.
+- 💭 **Fold script for docs fixups** — the fixup, `branch --contains` and
+  autosquash steps become one script that refuses with a reason. Report G1.
+- 💭 **Git steps leave the always-loaded file** — move Git Workflow steps 1 to
+  14 into a path-scoped rule or `my:handoff`, keeping a pointer. Waits for the
+  fold script row. Report G2.
+- 💭 **Docs volume around the code** — decide whether roadmap and decision
+  edits fold into the next feature commit, as specs do. Waits for the user's
+  decision. Report S2.
+- 💭 **One review file per branch** — the end-of-branch reviews write one file
+  with a section per reviewer. Waits for evidence that the per-review files
+  cost time today. Report S3.
+
 ## Other
 
 Historical, self-contained efforts are tracked as dated specs in `docs/plans/`
