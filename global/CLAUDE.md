@@ -75,8 +75,8 @@ turns out larger than its size, stop and say so before going on.
 | Bug, test failure, or unexpected behavior | `superpowers:systematic-debugging` |
 | Starting non-trivial work that warrants a worktree (see Git Workflow rules) — before any code changes | `superpowers:using-git-worktrees` (create the worktree with `git worktree add`, never `EnterWorktree`) |
 | Executing a plan from `docs/plans/` | `superpowers:executing-plans` |
-| Branch is feature-complete and ready to integrate | `superpowers:finishing-a-development-branch` |
-| Major work needs review before merge | `superpowers:requesting-code-review` |
+| Branch is feature-complete and ready to integrate | Git Workflow steps 12 and 13, or `/my:handoff review` for a handed-off branch (not `superpowers:finishing-a-development-branch`) |
+| Major work needs review before merge | The end-of-branch reviews in Code Review Routing: `my:soundness-review` and `/code-review high` on `main..<branch>` (not `superpowers:requesting-code-review`) |
 
 Skip the table only for: single-line fixes, typo/comment edits, doc-only changes, config tweaks. For Small and Medium changes, the size table above says which rows apply.
 

@@ -79,9 +79,9 @@ Findings of
 [`docs/reports/2026-10-09-workflow-efficiency-critique.md`](docs/reports/2026-10-09-workflow-efficiency-critique.md).
 Rows are unordered unless a row says what it waits for.
 
-- 💭 **Trigger table contradictions** — fix: two rows of the "Invoke first"
-  table name Superpowers skills that later sections forbid or override.
-  Report C1, C2.
+- ✅ **Trigger table contradictions** — fix: the "Invoke first" rows for
+  integrating and reviewing now name the Git Workflow steps and the
+  end-of-branch reviews. Report C1, C2.
 - 💭 **UI rule has a Small case** — a Small change that adds no screen or state
   needs no design canvas. Report S1.
 - 💭 **Fold script for docs fixups** — the fixup, `branch --contains` and
