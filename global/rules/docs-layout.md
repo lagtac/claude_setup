@@ -18,68 +18,75 @@ and do not convert it without asking. Some projects generate their index, or kee
 | Plan | How to build it: steps, tests, commits. | `docs/plans/` | `YYYY-MM-DD-<slug>.md` |
 | Review | A report on one spec, one plan or one diff. It sits next to what it reviewed. | `docs/plans/` | `…-review.md`, `…-review-2.md` |
 | Report | Findings about a whole product or area on one day, such as a design critique, an audit or an architecture critique. Other documents fix what it finds. It is never carried out itself. | `docs/reports/` | `YYYY-MM-DD-<slug>-critique.md`, `-audit.md` |
-| Action plan | Breaks a report's findings into phases. | `docs/plans/` | `YYYY-MM-DD-<slug>-action-plan.md` |
+| Action plan | Optional. Routes a large report's findings into roadmap rows once, then stays as a reference. | `docs/plans/` | `YYYY-MM-DD-<slug>-action-plan.md` |
 | Briefing | A plain-language write-up for readers outside engineering (`my:briefing`). | `docs/briefings/` | `YYYY-MM-DD-<slug>.md` |
 
 The test for "report or review": a review has one subject that someone will change in answer to
 it. A report has many findings across many files, and several later documents answer it.
 
-## Action plans
+## From report to roadmap
 
-A report's findings become work through one action plan. The chain is:
+A report's findings become rows in the project's roadmap. The roadmap is the one live list of
+work, and it keeps the only order. The chain is:
 
 ```text
-report → action plan (phases) → spec → plan → branch
+report → roadmap rows, placed in the order → spec or plan, by size → branch
 ```
 
-- **One file.** Every phase is a section of the action plan. Do not write one file per phase: a
-  phase only scopes work that later gets its own spec or plan, so a separate file adds a layer
-  that looks like a plan and is not one.
-- **A later report on the same area joins the existing action plan.** Route its findings into
-  the phases that exist, or add a phase. Do not start a second action plan.
-- **Sections:** "How to read this"; "Order", a table with the columns Phase, Starts, Gate and
-  Leads to; "Decisions", one numbered list for the whole plan; then one section per phase.
-- **Each phase section** holds the scope, what is out of scope, the gate, the next document (a
-  spec, a bug-fix plan, or none), what it needs, and notes the later plans must cover. It holds
-  no implementation steps.
-- **Define shared things before pages use them.** A phase that adds tokens or components changes
-  no page. Using them in pages is a later phase. This keeps each value from changing twice.
-- **Bug fixes and features are separate branches,** even inside one phase.
-- **One order only.** The action plan keeps the order of the phases. The roadmap links to it and
-  does not copy that order.
+- **The roadmap keeps the order.** It lives in the roadmap's `## Order of work` section
+  (`my:roadmap-management` rule 12). No other document holds the order, a gate, or whether work
+  has started or shipped. A document that did would be a second copy, and copies drift.
+- **Each row cites its finding:** the report's path and the finding's reference (item letter,
+  finding code or heading).
+- **A row that cannot start says why, in the row:** `Blocked by row N.`, or `Waits for <what>.`
+  for a blocker outside the roadmap, such as a client's answer or a missing file.
+- **The report records where its findings went.** A short "Where these went" section maps each
+  reference to a row, or to "no action" with a reason. The report's status line names the rows.
+- **Bug fixes and features are separate rows,** so they become separate branches.
+- **Shared things come first.** A row that adds tokens or components sits before the rows that
+  use them in pages. This keeps each value from changing twice.
+- **Decisions go where the work reads them.** A decision about one row goes into that row's
+  spec. A decision for the whole product goes into the project's `CLAUDE.md`. Do not keep a
+  separate decision log that work has to search.
 
-### Making an action plan
+### Routing a report
 
-1. **Read the whole report.** Note each finding's reference (item letter, finding code or
-   heading), so every finding can be traced.
-2. **Look for an existing action plan** on the same area in `docs/plans/`. If one exists, route
-   the new findings into it (see above) and skip to step 6.
-3. **Sort the findings.** Mark each one as a bug, a feature, a shared definition (tokens,
-   components), a use of shared things in pages, a product decision, or blocked outside the
-   project's scope.
-4. **Propose phases and their order** to the user: which phase each finding goes to, what each
-   phase's gate is, and what document comes next. Shared definitions come before the phases that
-   use them. Wait for the user's answer. The order is a decision, so it is not guessed.
-5. **Write the action plan** in the shape above. Record the user's answers as numbered decisions,
-   with the date.
-6. **Connect it.** Give the report and the action plan a status line. If the project has an
-   index, add both rows in the same commit. Link the action plan from the roadmap, without
-   copying its order.
-7. **Run the checklist** below, then commit. The action plan is documentation only, so it needs
-   no worktree.
+1. **Read the whole report.** Note each finding's reference.
+2. **Sort the findings.** Mark each one as a bug, a feature, a shared definition (tokens,
+   components), a use of shared things in pages, a product decision, blocked outside the
+   project's scope, or no action.
+3. **Propose rows and their place in the order** to the user. Group the findings that one branch
+   would fix into one row. Wait for the user's answer: the order is a decision, so it is not
+   guessed.
+4. **Write it down.** Add the rows and their place in `## Order of work`. Add "Where these went"
+   to the report and update its status line. If the project has an index, update the report's
+   row in the same commit.
+5. **Run the checklist** below, then commit. This is documentation only, so it needs no
+   worktree.
+
+### When an action plan helps
+
+Route directly when you can. Write an action plan only when a report is too large to route in
+one sitting, or when the grouping needs several rounds with the user.
+
+- **It is a working file for the routing,** nothing more: the groups, the user's answers with
+  their dates, and the questions still open.
+- **It ends when every finding has a row or a reason.** Its status becomes `done`, naming the
+  commit that added the rows. After that it is a reference, and nobody edits it.
+- **It never holds the order, a gate, or the state of work.** Those are in the roadmap from the
+  first row on.
+- **A later report gets its own routing.** It does not join an old action plan.
 
 ### Checklist
 
-- Every finding in the report is in a phase, marked out of scope, or marked blocked, with its
-  reference. None is missing.
-- Every phase has a gate and a next document ("none" counts as an answer).
-- No phase mixes a bug fix and a feature on one branch.
-- No phase uses a shared definition before the phase that defines it.
-- Every decision the user gave is in the numbered list, with its date.
-- Every section name that another file cites matches a heading exactly. Check with
-  `grep -F "## <name>"`.
+- Every finding in the report has a row, or a reason in "Where these went". None is missing.
+- Every row cites its finding's reference.
+- No row mixes a bug fix and a feature.
+- No row uses a shared definition before the row that defines it, in the order.
+- Every row that cannot start says what it waits for.
+- The order lives only in the roadmap. An action plan, if there is one, is `done` and holds no
+  order.
 - After any move or rename, `git grep` finds no link to the old path.
-- The roadmap links to the action plan and does not repeat the order.
 
 ## Status line
 

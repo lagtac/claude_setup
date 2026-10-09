@@ -82,6 +82,7 @@ A new row goes in only **after** the user has agreed to the idea in conversation
 - Choose the next free `#` in that table (continue the section's numbering, including suffix forms like `1b`, `1c` when the row clearly extends a previous one).
 - Status: `💭`. Spec/plan column: `—`. No link required at this stage.
 - Title format: `**<Short Name>** — <one-clause framing>`. Match the style of existing rows.
+- Place it in the order. If the roadmap has an `## Order of work` section (rule 12), ask the user where the new row goes, or whether it stays unordered, and write the answer in the same edit. Never guess a position: the order is the user's decision.
 
 ### 4. Promote 💭 → 📋 — spec landed
 
@@ -188,13 +189,13 @@ A roadmap says what and roughly when. Blocking relations are execution detail �
 What to write instead, in escalating order of need:
 
 - **Nothing.** If the priority/status tiers already put the blocker first, the dependency is expressed. Stop here — a prose edge that only restates the tier is pure decay surface.
-- **One clause, one direction.** Where an edge genuinely changes the order, name the blocker *from the blocked row*: `Blocked by row 4b.` Never mix directions — "raises the ceiling on row 5" in one row and "the keying half is row 4b" in another forces the reader to parse each sentence for which way the arrow runs.
+- **One clause, one direction.** Where an edge genuinely changes the order, name the blocker *from the blocked row*: `Blocked by row 4b.` For a blocker outside the roadmap, such as a client's answer or a missing file, write `Waits for <what>.` in the same place. Never mix directions — "raises the ceiling on row 5" in one row and "the keying half is row 4b" in another forces the reader to parse each sentence for which way the arrow runs.
 - **An `## Order of work` section**, once more than a couple of edges exist. Bullets of the form `**4b, then 7, then 4c.** <the constraint that forces it>` — state the *reason* (shared migration, structural prerequisite), not just the sequence. Close with the contract that anything unnamed is unordered, so the section never has to list rows it has nothing to say about.
 
 Two failure modes to watch:
 
 - **Split-rot.** When rule 7 splits a row, inherited edge clauses keep pointing at numbers that no longer mean what they meant. Re-read every prose edge in the rows you touch during a split, not just the ones you're renumbering.
-- **Two live orderings.** When a durable doc elsewhere already sequences the work — a code review's "suggested order of work", a spec's phasing — do not maintain a second copy. Keep one live, and leave a dated supersession note on the other pointing at it (rule 8's linking discipline applies).
+- **Two live orderings.** When a durable doc elsewhere already sequences the work — an action plan's phases, a code review's "suggested order of work", a spec's phasing — do not maintain a second copy. Keep one live, and leave a dated supersession note on the other pointing at it (rule 8's linking discipline applies).
 
 ## Common mistakes
 
