@@ -91,6 +91,12 @@ the report says why.
 - ✅ **Git steps leave the always-loaded file** — the fourteen feature steps
   move to `docs-layout.md`, with a pointer in `CLAUDE.md`. Same spec as the
   fold script. Report G2. [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md)
+- 📋 **`check` asks the fold** — fix: `git-fold-fixups.py check <sha>` says yes
+  to a target with a merge, `squash!` or `amend!` commit after it, and to a
+  commit that is itself a fixup; the fold then refuses that fixup on every run.
+  zitamu's `main` has pull merges. `check` resolves a fixup to its target and
+  runs the fold's own `refusal()`. Small. Known limit in the
+  [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md)'s Risk section.
 
 ## Other
 
