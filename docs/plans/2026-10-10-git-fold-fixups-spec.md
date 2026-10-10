@@ -1,6 +1,12 @@
 # Spec: `git-fold-fixups`, and the feature steps leave the always-loaded file
 
-**Status:** approved, 2026-10-10. A script folds docs fixups with every check the prose asked for, and the fourteen feature steps move to the rule that loads with `docs/plans/`.
+**Status:** done, 2026-10-10. Shipped in dc998fb. End-of-branch checks: unit tests, 57 passed,
+4 failed (`test_lists_tables_outside_code_fences`,
+`test_expand_lists_a_table_inside_a_nested_list_item`,
+`test_expand_ignores_fence_markers_inside_a_longer_fence`,
+`test_expand_skips_rows_whose_cell_count_differs_from_the_dash_line`, all in
+`test_md_table_filters.py` and failing the same way on `main` before this branch); markdownlint,
+no new error except MD013. Known limits are in Risk.
 
 ## How to read this spec
 

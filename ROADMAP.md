@@ -85,10 +85,10 @@ the report says why.
   end-of-branch reviews. Report C1, C2.
 - ✅ **UI rule has a Small case** — a Small change that adds no screen or state
   needs no design canvas. Report S1.
-- 📋 **Fold script for docs fixups** — the fixup, `branch --contains` and
+- ✅ **Fold script for docs fixups** — the fixup, `branch --contains` and
   autosquash steps become one script that refuses with a reason. Report G1.
   [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md)
-- 📋 **Git steps leave the always-loaded file** — the fourteen feature steps
+- ✅ **Git steps leave the always-loaded file** — the fourteen feature steps
   move to `docs-layout.md`, with a pointer in `CLAUDE.md`. Same spec as the
   fold script. Report G2. [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md)
 
