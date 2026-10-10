@@ -58,7 +58,7 @@ turns out larger than its size, stop and say so before going on.
   as code, signatures and files for code steps, no code bodies. It runs the
   brainstorming row and skips the writing-plans row. There is no plan stage to
   commit the `approved` status, so commit it as a fixup of the spec commit,
-  fold it (Git Workflow step 9), then run `/my:handoff code <spec path>`. Fold
+  fold it with `git-fold-fixups.py`, then run `/my:handoff code <spec path>`. Fold
   before the hand-off: once the worktree sits on the `fixup!` commit, the
   fold must wait until the branch is merged. Where the project keeps a plans
   index, its row goes into the spec commit. Wherever this file says "the
@@ -75,7 +75,7 @@ turns out larger than its size, stop and say so before going on.
 | Bug, test failure, or unexpected behavior | `superpowers:systematic-debugging` |
 | Starting non-trivial work that warrants a worktree (see Git Workflow rules) — before any code changes | `superpowers:using-git-worktrees` (create the worktree with `git worktree add`, never `EnterWorktree`) |
 | Executing a plan from `docs/plans/` | `superpowers:executing-plans` |
-| Branch is feature-complete and ready to integrate | Git Workflow steps 12 and 13, or `/my:handoff review` for a handed-off branch (not `superpowers:finishing-a-development-branch`) |
+| Branch is feature-complete and ready to integrate | Steps 12 and 13 in `~/.claude/rules/docs-layout.md`, or `/my:handoff review` for a handed-off branch (not `superpowers:finishing-a-development-branch`) |
 | Major work needs review before merge | The end-of-branch reviews in Code Review Routing: `my:soundness-review` and `/code-review high` on `main..<branch>` (not `superpowers:requesting-code-review`) |
 
 Skip the table only for: single-line fixes, typo/comment edits, doc-only changes, config tweaks. For Small and Medium changes, the size table above says which rows apply.
@@ -167,32 +167,11 @@ We use **GitLab** unless stated otherwise in the project. There are no "pull req
 
 ### One feature, four commits on `main`
 
-A Large feature leaves four commits on `main` (Small and Medium leave fewer, as the size table says): the spec with its review, the plan with its review, the squash-merged code, and the `done` mark. Without this rule, most commits are small edits to one spec or plan: on zitamu, 44 of 52 commits by 2026-09-18 were `docs:`. Docs are written in the main checkout, because an `@` mention cannot reach `.claude/worktrees/`. Code is written in a worktree, because sessions often run in parallel. A project's own file names only what differs: its plans index, its scopes, its test commands.
-
-Two more commits are allowed. `my:architect` commits the architecture brief on its own, before step 1. An edit to another document that the spec forces, such as a glossary or a data model, is its own commit, not a fixup of the spec.
+A Large feature leaves four commits on `main`: the spec with its review, the plan with its review, the squash-merged code, and the `done` mark. Small and Medium leave fewer, as the size table says. The fourteen steps, and when to fixup and fold, are in `~/.claude/rules/docs-layout.md`, section "One feature, four commits on `main`". That rule loads when a file in `docs/plans/` is read or written. Before any numbered step, read it if it has not loaded.
 
 **Before step 1 in a project for the first time,** check that the project's instructions name four things: the plans index (or that there is none), the commit scopes, the test command for each code commit, and whether there is a remote. If any is missing, find it from the repo: scopes from `git log`, the test command from `package.json` or a `Makefile`. Then propose a short "Git workflow" section for `CLAUDE.md`, and ask about anything the repo does not show. Write the section only after the user approves it. If the project forbids editing `CLAUDE.md`, propose `CLAUDE.local.md` instead.
 
-1. Write the spec on `main`.
-2. Write the spec review on `main`.
-3. Commit the spec and the review together.
-4. Fixup any later spec and review edits, with `git commit --fixup <hash>`.
-5. Write the plan on `main`.
-6. Write the plan review on `main`.
-7. Commit the plan and the plan review together.
-8. Fixup any later plan and plan-review edits.
-9. Fold the fixups: `GIT_SEQUENCE_EDITOR=true git rebase -i --autosquash <oldest-target>^`. `<oldest-target>` is the oldest commit that a `fixup!` commit names. Only the interactive form folds fixups. Without `-i`, the rebase reports success and leaves every `fixup!` commit in place. So check that `git log --oneline` shows no `fixup!`, and that `git diff <pre-rebase-HEAD> HEAD` is empty. The target's parent works with or without a remote, and the rebase gives new hashes only to the target and the commits after it. The rebase needs a clean main checkout, so run it when no other session has uncommitted edits there.
-10. Create the worktree, and write the code there.
-11. Make doc edits in the worktree as required, but never edit the project's plans index there. While the worktree exists, edit this feature's spec and plan only in the worktree.
-12. Squash-merge the branch into `main`, and commit.
-13. Mark the spec and plan `done` on `main`, citing the squash commit.
-14. The user pushes at their own pace.
-
-- **Before every fixup** (steps 4 and 8), run `git branch --contains <sha>`, where `<sha>` is the target commit. If it lists a branch marked `+`, a worktree has that branch checked out, so make a normal commit instead. Merged branches without a worktree do not count. A rebase gives new hashes to the target and every later commit, so an open branch built on them would conflict at its squash-merge. Always name the target by hash, never `--fixup HEAD`: a parallel session may have committed in between.
-- **Before every rebase** (step 9), run the same check on every pending `fixup!` target. A worktree opened after the fixup may now sit on top of it. If one does, wait until that branch is merged and its worktree removed.
-- **No commit only changes a status.** There is no "in progress" commit. A status change goes into the commit that causes it.
-- **A `docs:` commit runs no tests and no code reviews.** This covers every commit that touches only `.md` files: specs, plans, their reviews, fixups, index rows and the `done` marks of step 13. The only checks are the Markdown linter and a reread of `git diff --cached`. The spec review (step 2) and the plan review (step 6) still run, because they are the content of the commit, not a check on it. A code branch that also edits docs is reviewed as a code branch.
-- **Cite only commits on `main`.** Never cite a commit that lives only on a local branch. A review names the decisions and sections it read, like "D12 to D16", not a hash, because later fixups fold the answers into the reviewed commit. zitamu (`real-estate-webapp`) has uncommitted `pre-commit` and `pre-push` hooks that enforce this rule and refuse a push with `fixup!` commits.
+- **A `docs:` commit runs no tests and no code reviews.** This covers every commit that touches only `.md` files: specs, plans, their reviews, fixups, index rows and the `done` marks (step 13). The only checks are the Markdown linter and a reread of `git diff --cached`. The spec review (step 2 in `docs-layout.md`) and the plan review (step 6) still run, because they are the content of the commit, not a check on it. A code branch that also edits docs is reviewed as a code branch.
 
 ### Splitting scope before branching
 

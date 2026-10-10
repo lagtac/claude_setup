@@ -100,6 +100,13 @@ as `/my:<name>`.
   folder on PATH in its sessions only; your shell finds them through symlinks
   in `~/bin`. Tests: `cd plugins/my && python3 -m unittest discover tests`.
 
+`plugins/my/bin/` also holds `git-fold-fixups.py`, which is not a skill. The
+feature steps in `global/rules/docs-layout.md` and `my:handoff` call it.
+`git-fold-fixups.py check <sha>` says whether a fixup of a commit is safe. With
+no argument it folds every waiting `fixup!` commit on the branch, or refuses
+with one line and changes nothing. Your shell finds it through a symlink in
+`~/bin`, as for the md-tables filters. Its tests run with the same command.
+
 ## Commands
 
 - `/my:commit` — Structured commit workflow with Conventional Commits.

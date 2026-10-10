@@ -8,7 +8,9 @@ paths:
 
 These rules apply unless the project documents its own layout. If it does, follow the project
 and do not convert it without asking. Some projects generate their index, or keep status in
-`ROADMAP.md` instead of in each file.
+`ROADMAP.md` instead of in each file. The section "One feature, four commits on `main`" is the
+exception: it is part of the Git Workflow and always applies. A project names only what differs
+there.
 
 ## Kinds of document
 
@@ -126,3 +128,46 @@ line. Without the line, the hook checks only that files are committed and dated.
 When a document moves or is renamed, update every link to it. Search the repo for the old path
 with `git grep`. Keep superseded documents in place, marked `superseded`, instead of deleting
 them.
+
+## One feature, four commits on `main`
+
+A Large feature leaves four commits on `main` (Small and Medium leave fewer, as the size table in
+`~/.claude/CLAUDE.md` says): the spec with its review, the plan with its review, the squash-merged
+code, and the `done` mark. Without this rule, most commits are small edits to one spec or plan: on
+zitamu, 44 of 52 commits by 2026-09-18 were `docs:`. Docs are written in the main checkout,
+because an `@` mention cannot reach `.claude/worktrees/`. Code is written in a worktree, because
+sessions often run in parallel. A project's own file names only what differs: its plans index, its
+scopes, its test commands.
+
+Two more commits are allowed. `my:architect` commits the architecture brief on its own, before
+step 1. An edit to another document that the spec forces, such as a glossary or a data model, is
+its own commit, not a fixup of the spec.
+
+1. Write the spec on `main`.
+2. Write the spec review on `main`.
+3. Commit the spec and the review together.
+4. Fixup any later spec and review edits, with `git commit --fixup <hash>`. Run
+   `git-fold-fixups.py check <hash>` first. If it exits 1, make a normal commit instead. Always
+   name the target by hash, never `--fixup HEAD`: a parallel session may have committed in between.
+5. Write the plan on `main`.
+6. Write the plan review on `main`.
+7. Commit the plan and the plan review together.
+8. Fixup any later plan and plan-review edits. Run `git-fold-fixups.py check <hash>` first. If it
+   exits 1, make a normal commit instead. Always name the target by hash, never `--fixup HEAD`: a
+   parallel session may have committed in between.
+9. Fold the fixups with `git-fold-fixups.py`. It refuses, and changes nothing, when the fold is not
+   safe; its message says why. Run it when no other session has uncommitted edits in the main
+   checkout.
+10. Create the worktree, and write the code there.
+11. Make doc edits in the worktree as required, but never edit the project's plans index there.
+    While the worktree exists, edit this feature's spec and plan only in the worktree.
+12. Squash-merge the branch into `main`, and commit.
+13. Mark the spec and plan `done` on `main`, citing the squash commit.
+14. The user pushes at their own pace.
+
+- **No commit only changes a status.** There is no "in progress" commit. A status change goes into
+  the commit that causes it.
+- **Cite only commits on `main`.** Never cite a commit that lives only on a local branch. A review
+  names the decisions and sections it read, like "D12 to D16", not a hash, because later fixups fold
+  the answers into the reviewed commit. zitamu (`real-estate-webapp`) has uncommitted `pre-commit`
+  and `pre-push` hooks that enforce this rule and refuse a push with `fixup!` commits.

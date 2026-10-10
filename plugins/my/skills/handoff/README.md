@@ -47,9 +47,10 @@ of the skill: you write the spec with Claude in your own session. You then
 start the chain with `/my:handoff plan <spec path>`.
 
 A spec with its own **Tasks** section (a Medium change) has no plan. Commit
-its `approved` status as a fixup of the spec commit, fold the fixup, then
-start the chain with `/my:handoff code <spec path>`. The code stage refuses a
-spec whose status is not committed as `approved`.
+its `approved` status as a fixup of the spec commit, fold the fixup with
+`git-fold-fixups.py`, then start the chain with
+`/my:handoff code <spec path>`. The code stage refuses a spec whose status is
+not committed as `approved`.
 
 ## Two ways to call it
 
@@ -107,8 +108,10 @@ the stage does not guess whether to continue or start over. You decide.
    checks that the spec and the plans index hold only its own edits.
 6. Commits the plan, the review and the spec's `approved` status in one
    commit, and nothing else, even when other files are staged.
-7. Folds waiting fixups of the spec only when the main checkout is clean.
-   Otherwise it names them, and the review stage folds them after the merge.
+7. Folds waiting fixups of the spec with `git-fold-fixups.py`, only when the
+   main checkout is clean. Otherwise it names them, and the review stage
+   folds them after the merge. When the script refuses, the stage stops and
+   shows you its message.
 8. Launches the code stage.
 
 ### Code stage
@@ -135,8 +138,9 @@ It works inside the worktree, so the main checkout stays clean.
 5. Runs each review that led to a fix once more. That second review is final.
 6. Asks you: ready to squash-merge?
 7. After your yes, squash-merges into the base branch and removes the
-   worktree. Then it folds waiting fixups of the spec and the plan, when the
-   main checkout is clean; otherwise it stops and asks you. Last, it marks
+   worktree. Then it folds waiting fixups of the spec and the plan with
+   `git-fold-fixups.py`, when the main checkout is clean; otherwise it stops
+   and asks you. Last, it marks
    the spec and plan `done` with the squash commit's hash after the fold. It
    keeps the branch and never pushes.
 

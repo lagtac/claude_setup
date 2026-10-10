@@ -222,8 +222,14 @@ user decides.
    `<spec commit>` is the commit that added the spec:
    `git log --diff-filter=A --format=%h -1 <base> -- <spec path>`. If one
    does and `git status --porcelain` prints nothing, run the project's
-   pre-rebase check, then the fold. A failed pre-rebase check is a gate:
-   signal and stop. If `git status --porcelain` prints anything, skip the
+   pre-rebase check, then the fold: `git-fold-fixups.py` in the main
+   checkout. A failed pre-rebase check is a gate: signal and stop. The
+   script folds every waiting fixup on `<base>`, and refuses when that is
+   not safe. Exit `1` means it refused and changed nothing: signal
+   `<name>: fold refused: <its message>` and stop. Exit `3` means the
+   rebase rewrote history and a check after it failed: signal
+   `<name>: fold rewrote history and a check failed; HEAD before was <hash>`
+   and stop. If `git status --porcelain` prints anything, skip the
    fold. The review stage folds them after the squash-merge, before its
    `done` marks (Review stage, step 8).
 9. Finish the project's other docs steps, then run "Launch" with
@@ -342,7 +348,9 @@ all land on the branch, and the main checkout stays clean.
       Fold only when `git status --porcelain` in the main checkout prints
       nothing and the project's pre-rebase check passes. Otherwise signal
       `<name>: merged; fixups <their hashes> wait for a clean <base>` and
-      stop. After the user's reply, check again, then fold.
+      stop. After the user's reply, check again, then fold. The fold is
+      `git-fold-fixups.py` in the main checkout, and its exits `1` and `3`
+      are signals as in Plan stage, step 8.
    4. Set the `done` marks as the project's rules say. They cite the squash
       commit's hash as it is after the fold, and the counts from step 2.
    Then run "Finish".

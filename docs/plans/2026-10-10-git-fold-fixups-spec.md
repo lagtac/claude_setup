@@ -60,7 +60,7 @@ Two other repos point at the section by name and number:
 `plugins/my/bin/git-fold-fixups.py`, Python 3 standard library only, like its siblings. It runs
 in the current directory's repository.
 
-- `git-fold-fixups.py check <sha>`: is a fixup of `<sha>` safe?
+- `git-fold-fixups.py check <sha>`: is a fixup of `<sha>` safe, so that the fold will accept it?
 - `git-fold-fixups.py` with no argument: fold every waiting fixup on the current branch.
 
 Exit codes: `0` done or safe; `1` refused, nothing changed (the reason is printed to stderr);
@@ -68,16 +68,24 @@ Exit codes: `0` done or safe; `1` refused, nothing changed (the reason is printe
 and the old `HEAD` is printed (D5).
 The script never pushes, never resets, and never deletes a branch.
 
-### D2. What "held by a worktree" means
+### D2. What "held by a worktree" means, and what `check` refuses
 
-A branch is held when a worktree other than the current one has it checked out. This is the `+`
-mark of `git branch --contains`. The script reads it from
+A commit is held when a worktree other than the current one has a branch, or a detached `HEAD`,
+that contains it. For branches this is the `+` mark of `git branch --contains`. The script reads
+it from
 `git for-each-ref --contains <sha> refs/heads --format='%(refname:short)%00%(worktreepath)'`, and
 ignores rows with an empty worktree path and the row of the current worktree. Merged branches
-without a worktree do not count.
+without a worktree do not count. For a worktree with no branch checked out, such as one in the
+middle of a rebase, it reads `git worktree list --porcelain` and tests whether `<sha>` is an
+ancestor of that worktree's `HEAD`. (Detached worktrees were added in the review round,
+2026-10-10, by the user's decision.)
 
-`check <sha>` exits `1` and prints each held branch with its worktree path when one exists.
-Otherwise it exits `0` and prints nothing.
+`check <sha>` exits `1` when the fold would refuse a fixup of `<sha>` for good or for now: when
+a worktree holds it, when it is already on the upstream (D4.5), or when another commit on the
+first-parent history shares its subject (D4.7). It prints the reason. Otherwise it exits `0` and
+prints nothing. (D4.5 and D4.7 were added in the review round, 2026-10-10, by the user's
+decision: without them `check` passed a fixup that the fold then refused on every run, and that
+one fixup blocked every later fold.)
 
 ### D3. Finding the fixups and their targets
 
@@ -215,6 +223,13 @@ None. Python 3 standard library and Git 2.23 or later for `%(worktreepath)`. Git
   file in `docs/plans/`, not only when it reads one. This is not documented. Task 3 tests it.
   If writing does not load the rule, the steps stay in `CLAUDE.md`; only steps 4, 8 and 9 and
   the two deleted bullets change. Detection: the Task 3 test, before any move.
+  Result, 2026-10-10, Claude Code 2.1.296: a write loads the rule. Run A (create the file) and
+  run B (read it) both ended with `CANARY-7`, and in run A the word came only after the `Write`
+  call. The rule was project-level, in the fixture's `.claude/rules/`, because the permission
+  check refused a file in `~/.claude/rules/` as a change to Claude's own config. Evidence for
+  the user-level rule: in the code session of this spec, the harness injected the user-level
+  `docs-layout.md` right after an `Edit` of a file in `docs/plans/`; earlier Bash reads of that
+  folder did not load it. Not tested: a user-level rule with a file that is new, not edited.
 - **History rewrite.** The script rewrites `main`. D4 refuses the unsafe cases, the abort
   restores `HEAD` on a failed rebase, and a failed check prints `<before>` for a manual
   `git reset --hard <before>`. A rebase on a dirty tree is refused, so no edit is lost.
@@ -231,8 +246,55 @@ None. Python 3 standard library and Git 2.23 or later for `%(worktreepath)`. Git
   `global/CLAUDE.md` lines 61, 78, 168 to 195; `global/rules/docs-layout.md`;
   `plugins/my/skills/handoff/SKILL.md` lines 217 to 231 and 339 to 345;
   `plugins/my/skills/handoff/README.md` lines 50, 110, 138; `grispy2-web-ext/CLAUDE.md:5` and
-  zitamu `CLAUDE.local.md:250-253` (one sentence, D6); zitamu `CLAUDE.local.md:301-328` (step
+  zitamu `CLAUDE.local.md:250-253` (one sentence, D6); zitamu `.git/hooks/pre-push` lines 2 and
+  11 (uncommitted, edited after the merge, Task 6); zitamu `CLAUDE.local.md:301-328` (step
   numbers kept, no edit).
+- **Choices made in the code stage**, beyond D1 to D5:
+  - The rebase runs as `git -c rebase.updateRefs=false rebase …`. A user setting of
+    `rebase.updateRefs=true` would otherwise move the merged branches the rules keep.
+  - `check` with an argument that is not a commit prints `not a commit` and the usage, and
+    exits `2`. It is an input error, not a refusal.
+  - The D4.1 check runs before the search for fixups. During a rebase `HEAD` is detached, so
+    the search could print `nothing to fold` instead of refusing. D4.3 and D4.7 run next,
+    because D4.4 to D4.6 need a resolved target.
+- **Found in the review round, 2026-10-10, and fixed:** an upstream that is configured but whose
+  ref is missing now refuses with that reason, not a raw git error; a failed git call after the
+  rebase exits `3`, not `1`; a rebase abort that does not restore `HEAD` exits `3`; every git
+  call runs with `log.showSignature=false`, so signature lines cannot break the parsing.
+- **Known limits from the review round:**
+  - With no upstream, fixups are looked for in the whole first-parent history. An old
+    unfolded `fixup!` commit would widen the rebase to its target, or refuse for good. `main` in
+    this repo has none today.
+  - D4.7 counts subjects across the whole first-parent history, not only the rebase range. A
+    very old commit with the same subject refuses without need. This is safe.
+  - A fixup whose target is not on the first-parent history, or was reworded, passes `check`
+    and is then refused by the fold as "no target".
+  - No test reaches exit `3`, an `amend!` commit in the range, or a run from inside a linked
+    worktree. The exit `3` paths are short and were read in the review.
+- **Known limits from the final re-review**, 2026-10-10. The re-review is final, so these are
+  not fixed:
+  - `check` still passes two cases that the fold then refuses on every run. First, a `check` of
+    a commit that is itself a `fixup!`: a fixup of it folds into the original target, which
+    `check` does not test. Second, a merge, `squash!` or `amend!` commit between the target and
+    `HEAD`. So the docstring's "the fold would accept it" claims too much. The root cause is
+    that `check` has its own tests instead of running the fold's `refusal()` on the fixup it
+    would create. claude-setup's `main` has no merges, but zitamu's first-parent `main` has
+    pull merges (the latest on 2026-10-09). There, a spec committed before a `git pull` that
+    merges can pass `check` and then block the fold. Closing this means `check` runs the
+    fold's range test too, which changes D2's contract and needs the user's decision.
+  - A configured upstream whose ref is missing refuses even when there is nothing to fold,
+    because `upstream()` runs before the search for fixups finds none.
+  - When several targets would be refused, the loop runs over a set, so which reason is
+    printed can change between runs.
+  - "always applies" in `docs-layout.md` does not name the learning-workspace exemption of
+    `global/CLAUDE.md`, where `my:tutor` replaces the Git Workflow.
+  - `strip_fixup` does not skip a `squash!` or `amend!` prefix after `fixup!`, as autosquash
+    does. Such a fixup is refused as "no target" instead of for the `squash!` commit.
+  - Code quality: `held_branches` now returns detached HEADs too, so its name is narrow;
+    `fold()` repeats the base-or-`--root` logic of `range_args`; a fold reads the first-parent
+    log three times.
+  - A detached worktree that was deleted but not pruned blocks `check` and the fold until
+    `git worktree prune` runs. The refusal names its path.
 - **Manual step.** The shell finds the script through a symlink in `~/bin`, as the md-tables
   filters do. Claude Code sessions get `plugins/my/bin/` on PATH by themselves.
 
@@ -420,6 +482,21 @@ become ✅ with the `done` mark of step 13).
 
 Manual, outside the repo, after the merge: `ln -s
 ~/projects/claude-setup/plugins/my/bin/git-fold-fixups.py ~/bin/git-fold-fixups.py`.
+
+Also after the merge, not before: the zitamu sentence of D6. `~/.claude/rules/` links to the main
+checkout, so before the merge the new sentence would name a section that is not there yet. In
+`~/projects/zitamu/real-estate-webapp/CLAUDE.local.md`, the sentences "The general flow is in …
+for citing commits." become:
+
+> The general flow is in `~/.claude/rules/docs-layout.md`, section "One feature, four commits
+> on `main`": the fourteen steps, `git-fold-fixups.py` for the fixups and the fold, and the
+> rule for citing commits. The rules for `docs:` commits are in `~/.claude/CLAUDE.md`, Git
+> Workflow, under the same heading.
+
+With it, in the same repo's uncommitted `.git/hooks/pre-push` (added in the review round): the
+header comment on line 2 names `~/.claude/rules/docs-layout.md`, section "One feature, four
+commits on `main`", and the refusal message on line 11 says to run `git-fold-fixups.py` (step 9)
+instead of the bare `git rebase -i --autosquash`.
 
 ## Open questions
 
