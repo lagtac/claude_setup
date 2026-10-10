@@ -1,6 +1,6 @@
 # Critique: the development workflow, efficiency
 
-**Status:** current, 2026-10-09. Findings on whether the global rules, Superpowers and the `my:` skills make coding faster; each finding has a row in the roadmap's "Workflow efficiency" section, or a reason below.
+**Status:** current, 2026-10-09. Findings on whether the global rules, Superpowers and the `my:` skills make coding faster; C1, C2 and S1 are fixed; G1 and G2 have a roadmap row; S2 and S3 need no action.
 
 ## How to read this
 
@@ -155,5 +155,5 @@ All rows are in `ROADMAP.md`, section "Workflow efficiency".
 | G1 | Row "Fold script for docs fixups". |
 | G2 | Row "Git steps leave the always-loaded file", after the G1 row. |
 | S1 | Row "UI rule has a Small case". |
-| S2 | Row "Docs volume around the code", waiting for the user's decision. |
-| S3 | Row "One review file per branch", waiting for evidence of its cost. |
+| S2 | No action, the user's choice of 2026-10-10. Each docs commit costs seconds, most record the client's changes, and more fixups would add Git steps. |
+| S3 | No action, the user's choice of 2026-10-10. No evidence the files cost time; the change would touch three skills. |

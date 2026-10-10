@@ -77,7 +77,8 @@ Follow-ups spawned by the planner retirement. Spec:
 
 Findings of
 [`docs/reports/2026-10-09-workflow-efficiency-critique.md`](docs/reports/2026-10-09-workflow-efficiency-critique.md).
-Rows are unordered unless a row says what it waits for.
+Rows are unordered unless a row says what it waits for. S2 and S3 got no row;
+the report says why.
 
 - ✅ **Trigger table contradictions** — fix: the "Invoke first" rows for
   integrating and reviewing now name the Git Workflow steps and the
@@ -89,12 +90,6 @@ Rows are unordered unless a row says what it waits for.
 - 💭 **Git steps leave the always-loaded file** — move Git Workflow steps 1 to
   14 into a path-scoped rule or `my:handoff`, keeping a pointer. Waits for the
   fold script row. Report G2.
-- 💭 **Docs volume around the code** — decide whether roadmap and decision
-  edits fold into the next feature commit, as specs do. Waits for the user's
-  decision. Report S2.
-- 💭 **One review file per branch** — the end-of-branch reviews write one file
-  with a section per reviewer. Waits for evidence that the per-review files
-  cost time today. Report S3.
 
 ## Other
 
