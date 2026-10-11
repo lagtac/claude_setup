@@ -42,11 +42,13 @@ put subheadings inside one.
 1. List the tables. The command changes nothing:
 
    ```bash
-   md-expand-table.py doc.md
+   md-expand-table.py --list doc.md
    ```
 
    Each line shows the table number, its line, the heading above it, its size
-   and its columns.
+   and its columns. Without `--list` or `--table`, the command expands every
+   table. One table it refuses stops the whole run, so pass `--table` with only
+   the tables it can expand.
 
 2. Pick the tables with the user when it is not obvious which ones. Keep short
    lookup tables (a legend, a status list) as tables.
@@ -62,6 +64,7 @@ put subheadings inside one.
    empties the file before the command reads it.
 
    - `--table` takes the numbers from the list, even for several tables.
+     Without it, every table is expanded.
    - `--body-col NAME` writes that column as a paragraph. Pick the long-text
      column that states what the row is.
    - `--level N` sets the heading level. By default it is one below the heading
@@ -77,14 +80,18 @@ The tool exits with code 2 and prints nothing to stdout when:
 
 - a table number does not exist;
 - a heading cell is empty or repeated;
+- a column name, other than the first, is empty or repeated;
+- a table is indented, because it may sit in a list item. Unindent it first;
 - a row has more cells than the header;
 - `--body-col` names no column, or one of its cells starts like Markdown markup
-  (`#`, `-`, `1.`, `>`, `|`, `<!--`, a code fence, or a rule such as `---`).
+  (`#`, a list marker such as `-`, `*`, `+`, `1.` or `1)`, `>`, `|`, `<!--`, a
+  code fence, or a rule such as `---` or `***`).
   Such a cell would become a heading, a list or a code block. Drop
   `--body-col` for that column.
 
 It skips tables inside code fences, and lines whose header and dash line differ
-in cell count, because GitHub does not render those as tables.
+in cell count, because GitHub does not render those as tables. It also skips
+tables indented by four spaces or a tab, as code blocks (see Known limits).
 
 ## Collapse sections into a table
 
@@ -107,10 +114,13 @@ table written back into the document would drift when someone edits a section.
 ## Known limits
 
 - Rows under a level-6 heading stay at level 6, because Markdown has no level 7.
-- Windows line endings (CRLF) are not converted. Mixed endings can result.
-- A table inside a list item expands to headings at the left margin, which ends
-  the list.
-- A table indented by four spaces outside a list is a code block on GitHub, but
-  the tool still lists it. Check the line number before you expand it.
+- Windows line endings (CRLF): with a FILE argument, every line ending in the
+  output becomes LF. With stdin, the new sections use LF and the rest keeps
+  CRLF, so endings can be mixed.
+- A `--body-col` cell that starts with an HTML tag such as `<div>` is written as
+  a paragraph, which GitHub reads as raw HTML.
+- A table inside a list item that is indented by four spaces or more is
+  skipped as a code block, so the tool does not list it. GitHub still renders
+  it as a table.
 - When text sits right above a table, the first new heading follows it with no
   blank line. The page renders correctly, but markdownlint rule MD022 flags it.

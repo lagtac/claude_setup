@@ -98,14 +98,16 @@ as `/my:<name>`.
   sections back into a table, with the two filters in `plugins/my/bin/`
   (`md-expand-table.py`, `md-collapse-sections.py`). Claude Code puts that
   folder on PATH in its sessions only; your shell finds them through symlinks
-  in `~/bin`. Tests: `cd plugins/my && python3 -m unittest discover tests`.
+  in `~/bin`. Both files are symlinks to `~/src/scripts/`, which holds the
+  scripts and their tests: `cd ~/src/scripts && python3 -m unittest -v`.
 
 `plugins/my/bin/` also holds `git-fold-fixups.py`, which is not a skill. The
 feature steps in `global/rules/docs-layout.md` and `my:handoff` call it.
 `git-fold-fixups.py check <sha>` says whether a fixup of a commit is safe. With
 no argument it folds every waiting `fixup!` commit on the branch, or refuses
 with one line and changes nothing. Your shell finds it through a symlink in
-`~/bin`, as for the md-tables filters. Its tests run with the same command.
+`~/bin`, as for the md-tables filters. Its tests:
+`cd plugins/my && python3 -m unittest discover tests`.
 
 ## Commands
 
