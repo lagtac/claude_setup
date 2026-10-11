@@ -48,6 +48,10 @@ Follow-ups spawned by the planner retirement. Spec:
 - ✅ **`summarizer` plan-path convention** — reads and writes dated files in
   `docs/plans/`, and reads the diff itself. `dd45902`;
   the same `$planDirectory` fix for `optimize-prompt` in `60f6b67`.
+- 💭 **md-tables tests fail on `main`** — fix: 4 tests in
+  `plugins/my/tests/test_md_table_filters.py` fail. Three expect
+  `md-expand-table.py` to list tables and get the input back; one expects a
+  ragged row to be skipped. Cause not yet found. Small.
 
 ## Design workflow
 
