@@ -11,8 +11,11 @@ Usage:
     git-fold-fixups.py check SHA    is a fixup of SHA safe? (the fold would accept it)
 
 A worktree holds a commit when it has a branch, or a detached HEAD, that
-contains the commit. `check` refuses when another worktree holds SHA, when SHA
-is already on the upstream, and when another commit shares its subject.
+contains the commit. `check` runs the fold's rules on the fixup that
+`git commit --fixup SHA` would make. When SHA is itself a fixup, that is SHA's
+own target. It leaves out the rules that do not depend on SHA: uncommitted
+changes (the fixup's own edits are not committed yet when `check` runs), a
+rebase, merge or cherry-pick in progress, and other waiting fixups.
 
 The fold refuses when a rebase, merge or cherry-pick is in progress; when a
 tracked file has uncommitted changes; when a fixup has no target, or more than
@@ -142,11 +145,11 @@ def in_progress():
     return False
 
 
-def oldest_target(fixups):
-    """The oldest target. HEAD's first-parent log is newest first, so it is
+def oldest_target(targets):
+    """The oldest of TARGETS. HEAD's first-parent log is newest first, so it is
     the target that comes last in it."""
     order = {sha: index for index, (sha, _) in enumerate(first_parent_log())}
-    return max((candidates[0] for _, candidates in fixups), key=order.__getitem__)
+    return max(targets, key=order.__getitem__)
 
 
 def parent(sha):
@@ -173,12 +176,18 @@ def refusal(fixups):
                 f"fixup {short(sha)} has an ambiguous target: "
                 f"{names} share the subject '{strip_fixup(subject)}'"
             )
+    return range_refusal({candidates[0] for _, candidates in fixups})
+
+
+def range_refusal(targets):
+    """Why folding into TARGETS is not safe because of other worktrees, the
+    upstream, or the commits from the oldest target to HEAD, or None."""
     up = upstream()
-    for target in {candidates[0] for _, candidates in fixups}:
+    for target in targets:
         reason = target_refusal(target, up)
         if reason:
             return reason
-    span = range_args(oldest_target(fixups))
+    span = range_args(oldest_target(targets))
     merges = git("rev-list", "--merges", *span).splitlines()
     if merges:
         return f"merge commit {short(merges[0])} is in the range; the rebase would flatten it"
@@ -189,9 +198,29 @@ def refusal(fixups):
     return None
 
 
+def check_refusal(sha):
+    """Why a fixup of SHA is not safe, or None. The fixup's subject names the
+    original target, so a fixup of a fixup folds into that target."""
+    subject = git("log", "-1", "--format=%s", sha)
+    wanted = strip_fixup(subject)
+    log = first_parent_log()
+    order = {older: index for index, (older, _) in enumerate(log)}
+    if sha not in order:
+        return f"no target: {short(sha)} is not on the first-parent history"
+    candidates = [older for older, older_subject in log if older_subject == wanted]
+    if not candidates:
+        return f"no target: no commit on the first-parent history has the subject '{wanted}'"
+    if len(candidates) > 1:
+        names = ", ".join(short(c) for c in candidates)
+        return f"ambiguous: {names} share the subject '{wanted}'"
+    if order[candidates[0]] < order[sha]:
+        return f"no target: fixup {short(sha)} is older than {short(candidates[0])} ({wanted})"
+    return range_refusal(candidates)
+
+
 def fold(fixups):
     before = git("rev-parse", "HEAD")
-    oldest = oldest_target(fixups)
+    oldest = oldest_target([candidates[0] for _, candidates in fixups])
     base = parent(oldest)
     env = dict(os.environ, GIT_SEQUENCE_EDITOR="true")
     command = ["-c", "rebase.updateRefs=false", "rebase", "-i", "--autosquash"]
@@ -250,15 +279,7 @@ def main(argv):
             if not sha:
                 print(f"not a commit: {argv[1]}", file=sys.stderr)
                 return usage()
-            subject = git("log", "-1", "--format=%s", sha)
-            shared = [
-                other for other, other_subject in first_parent_log()
-                if other_subject == subject and other != sha
-            ]
-            reason = target_refusal(sha, upstream())
-            if not reason and shared:
-                names = ", ".join(short(other) for other in shared)
-                reason = f"ambiguous: {names} share the subject '{subject}' with {short(sha)}"
+            reason = check_refusal(sha)
             if reason:
                 print(reason, file=sys.stderr)
                 return 1

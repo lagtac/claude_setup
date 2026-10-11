@@ -153,6 +153,85 @@ class CheckTest(FoldTestCase):
         self.assertIn("detached", result.stderr)
         self.assertIn("wt", result.stderr)
 
+    def test_check_of_a_fixup_tests_its_target(self):
+        commit(self.repo, "docs: spec", {"spec.md": "one\n"})
+        self.add_upstream()
+        fixup = commit(self.repo, "fixup! docs: spec", {"spec.md": "two\n"})
+        result = run(self.repo, "check", fixup)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("pushed", result.stderr)
+
+    def test_check_refuses_merge_after_target(self):
+        target = commit(self.repo, "docs: spec", {"spec.md": "one\n"})
+        git(self.repo, "checkout", "-q", "-b", "side")
+        commit(self.repo, "side work", {"side.md": "side\n"})
+        git(self.repo, "checkout", "-q", "main")
+        commit(self.repo, "main work", {"main.md": "main\n"})
+        git(self.repo, "merge", "-q", "--no-ff", "-m", "merge side", "side")
+        result = run(self.repo, "check", target)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("merge", result.stderr)
+
+    def test_check_refuses_squash_commit_after_target(self):
+        target = commit(self.repo, "docs: spec", {"spec.md": "one\n"})
+        commit(self.repo, "squash! docs: spec", {"spec.md": "two\n"})
+        result = run(self.repo, "check", target)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("squash!", result.stderr)
+
+    def test_check_refuses_target_off_first_parent_history(self):
+        git(self.repo, "checkout", "-q", "-b", "side")
+        target = commit(self.repo, "side work", {"side.md": "side\n"})
+        git(self.repo, "checkout", "-q", "main")
+        commit(self.repo, "main work", {"main.md": "main\n"})
+        git(self.repo, "merge", "-q", "--no-ff", "-m", "merge side", "side")
+        result = run(self.repo, "check", target)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("no target", result.stderr)
+
+    def side_commit_sharing_a_subject(self):
+        """main has `docs: spec`; branch side has another `docs: spec`. Returns side's."""
+        commit(self.repo, "docs: spec", {"spec.md": "one\n"})
+        git(self.repo, "checkout", "-q", "-b", "side", "HEAD~1")
+        side = commit(self.repo, "docs: spec", {"side.md": "side\n"})
+        git(self.repo, "checkout", "-q", "main")
+        return side
+
+    def test_check_refuses_off_history_target_sharing_a_subject(self):
+        side = self.side_commit_sharing_a_subject()
+        result = run(self.repo, "check", side)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("no target", result.stderr)
+
+    def test_check_refuses_off_history_fixup_sharing_a_subject(self):
+        commit(self.repo, "docs: spec", {"spec.md": "one\n"})
+        git(self.repo, "checkout", "-q", "-b", "side", "HEAD~1")
+        commit(self.repo, "docs: spec", {"side.md": "side\n"})
+        fixup = commit(self.repo, "fixup! docs: spec", {"side.md": "two\n"})
+        git(self.repo, "checkout", "-q", "main")
+        result = run(self.repo, "check", fixup)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("no target", result.stderr)
+
+    def test_check_refuses_fixup_older_than_its_target(self):
+        fixup = commit(self.repo, "fixup! docs: spec", {"spec.md": "one\n"})
+        commit(self.repo, "docs: spec", {"spec.md": "two\n"})
+        result = run(self.repo, "check", fixup)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("no target", result.stderr)
+
+    def test_check_safe_for_a_waiting_fixup(self):
+        self.spec_with_fixup()
+        result = run(self.repo, "check", self.head())
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "")
+
+    def test_check_safe_when_target_has_a_waiting_fixup(self):
+        target = self.spec_with_fixup()
+        result = run(self.repo, "check", target)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "")
+
     def test_check_not_a_commit_is_usage_error(self):
         result = run(self.repo, "check", "no-such-ref")
         self.assertEqual(result.returncode, 2)

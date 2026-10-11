@@ -91,7 +91,10 @@ a worktree holds it, when it is already on the upstream (D4.5), or when another 
 first-parent history shares its subject (D4.7). It prints the reason. Otherwise it exits `0` and
 prints nothing. (D4.5 and D4.7 were added in the review round, 2026-10-10, by the user's
 decision: without them `check` passed a fixup that the fold then refused on every run, and that
-one fixup blocked every later fold.)
+one fixup blocked every later fold.) (Since 2026-10-11, `check` runs the fold's own rules on the
+fixup it would create. It leaves out the rules that do not depend on `<sha>`: uncommitted changes,
+an operation in progress (D4.1) and other waiting fixups. A `check` of a fixup tests that fixup's
+own target. This closes the first known limit from the final re-review, in Risk.)
 
 ### D3. Finding the fixups and their targets
 
@@ -274,7 +277,8 @@ None. Python 3 standard library and Git 2.23 or later for `%(worktreepath)`. Git
   - D4.7 counts subjects across the whole first-parent history, not only the rebase range. A
     very old commit with the same subject refuses without need. This is safe.
   - A fixup whose target is not on the first-parent history, or was reworded, passes `check`
-    and is then refused by the fold as "no target".
+    and is then refused by the fold as "no target". (Half closed on 2026-10-11: `check` now
+    refuses a target off the first-parent history. A reworded target still passes.)
   - No test reaches exit `3`, an `amend!` commit in the range, or a run from inside a linked
     worktree. The exit `3` paths are short and were read in the review.
 - **Known limits from the final re-review**, 2026-10-10. The re-review is final, so these are
@@ -288,6 +292,7 @@ None. Python 3 standard library and Git 2.23 or later for `%(worktreepath)`. Git
     pull merges (the latest on 2026-10-09). There, a spec committed before a `git pull` that
     merges can pass `check` and then block the fold. Closing this means `check` runs the
     fold's range test too, which changes D2's contract and needs the user's decision.
+    (Closed on 2026-10-11 by the user's decision: see D2.)
   - A configured upstream whose ref is missing refuses even when there is nothing to fold,
     because `upstream()` runs before the search for fixups finds none.
   - When several targets would be refused, the loop runs over a set, so which reason is
