@@ -1,6 +1,6 @@
 # Critique: the development workflow, efficiency
 
-**Status:** current, 2026-10-09. Findings on whether the global rules, Superpowers and the `my:` skills make coding faster; C1, C2 and S1 are fixed; G1 and G2 have a roadmap row; S2 and S3 need no action.
+**Status:** current, 2026-10-12. Findings on whether the global rules, Superpowers and the `my:` skills make coding faster; C1, C2, S1, G1 and G2 are fixed; S2 and S3 need no action; the measurements of 2026-10-12 (M1 to M3) need none either, and a roadmap row measures again later.
 
 ## How to read this
 
@@ -12,6 +12,10 @@
   The size table arrived on 2026-10-03.
 - **Method:** the files were read. Nothing was timed. Claims about model attention are marked as
   hypotheses.
+- **Measurements of 2026-10-12:** the section of that name adds timings from zitamu's git history.
+  They come from the zitamu report
+  `real-estate-webapp/docs/reports/2026-10-12-commit-size-audit.md`, sections "Pace" and "Where
+  the branch `fix` commits came from", committed on zitamu's `main` in `f865401` and `d441494`.
 
 ## Short answer
 
@@ -123,6 +127,11 @@ day. That churn is real work, not waste.
 commit, as specs do. If the answer is no, the ratio is a cost of client work and not of the
 workflow.
 
+**New count, 2026-10-12.** Over the four full weeks from 2026-09-14, zitamu made 249 docs-only
+commits for 52 merged branches: 3.3, 4.4, 8.2 and 6.3 per branch by week, 4.8 on average. A Large
+change plans for three. The count is higher than the plan and rising, but nothing shows that the
+extra commits cost time. The user kept "no action" on 2026-10-12.
+
 ### S3. Many review files for one feature
 
 The `--plan-only` flag produced eight files in `docs/plans/`: spec, spec review, plan, plan review,
@@ -137,9 +146,49 @@ after the merge.
 - **Recommendation:** B, but only if the index or the orphan hook costs time today. If nobody
   reads the directory listing, the cost is small and A is fine.
 
+## Measurements of 2026-10-12
+
+These come from the zitamu report named in "How to read this". Times are from author dates, because
+the fixup fold rewrites commit dates. Spec times cover the 28 zitamu specs marked `done`.
+
+### M1. The code stage is not what limits throughput
+
+A branch lives 1.1 hours at the median, from its first commit to its squash-merge. A spec reaches
+`done` 4.6 hours after its first commit at the median. About 13 branches merge per week, so
+building fills about 14 hours of the week. The week with the fewest branches, 6, did not have
+short branches: its median branch lived 3.6 hours. This suggests that throughput depends on how many
+specs are ready, not on how fast agents write code. Git cannot prove it, because it does not
+record waiting.
+
+**Fix:** none. Making the agents write code faster would change little.
+
+### M2. Waits between stages make the long cycles
+
+The average spec takes 12.7 hours, almost three times the median. The five specs that took over
+12 hours each had one gap of 17 hours or more between two stages: spec to plan, or plan to `done`.
+Such a gap looks like a night with no session, not like slow work.
+
+**Fix:** none new. `my:handoff auto` (shipped in `39737e1`, on 2026-10-12) runs the stages without
+waiting for the user. The measured weeks are all before it, so its effect is not known yet.
+
+### M3. The end-of-branch reviews find real defects, in one small round
+
+Of the 105 `fix` commits on zitamu's branches, 40 fix what the end-of-branch reviews found. 38 of
+those 40 change what a user, a screen reader or a crawler meets. One example: a video that could
+never play, while every test passed. 29 of 55 branches have a review fix, and 21 of them have
+exactly one. The other `fix` commits are the branch's planned work (49), defects found while
+building (11), and 5 whose message does not say.
+
+7 of the 40 messages say that the user chose the answer, on 6 of the 55 branches. So with
+"Design-changing findings: `stop`" in a Delegation section, about 1 auto run in 9 would stop for a
+review finding.
+
+**Fix:** none. This supports one review round per branch, and S3's "no action".
+
 ## Evidence limits
 
-- No session was timed. "Fast" above means few commits and short calendar time on `main`.
+- No session was timed. "Fast" above means few commits and short calendar time on `main`. M1 to
+  M3 measure calendar time from git, which cannot tell work from waiting.
 - Zitamu is shared with another developer. Some of its commits are theirs and follow other rules.
 - Most commits in this repo are work on the workflow itself. They are not evidence for or
   against coding speed.
@@ -155,5 +204,7 @@ All rows are in `ROADMAP.md`, section "Workflow efficiency".
 | G1 | Row "Fold script for docs fixups". |
 | G2 | Row "Git steps leave the always-loaded file", after the G1 row. |
 | S1 | Row "UI rule has a Small case". |
-| S2 | No action, the user's choice of 2026-10-10. Each docs commit costs seconds, most record the client's changes, and more fixups would add Git steps. |
+| S2 | No action, the user's choice of 2026-10-10, kept on 2026-10-12 with the new count. Each docs commit costs seconds, most record the client's changes, and more fixups would add Git steps. |
 | S3 | No action, the user's choice of 2026-10-10. No evidence the files cost time; the change would touch three skills. |
+| M1, M3 | No action. They support the current flow. |
+| M2 | No action now; `my:handoff auto` answers it. Row "Measure the auto runs" checks its effect. |

@@ -75,8 +75,8 @@ Make the harness reusable in new projects without forking copies. Spec:
 
 Findings of
 [`docs/reports/2026-10-09-workflow-efficiency-critique.md`](docs/reports/2026-10-09-workflow-efficiency-critique.md).
-Rows are unordered unless a row says what it waits for. S2 and S3 got no row;
-the report says why. All rows are shipped.
+Rows are unordered unless a row says what it waits for. S2, S3, M1 and M3 got
+no row; the report says why.
 
 - ✅ **Trigger table contradictions** — fix: the "Invoke first" rows name the
   Git Workflow steps and the end-of-branch reviews. Report C1, C2.
@@ -89,6 +89,10 @@ the report says why. All rows are shipped.
   [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md)
 - ✅ **`check` asks the fold** — fix: `git-fold-fixups.py check` runs the
   fold's own rules. Small. [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md)
+- 💭 **Measure the auto runs** — after a few weeks of `my:handoff auto` on
+  zitamu, rerun the spec-to-`done` timing and the docs-only commits per branch
+  from zitamu's commit size audit, and compare them with the 2026-10-12 numbers.
+  Waits for those weeks. Report M2.
 
 ## Other
 
