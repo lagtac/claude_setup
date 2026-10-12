@@ -2,7 +2,7 @@
 
 **Status:** review of main..feat/status-skill, 2026-10-12. Mixed: the fix round resolves both Warnings from the first review. One new Warning remains: for a branch with no shared history, the fix sends the model to a two-dot diff whose `-` side is mostly `main`'s own later work, and step 2 does not say to take names from the added lines only.
 
-**Scope:** main..feat/status-skill, diffed from the merge base of local `main` and `feat/status-skill` (local `main`, not `origin/main`). The merge base is `5c45b41`, which is also the tip of local `main`, so the range holds exactly the branch's commits. This is the final re-review after one fix round.
+**Scope:** main..feat/status-skill, diffed from the merge base of local `main` and `feat/status-skill` (local `main`, not `origin/main`). The merge base is the tip of local `main` at the time, so the range holds exactly the branch's commits. This is the final re-review after one fix round.
 
 ## Change Summary
 
