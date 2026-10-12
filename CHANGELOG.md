@@ -72,6 +72,12 @@ the known limits.
 
 ### Changed
 
+- `/my:status` lists two items that use the same **Shared resources** lock
+  as safe to run together, and says they take turns on that lock. Before,
+  any item that used a shared resource could not pair with another, so two
+  code items in a project with one Docker stack never paired. An item whose
+  files include one that a shared-resource command names or runs, such as
+  its script, still does not pair.
 - `my:spec-review` checks that a spec which adds UI decides off-path events:
   browser Back and Forward, a reload or deep link, a record deleted or
   restored while shown, an element that hides with focus or a panel open, a

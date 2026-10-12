@@ -65,7 +65,9 @@ Follow-ups spawned by the planner retirement. Spec:
   [plan](docs/plans/2026-10-12-parallel-auto-runs.md)
 - ✅ **`my:status`** — one read-only report of where we are, what is next,
   and what can run in parallel. Shipped in `c4d3832`; known limits are in the
-  spec's Risk section. [spec](docs/plans/2026-10-12-status-skill-spec.md)
+  spec's Risk section. Since 2026-10-12, items that take turns on a
+  **Shared resources** lock can pair; see `CHANGELOG.md`.
+  [spec](docs/plans/2026-10-12-status-skill-spec.md)
 
 ## Harness generalization
 

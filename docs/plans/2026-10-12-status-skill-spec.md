@@ -157,10 +157,15 @@ gated, as if the order of work said so.
    Without that section: 🚧 rows, then 📋 rows, in roadmap order, and the report says it used
    roadmap order because no order was given. A row with no spec gets "write its spec" as its
    command (`superpowers:brainstorming`).
-3. **What can run in parallel.** Two items may run together only when all four hold:
+3. **What can run in parallel.** Two items may run together only when all three remaining conditions hold:
    - the order of work does not gate one behind the other;
    - their file lists share no path outside the docs paths;
-   - neither touches a resource listed under **Shared resources** in "Parallel runs";
+   - (Removed after shipping, on 2026-10-12.) This condition read: neither touches a
+     resource listed under **Shared resources** in "Parallel runs". Now a shared resource
+     does not stop a pair, because runs take turns on it under its lock. The exception:
+     an item whose file list holds a file that a **Shared resources** command names or
+     runs does not pair. The skill's "What can run in parallel" holds the current rule;
+     see `CHANGELOG.md`;
    - runs whose `next` is not `finished`, stopped ones included, plus new runs stay within
      **Max runs**, as in the parallel auto runs spec's D3.
 

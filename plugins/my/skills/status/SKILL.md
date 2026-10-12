@@ -121,13 +121,20 @@ A row with no spec gets "write its spec" as its command
 
 ### 3. What can run in parallel
 
-Two items may run together only when all four hold:
+Two items may run together only when all three hold:
 
 - the order of work, or a row's own text, does not gate one behind the other;
 - their file lists share no path outside the docs paths;
-- neither touches a resource under **Shared resources**;
 - the runs whose `next` is not `finished`, stopped ones included, plus the new
   runs, stay within **Max runs**.
+
+A resource under **Shared resources** does not stop two items from running
+together: each run uses it under its lock, so the runs take turns on it. When
+both items are code work, list them as safe, and add that they wait for each
+other on the project's locks, by name. One exception: when one item's file
+list holds a file that a **Shared resources** command names or runs, such as
+its script, the other item would use a changed resource. Do not list that
+pair as safe, and say why.
 
 An item with unknown overlap is never listed as safe; say that its overlap is
 unknown. Without a "Parallel runs" section, allow one auto run, and offer the
