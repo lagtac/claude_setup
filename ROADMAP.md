@@ -52,6 +52,12 @@ Follow-ups spawned by the planner retirement. Spec:
   `~/src/scripts/` and changed there, so this repo's old tests went stale. They
   moved into the suite in `~/src/scripts/`, which owns the scripts; `SKILL.md`
   and `README.md` now describe the new command line. Small.
+- 📋 **Deny list has no effect** — fix: the repo-root `settings.json` deny list
+  is read by nothing (Claude Code reads `.claude/settings.json`, and a plugin
+  `settings.json` drops permission rules), yet `CLAUDE.md` and `README.md`
+  describe it as active. Found while writing the
+  [spec](docs/plans/2026-10-12-autonomous-run-spec.md) for `my:handoff auto`
+  (its D4).
 
 ## Design workflow
 
@@ -76,6 +82,12 @@ Follow-ups spawned by the planner retirement. Spec:
   `tutor` output style. Shipped in `1e69584`; known limits are in the spec's
   Risk section. Spec:
   [`docs/plans/2026-10-06-tutor-spec.md`](docs/plans/2026-10-06-tutor-spec.md).
+- 📋 **`my:handoff auto`** — one feature runs from an approved spec to its
+  `done` marks with no user input, within a Delegation section the user
+  approves, and never pushes. Large. Brief:
+  [`docs/plans/2026-10-11-autonomous-run-architecture.md`](docs/plans/2026-10-11-autonomous-run-architecture.md),
+  spec:
+  [`docs/plans/2026-10-12-autonomous-run-spec.md`](docs/plans/2026-10-12-autonomous-run-spec.md).
 
 ## Workflow efficiency
 
