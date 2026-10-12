@@ -121,6 +121,29 @@ no row; the report says why.
   from zitamu's commit size audit, and compare them with the 2026-10-12 numbers.
   Waits for those weeks. Report M2.
 
+## `my:handoff` instructions
+
+Findings of
+[`docs/reports/2026-10-12-handoff-instructions-audit.md`](docs/reports/2026-10-12-handoff-instructions-audit.md).
+Rows are unordered unless a row says what it waits for.
+
+- 💭 **Split `my:handoff` by mode** — move auto-only and parallel-only text
+  out of `SKILL.md` into files read through a pointer step, so a stage loads
+  only its own branch. Rehearse a supervised and an auto run headless before
+  and after. Report P1.
+- 💭 **Write review step 8 whole per mode** — the four versions of the merge
+  step become one list per mode; smaller patches sit under the step they
+  change. Waits for "Split `my:handoff` by mode". Report P2.
+- 💭 **One script for the locked commit** — a `locked-commit.py` that reads
+  the message from stdin replaces the five copies of the locked command and
+  the heredoc rule. Report P3.
+- 💭 **Trim copied facts in `my:handoff`** — the lock exit-code table points
+  to `handoff-lock.py --help`, and design explanations stay in the specs.
+  Small. Report P4.
+- 💭 **Name repeated cross-references** — *locked commit*, *shared-doc
+  check* and *waiting fixups* replace "as in Plan stage, step N". Small.
+  Report P5.
+
 ## Other
 
 Older self-contained efforts (code-review consolidation, planning-standards
