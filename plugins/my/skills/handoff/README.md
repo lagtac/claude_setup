@@ -163,8 +163,9 @@ A stage stops and waits at these points:
 At each point it does three things:
 
 1. Renames its window to `<name> ⚠`.
-2. Sends a notification with `PushNotification`. This is often not delivered
-   while you work in another window, so the `⚠` mark is the main signal.
+2. Sends a notification with `PushNotification`, when the session has that
+   tool. This is often not delivered while you work in another window, so
+   the `⚠` mark is the main signal.
 3. Prints one line that starts with `<name>:` and says what you need to do.
 
 When you answer in that window, the `⚠` goes away before the stage goes on.
@@ -386,13 +387,17 @@ Two runs keep about 6 `claude` processes; see "Memory" below. Spec:
   that has not changed for a long time.
 - **Memory.** Every stage is a full `claude` process. A rehearsal with
   four runs at once reached 13 processes and left 1.8 GB free on a 15 GB
-  machine. Run one auto run at a time; it keeps about 3 processes.
+  machine. Run one auto run at a time; it keeps about 3 processes. On a
+  machine like this, that advice is stricter than the **Max runs** default
+  of 2 in "Parallel runs": set `Max runs: 1` there, or start one run at a
+  time.
 
 ## What you need
 
 - tmux, with the session running inside it.
 - A session in `auto` or `bypassPermissions` mode, for windows to open on their
   own.
-- The tools `ListAgents` and `PushNotification`.
+- The tool `ListAgents`. `PushNotification` is optional: without it, a stage
+  skips the notification, and the `⚠` mark still shows.
 - For auto mode, `python3`: the push guard and `handoff-state.py` are Python
   scripts.

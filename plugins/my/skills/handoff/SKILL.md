@@ -182,8 +182,11 @@ server: that process keeps the lock until it ends.
    `tmux rename-window -t "$TMUX_PANE" "<name> ⚠"`. Always pass `-t`: without
    it tmux renames the window the user is looking at.
 2. Call `PushNotification` with one line under 200 characters that leads with
-   `<name>:` and says what the user must do. It is often not sent while the
-   user is active elsewhere; that is expected. Do not retry.
+   `<name>:` and says what the user must do. It may be a deferred tool: if
+   its schema is not loaded yet, load it once with
+   `ToolSearch("select:PushNotification")`. If `PushNotification` cannot be
+   called even then, skip this action. It is often not sent while the user
+   is active elsewhere; that is expected. Do not retry.
 3. Print the same line as the last line of your output.
 
 In a Run session only: after a signal, when the user next replies in this
@@ -468,10 +471,10 @@ is none.
    `next` equals `<stage>`. For `run auto review`, `next` is one of
    `review`, `merge-retry`, `merge`, `worktree-remove`, `fold` and `done`:
    the steps after the merge also run as the review stage.
-7. `run auto code` with a spec as the task doc: today's check "the plan is
-   committed on `<base>`" waits for the code stage's first step, which
-   commits the spec's `approved` edit. The other code-stage checks run as
-   listed.
+7. `run auto code` with a spec as the task doc: the check "the plan is
+   committed on `<base>`" waits until sub-steps a to c, before the code
+   stage's step 1, have committed the spec's `approved` edit. The other
+   code-stage checks run as listed.
 8. A `run auto` session that is a restart (see "Restarted stages", under
    "Resume") skips the checks that expect a fresh start: no plan yet, no
    branch yet, no worktree yet.
@@ -513,17 +516,20 @@ file would count as a live run.
    them. Use the project's rule when it names one. Otherwise pick
    `superpowers:subagent-driven-development` when the plan has several
    independent tasks, and `superpowers:executing-plans` when the tasks build
-   on each other or are small. The header also says that the project's review
-   rules replace the skill's own reviews, when the project has such rules.
+   on each other or are small. Print one line with the pick and its reason.
+   The header also says that the project's review rules replace the skill's
+   own reviews, when the project has such rules.
 3. Run the project's plan review on the uncommitted plan. Under the global
    rules that is `my:soundness-review --plan-only <plan path>`. The
    `--plan-only` token reviews the plan even when other sessions have
    uncommitted files on `<base>`. Take the review's path from the line it
    prints, `Review written to docs/plans/<filename>.`: an older review of the
    same plan makes the name end in `-plan-review-2.md`.
-4. For each finding, ask: would the fix change what a component owns, a
-   contract, the chosen option, or the scope? If no, fix it. If yes, it is a
-   gate.
+4. First, for each finding, ask: would the fix change what a component
+   owns, a contract, the chosen option, or the scope? If no, its class is
+   fix. If yes, it is a gate. Print one line per finding: the finding, its
+   class, and the evidence for that class. Only then fix the findings whose
+   class is fix. The review stage adds a third class, Risk.
 5. Signal and stop on any gate: a finding whose fix would change a decision,
    or a spec decision that turns out to rest on a false premise. The signal
    names the files this stage wrote or edited and left uncommitted on
@@ -655,28 +661,28 @@ file would count as a live run.
 
 Before step 1, when the task doc is a spec and its `approved` edit is not
 committed (`git status --porcelain -- <spec>` prints it), commit that edit
-in the main checkout. This is the commit the plan stage makes for a Large
-change.
+in the main checkout, in sub-steps a to c. This is the commit the plan
+stage makes for a Large change.
 
-1. Find `<spec commit>`, the commit that added the spec, as in Plan stage,
-   step 8. Run `git-fold-fixups.py check <spec commit>`. If it exits 1,
-   commit the edit as a normal `docs:` commit, with the scope the project's
-   rules give docs. Otherwise commit it with
-   `git commit --fixup <spec commit> -- <spec>`. Either way, commit only the
-   spec: `git commit … -- <spec>`, then check that
-   `git show --stat --format= HEAD` lists only the spec.
-2. If `git status --porcelain` in the main checkout prints nothing, fold as
-   in Plan stage, step 8: a failed pre-rebase check, or a fold exit of 1 or
-   3, is row 5, a stop. If it prints anything, skip the fold. The review
-   stage folds the waiting fixup after the merge.
-3. Then run the start check that waited: the task doc is committed on
-   `<base>`.
+- **a.** Find `<spec commit>`, the commit that added the spec, as in Plan
+  stage, step 8. Run `git-fold-fixups.py check <spec commit>`. If it exits
+  1, commit the edit as a normal `docs:` commit, with the scope the
+  project's rules give docs. Otherwise commit it with
+  `git commit --fixup <spec commit> -- <spec>`. Either way, commit only the
+  spec: `git commit … -- <spec>`, then check that
+  `git show --stat --format= HEAD` lists only the spec.
+- **b.** If `git status --porcelain` in the main checkout prints nothing,
+  fold as in Plan stage, step 8: a failed pre-rebase check, or a fold exit
+  of 1 or 3, is row 5, a stop. If it prints anything, skip the fold. The
+  review stage folds the waiting fixup after the merge.
+- **c.** Then run the start check that waited: the task doc is committed on
+  `<base>`.
 
-**With a "Parallel runs" section,** step 1 always makes a normal `docs:`
-commit, never `--fixup`, in the locked form of Plan stage, step 7, and step 2
-is skipped: nothing folds there.
+**With a "Parallel runs" section,** sub-step a always makes a normal `docs:`
+commit, never `--fixup`, in the locked form of Plan stage, step 7, and
+sub-step b is skipped: nothing folds there.
 
-In the steps:
+In the code stage's numbered steps:
 
 - Step 1: after the worktree exists, run
   `handoff-state.py set <slug> branch=<branch> worktree=<worktree path>`,
@@ -770,9 +776,10 @@ all land on the branch, and the main checkout stays clean.
 6. **One fix round.** For each finding, apply the test in Plan stage, step 4.
    A finding whose fix would change a decision is a gate. A finding about
    input that today's code never produces goes into the plan's **Risk**
-   section as a known limit. Fix the rest, test and commit as the project's
-   rules say. Commit the review reports and the **Risk** edits on the branch,
-   in the worktree: while the worktree exists, the plan is edited only
+   section as a known limit. Print the list as Plan stage, step 4 says,
+   before any fix. Fix the rest, test and commit as the project's rules say.
+   Commit the review reports and the **Risk** edits on the branch, in the
+   worktree: while the worktree exists, the plan is edited only
    there.
    Then run each review that led to a fix once more, with the same prompt
    block. That re-review is final: a new Critical finding is a gate, and a

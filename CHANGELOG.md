@@ -72,6 +72,10 @@ the known limits.
 
 ### Changed
 
+- `my:handoff` prints one line per review finding, with its class (fix, gate
+  or Risk) and the evidence, before the plan stage or the fix round fixes
+  anything. The plan stage also prints why it picked the execution skill.
+  See the [audit](docs/reports/2026-10-12-handoff-instructions-audit.md), R2.
 - `/my:status` lists two items that use the same **Shared resources** lock
   as safe to run together, and says they take turns on that lock. Before,
   any item that used a shared resource could not pair with another, so two
@@ -94,6 +98,11 @@ the known limits.
 
 ### Fixed
 
+- `my:handoff` loads the deferred `PushNotification` tool before a signal
+  calls it, and skips the notification when the tool is absent. The code
+  stage's auto sub-steps are lettered a to c, so "step 1" no longer names two
+  steps. The README says that its advice of one auto run at a time is
+  stricter than the **Max runs** default of 2. Audit R1, R3 and R4.
 - `git-fold-fixups.py check` runs the fold's own rules, so it no longer
   passes a target that the fold then refuses.
 - The md-tables docs describe the scripts' current command line in

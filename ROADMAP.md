@@ -143,6 +143,9 @@ Rows are unordered unless a row says what it waits for.
 - 💭 **Name repeated cross-references** — *locked commit*, *shared-doc
   check* and *waiting fixups* replace "as in Plan stage, step N". Small.
   Report P5.
+- ✅ **Rubric fixes in `my:handoff`** — `PushNotification` is loaded before
+  use, findings are classified in writing before a fix, and the code stage's
+  auto sub-steps have their own letters. Small. Report R1 to R4.
 
 ## Other
 

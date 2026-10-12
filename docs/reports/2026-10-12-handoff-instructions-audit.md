@@ -1,6 +1,6 @@
 # Audit: the `my:handoff` instructions
 
-**Status:** current, 2026-10-12. Four rubric findings (R1 to R4) and five findings on length and structure (P1 to P5). R1 to R4 get one Small fix. P1 to P5 are rows in `ROADMAP.md`, section "`my:handoff` instructions".
+**Status:** current, 2026-10-12. Four rubric findings (R1 to R4) and five findings on length and structure (P1 to P5). R1 to R4 are fixed. P1 to P5 are rows in `ROADMAP.md`, section "`my:handoff` instructions".
 
 ## How to read this
 
