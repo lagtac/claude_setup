@@ -7,8 +7,11 @@ The fold runs `git rebase -i --autosquash` without an editor, and only when it
 is safe. Otherwise it refuses, prints one line that says why, and changes nothing.
 
 Usage:
-    git-fold-fixups.py              fold every waiting fixup on the current branch
-    git-fold-fixups.py check SHA    is a fixup of SHA safe? (the fold would accept it)
+    git-fold-fixups.py [--docs-paths <path> ...]            fold every waiting fixup on the current branch
+    git-fold-fixups.py check SHA [--docs-paths <path> ...]  is a fixup of SHA safe? (the fold would accept it)
+
+--docs-paths comes last and takes one or more paths; a path that ends in `/` is
+a folder. Without it, the docs paths are `docs/`, `ROADMAP.md` and `CHANGELOG.md`.
 
 A worktree holds a commit when it has a branch, or a detached HEAD, that
 contains the commit. `check` runs the fold's rules on the fixup that
@@ -21,7 +24,11 @@ The fold refuses when a rebase, merge or cherry-pick is in progress; when a
 tracked file has uncommitted changes; when a fixup has no target, or more than
 one; when another worktree holds a target; when a target is already on the
 upstream, or the upstream is configured but its ref is missing; and when the
-range holds a merge, `squash!` or `amend!` commit.
+range holds a merge, `squash!` or `amend!` commit. It also refuses when a commit
+after the oldest target is cited in a file under the docs paths at HEAD: the
+fold would give that commit a new hash, and the citation would point at
+nothing. A citation is a word of 7 to 40 lowercase hex characters that is a
+prefix of the commit's full hash.
 
 Exit codes:
     0  folded, nothing to fold, or safe
@@ -38,6 +45,7 @@ import subprocess
 import sys
 
 FIXUP = "fixup! "
+DOCS_PATHS = ("docs/", "ROADMAP.md", "CHANGELOG.md")
 
 
 class GitError(Exception):
@@ -162,7 +170,7 @@ def range_args(oldest):
     return [f"{base}..HEAD"] if base else ["HEAD"]
 
 
-def refusal(fixups):
+def refusal(fixups, docs_paths):
     """The reason the fold is not safe, or None. The first rule that applies wins."""
     if git("status", "--porcelain", "--untracked-files=no"):
         return "uncommitted changes to tracked files; commit or stash them first"
@@ -176,12 +184,30 @@ def refusal(fixups):
                 f"fixup {short(sha)} has an ambiguous target: "
                 f"{names} share the subject '{strip_fixup(subject)}'"
             )
-    return range_refusal({candidates[0] for _, candidates in fixups})
+    return range_refusal({candidates[0] for _, candidates in fixups}, docs_paths)
 
 
-def range_refusal(targets):
+def citations(span_commits, docs_paths):
+    """The first of SPAN_COMMITS (full hashes) that a file under DOCS_PATHS
+    cites at HEAD, as (commit, file), or None."""
+    out = git("grep", "--full-name", "-o", "-w", "-E", "[0-9a-f]{7,40}", "HEAD", "--",
+              *(f":(top){path}" for path in docs_paths), check=False)
+    words = {}
+    for line in out.splitlines():
+        _, _, rest = line.partition(":")
+        path, _, word = rest.partition(":")
+        words.setdefault(word, path)
+    for sha in span_commits:
+        for length in range(7, len(sha) + 1):
+            if sha[:length] in words:
+                return sha, words[sha[:length]]
+    return None
+
+
+def range_refusal(targets, docs_paths):
     """Why folding into TARGETS is not safe because of other worktrees, the
-    upstream, or the commits from the oldest target to HEAD, or None."""
+    upstream, the commits from the oldest target to HEAD, or a citation of a
+    commit after the oldest target, or None."""
     up = upstream()
     for target in targets:
         reason = target_refusal(target, up)
@@ -195,10 +221,14 @@ def range_refusal(targets):
         sha, subject = line.split("\0", 1)
         if subject.startswith(("squash! ", "amend! ")):
             return f"commit {short(sha)} ({subject}) is in the range; its rebase stops for an editor"
+    after = git("rev-list", f"{oldest_target(targets)}..HEAD").splitlines()
+    cited = citations(after, docs_paths)
+    if cited:
+        return f"commit {short(cited[0])} is cited in {cited[1]}; a fold would give it a new hash"
     return None
 
 
-def check_refusal(sha):
+def check_refusal(sha, docs_paths):
     """Why a fixup of SHA is not safe, or None. The fixup's subject names the
     original target, so a fixup of a fixup folds into that target."""
     subject = git("log", "-1", "--format=%s", sha)
@@ -215,7 +245,7 @@ def check_refusal(sha):
         return f"ambiguous: {names} share the subject '{wanted}'"
     if order[candidates[0]] < order[sha]:
         return f"no target: fixup {short(sha)} is older than {short(candidates[0])} ({wanted})"
-    return range_refusal(candidates)
+    return range_refusal(candidates, docs_paths)
 
 
 def fold(fixups):
@@ -271,6 +301,12 @@ def main(argv):
     if argv in (["-h"], ["--help"]):
         print(__doc__)
         return 0
+    docs_paths = list(DOCS_PATHS)
+    if "--docs-paths" in argv:
+        split = argv.index("--docs-paths")
+        argv, docs_paths = argv[:split], argv[split + 1:]
+        if not docs_paths:
+            return usage()
     if len(argv) not in (0, 2) or (argv and argv[0] != "check"):
         return usage()
     try:
@@ -279,7 +315,7 @@ def main(argv):
             if not sha:
                 print(f"not a commit: {argv[1]}", file=sys.stderr)
                 return usage()
-            reason = check_refusal(sha)
+            reason = check_refusal(sha, docs_paths)
             if reason:
                 print(reason, file=sys.stderr)
                 return 1
@@ -291,7 +327,7 @@ def main(argv):
         if not fixups:
             print("nothing to fold")
             return 0
-        reason = refusal(fixups)
+        reason = refusal(fixups, docs_paths)
         if reason:
             print(f"refused: {reason}", file=sys.stderr)
             return 1

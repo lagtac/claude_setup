@@ -107,6 +107,73 @@ Compare by exact name: a package or a test is listed only when its name is
 written there. A missing key, an unknown key, or a value outside these forms
 fails the start check. Anything the section does not list stops the run.
 
+## Parallel runs
+
+A project allows several auto runs at once when its `CLAUDE.md` or
+`CLAUDE.local.md` holds a heading titled `Parallel runs`, at any level. Such
+a project "has the section". Spec:
+`docs/plans/2026-10-12-parallel-auto-runs-spec.md` in the claude-setup repo.
+
+```markdown
+## Parallel runs
+
+- **Max runs:** 2
+- **Docs paths:** `docs/`, `ROADMAP.md`, `CHANGELOG.md`
+- **Isolation:** `COMPOSE_PROJECT_NAME=app_<slug>`; `PORT=$((54310 + <slot>))`
+- **Shared resources:** `e2e`: `web/scripts/e2e-worktree.sh <path>`
+```
+
+| Key | Default when missing | Meaning |
+| --- | --- | --- |
+| Max runs | `2` | The most auto runs live at once. |
+| Docs paths | `docs/`, `ROADMAP.md`, `CHANGELOG.md` | Changes only under these paths are not code. A path ending in `/` is a folder. Everything else is code, including Markdown skills. |
+| Isolation | `none needed` | What every stage sets for each command it runs in the worktree, so that worktrees do not share test stacks or ports. It may use `<slug>` and `<slot>`. |
+| Shared resources | `none` | Commands that only one run may use at a time, each with a lock name. Each runs under its lock. |
+
+Without the section, only two parts of this apply: the locked start, with
+`--max 1`, so that a second auto run refuses to start; and the fold's
+refusal to give a cited commit a new hash. Every other step reads as
+written.
+
+The values that the steps below use:
+
+- **`<n>`**, the number the auto launch passes to `--max`: the **Max runs**
+  value when the section names one; `2` when the section has no **Max
+  runs** key; `1` when the project has no section.
+- **The docs paths:** the section's list, or the default list. Pass them to
+  `git-fold-fixups.py` and to `handoff-state.py merge` as
+  `--docs-paths <path> ...`, last on the command line, only when the section
+  names a list that differs from the default.
+- **`<slot>`:** the `slot` field that `handoff-state.py get <slug>` prints.
+  A supervised run has no state file and uses slot `1`.
+
+`handoff-lock.py`, on `PATH` like `handoff-state.py`, runs one command under
+a named lock that the main checkout and every worktree share:
+
+```text
+handoff-lock.py <name> [--timeout <seconds>] -- <command> [<arg> ...]
+```
+
+It holds the lock exactly as long as the command runs, and the kernel frees
+it when the command ends or dies. The default timeout is 90 s, below the
+Bash tool's 120 s. The exit code is the command's own, except for the
+script's own codes below. Each of those prints one stderr line that starts
+with `handoff-lock:`.
+
+| Code | Meaning |
+| --- | --- |
+| 64 | Usage error, or a bad lock name. Nothing ran. |
+| 74 | The lock file cannot be opened. Nothing ran. |
+| 75 | The wait timed out. Nothing ran. |
+| 126 | The command cannot be run. |
+| 127 | The command is not found. |
+
+A command can exit with one of these codes on its own. So read a code as the
+script's only when the stderr line that starts with `handoff-lock:` is there.
+
+A locked command must not start a process that outlives it, such as a
+server: that process keeps the lock until it ends.
+
 ## Signal
 
 "Signal" means these three actions, in this order, then stop and wait:
@@ -163,6 +230,16 @@ name.
 | 15 | review | `git merge --squash` conflicts, because `<base>` moved during the run | run `git reset --merge`, check that `git status --porcelain` prints nothing, then stop with `next=merge`. If the tree is still not clean, the stop line says so. (`git merge --abort` does not work here: a squash merge writes no `MERGE_HEAD`.) |
 | 16 | review | After the merge, `<base>` is not clean, so the fold must wait | stop with `next=fold` |
 | 17 | review | The fold exits 1 or 3 | stop with `next=fold`. Exit 3 also records the HEAD from before the fold. |
+| 18 | any | Lock `main` or a shared-resource lock times out (`handoff-lock.py` exit 75 with a stderr line that starts with `handoff-lock:`), except at the start | stop |
+| 19 | any | A shared doc (`ROADMAP.md`, `CHANGELOG.md`, the plans index) holds someone else's edits | stop |
+| 20 | review | The worktree rebase after `merge` exit 4 conflicts | run `git rebase --abort`, then stop with `next=merge-retry` |
+| 21 | review | The base moved a fourth time | stop with `next=merge-retry` |
+| 22 | review | `handoff-state.py merge` exits 5: the squash conflicts, or its commit fails | stop with `next=merge`, as row 15 |
+| 23 | any | Any other failure of `handoff-lock.py` or `handoff-state.py merge` | stop, with the script's message in the stop line |
+
+Rows 18 to 23 arise only in a project with a "Parallel runs" section. Rows 5,
+16 and 17 cannot arise there, because nothing folds. A refused start is not a
+stop: it writes nothing (see "Start checks in auto mode").
 
 With `decide` in Delegation [Design-changing findings], the stage picks the
 fix it judges best, applies it, and writes one line into the task doc's
@@ -256,14 +333,25 @@ stage's work itself: it launches the stage in a new window.
      take the next line. Otherwise the stage is `plan` and the doc is
      `spec`.
    - `code`: the stage is `code` and the doc is `task_doc`.
-   - `review`, `merge`, `worktree-remove`, `fold` or `done`: the stage is
-     `review` and the doc is `task_doc`. The steps after the merge run as
+   - `review`, `merge-retry`, `merge`, `worktree-remove`, `fold` or `done`:
+     the stage is `review` and the doc is `task_doc`. The steps after the merge run as
      the review stage.
 4. If the state's `stopped` field is not empty, print
    `<name>: the earlier stop was: <stopped>`. Then run
-   `handoff-state.py set <slug> stopped=`, and run "Launch" in auto mode
-   for that stage and doc, with the name `<stage>-<slug>`: it opens
+   `handoff-state.py set <slug> stopped=`. In a project with a "Parallel
+   runs" section, also run `handoff-state.py set <slug> merge_retries=0`.
+   Then run "Launch" in auto mode for that stage and doc, with the name `<stage>-<slug>`: it opens
    `run auto <stage> <doc>` with `MY_AUTORUN=<slug>`. Then "Finish".
+
+### To end an abandoned run
+
+A stopped run still counts toward the cap until the user resumes it or ends
+it. `handoff-state.py live` lists the runs that count. To end one, the user
+says so in a session. That session runs `git worktree remove <worktree>` when
+the state names a worktree that `git worktree list` shows, with `--force`
+only after the user's yes to it. Then it runs
+`handoff-state.py set <slug> next=finished stopped="ended by the user"`. The
+branch stays.
 
 ### Restarted stages
 
@@ -305,7 +393,9 @@ Then:
      `<name>: the fix round already ran; a second one would break the one-fix-round rule`.
      Otherwise start the reviews again at step 1.
    - `review` with `next` past `review`: start at the sub-step of step 8
-     that `next` names.
+     that `next` names. `merge-retry` is past `review`: the reviews and the
+     fix round are committed, so the "fix round already ran" stop does not
+     apply, and the stage starts at the merge sub-step.
 
 ## Run
 
@@ -376,8 +466,8 @@ is none.
    `finished`. If not, the reason is `a run for <slug> exists; use resume`.
 6. `run auto <stage>`: `handoff-state.py get <slug>` prints a state, and its
    `next` equals `<stage>`. For `run auto review`, `next` is one of
-   `review`, `merge`, `worktree-remove`, `fold` and `done`: the steps after
-   the merge also run as the review stage.
+   `review`, `merge-retry`, `merge`, `worktree-remove`, `fold` and `done`:
+   the steps after the merge also run as the review stage.
 7. `run auto code` with a spec as the task doc: today's check "the plan is
    committed on `<base>`" waits for the code stage's first step, which
    commits the spec's `approved` edit. The other code-stage checks run as
@@ -386,18 +476,31 @@ is none.
    "Resume") skips the checks that expect a fresh start: no plan yet, no
    branch yet, no worktree yet.
 
-When the checks pass, the auto launch creates the state and then goes to
-"Launch":
+When the checks pass, the auto launch creates the state with one locked
+command, and then goes to "Launch". `<n>` is as "Parallel runs" says: `1` in
+a project without the section.
 
 ```bash
-handoff-state.py set <slug> spec=<spec> task_doc=<task doc> next=<stage> \
-  branch= worktree= squash_subject= head_before_fold= stopped=
+handoff-lock.py main -- handoff-state.py start <slug> --max <n> \
+  spec=<spec> task_doc=<task doc> next=<stage> branch= worktree= \
+  squash_subject= head_before_fold= stopped= checked_base=
 ```
 
 `<task doc>` is the spec for `auto code`, and
 `docs/plans/<spec date>-<slug>.md`, the plan still to be written, for
-`auto plan`. The empty fields clear what a `finished` run left. Launch then
-types `run auto <stage> <spec>` into the new window.
+`auto plan`. `start` replaces a `finished` state of the same slug, and
+prints the run's slot. Because the cap check and the write are one locked
+step, two starts at once cannot both pass the cap. Launch then types
+`run auto <stage> <spec>` into the new window.
+
+A non-zero exit is a failed start check: signal the line below, and write
+nothing. It is not a stop, because a stop writes the state file, and that
+file would count as a live run.
+
+- Exit 1 with `refused: <k> auto runs are live (<slugs>); the most is <n>`, in a project without the section: `<name>: another auto run is live (<slug>); this project has no "Parallel runs" section`. Here `<slug>` is the other run's slug, taken from the script's line, not this spec's slug.
+- The same exit, in a project with the section: `<name>: <n> auto runs are live (<slugs>), the most this project allows`, with the slugs from the script's line.
+- Exit 1 with `refused: a run for <slug> exists; use resume`: `<name>: start check failed: a run for <slug> exists; use resume`, as start check 5.
+- Any other non-zero exit, a lock timeout included: `<name>: start check failed: <the script's message>`.
 
 ### Plan stage
 
@@ -436,6 +539,13 @@ types `run auto <stage> <spec>` into the new window.
    not this stage's own change, for example another session's row in the
    plans index, signal `<name>: <file> holds another session's edit` and
    stop.
+
+   **With a "Parallel runs" section,** the plans index, `ROADMAP.md` and
+   `CHANGELOG.md` are shared docs. Before editing one, run
+   `git diff --quiet HEAD -- <file>`. If it exits non-zero, someone else has
+   uncommitted edits there: signal `<name>: <file> holds someone else's
+   edits` and stop (row 19). The hunk check above then covers every hunk of
+   the file.
 7. Commit these paths, and only these, in one commit, following the
    project's rules for docs commits: `git add -- <paths>`, then
    `git commit -m "<message>" -- <paths>`. The `-- <paths>` on `git commit`
@@ -444,6 +554,29 @@ types `run auto <stage> <spec>` into the new window.
    these paths. A path with no change, such as an index that needed no
    edit, is not listed, and that is correct. If it lists another path,
    signal `<name>: the plan commit holds <path>` and stop.
+
+   **With a "Parallel runs" section,** every commit in the main checkout runs
+   under lock `main`, so the commit is one locked command that stages and
+   commits. First read `git diff -- <paths>`: it shows what the command will
+   stage, except the new plan and review, which this stage wrote whole. Then
+   run:
+
+   ```bash
+   handoff-lock.py main -- sh -c 'm=$1; shift; git add -- "$@" && git commit -m "$m" -- "$@" && git show --stat --format= HEAD' sh "$(cat <<'EOF'
+   <message>
+   EOF
+   )" <paths>
+   ```
+
+   The message always goes in through the quoted heredoc, so nothing in it
+   runs: not an apostrophe, a backtick or `$(`. Write the heredoc even for a
+   one-line message. In the command you run, the message lines and the `EOF`
+   line start at column 0, with no spaces before them: bash ends a heredoc
+   only on a line that is exactly `EOF`. The indent above only keeps the list
+   intact. This holds for every heredoc in this skill. The command ends with
+   `git show --stat --format= HEAD` inside the lock, so it lists the commit
+   this command made, even when another run commits right after. Check its
+   list as above. A lock timeout is row 18.
 8. Fold waiting fixups only when `<base>` is clean. The spec has fixups
    waiting when `git log --format='%h %s' <spec commit>..<base>` shows a
    commit whose subject is `fixup!`, a space, then the spec commit's
@@ -462,6 +595,10 @@ types `run auto <stage> <spec>` into the new window.
    and stop. If `git status --porcelain` prints anything, skip the
    fold. The review stage folds them after the squash-merge, before its
    `done` marks (Review stage, step 8).
+
+   **With a "Parallel runs" section,** skip this step. Nobody makes fixups
+   there, so none wait, and a fold could give another run's cited commit a
+   new hash.
 9. Finish the project's other docs steps, then run "Launch" with
    `code <plan path>`, then "Finish". When step 8 skipped a fold, print
    `<name>: fixups left unfolded: <their hashes>. The review stage folds
@@ -497,6 +634,14 @@ types `run auto <stage> <spec>` into the new window.
 2. Test each task as the project's rules define before its commit. After
    each task, read `git diff` for the test files the task touched. Run no
    code reviews and no end-of-branch checks: the review stage runs them.
+
+   **With a "Parallel runs" section,** apply its **Isolation** line, with
+   `<slug>` and `<slot>` filled in, to every test and server command. Run
+   every **Shared resources** command as
+   `handoff-lock.py <name> --timeout 3600 -- <command>`, with
+   `run_in_background`, and wait for its notification. A timeout is row 18.
+   Any subagent prompt this stage writes gains two lines: the filled-in
+   Isolation values, and the locked form of each shared-resource command.
 3. Signal and stop on any gate: a new dependency, a change outside the
    project's scope, a test failure that survives
    `superpowers:systematic-debugging`, or a test assertion that the task
@@ -526,6 +671,10 @@ change.
    stage folds the waiting fixup after the merge.
 3. Then run the start check that waited: the task doc is committed on
    `<base>`.
+
+**With a "Parallel runs" section,** step 1 always makes a normal `docs:`
+commit, never `--fixup`, in the locked form of Plan stage, step 7, and step 2
+is skipped: nothing folds there.
 
 In the steps:
 
@@ -568,6 +717,12 @@ all land on the branch, and the main checkout stays clean.
    rules name no such check, that is a gate too: signal and ask which checks
    to run. If the user says none, the `done` mark says
    `no end-of-branch checks run`.
+
+   **With a "Parallel runs" section,** apply its **Isolation** line, with
+   `<slug>` and `<slot>` filled in, to every check. Run every **Shared
+   resources** command as `handoff-lock.py <name> --timeout 3600 -- <command>`,
+   with `run_in_background`, and wait for its notification. A timeout is
+   row 18.
 3. **Map.** List the changed files and symbols with
    `git diff --stat <range>` and `git diff <range>`. For each symbol, find
    its callers:
@@ -603,6 +758,13 @@ all land on the branch, and the main checkout stays clean.
    batch, each plan with its spec. Each `my:soundness-review` subagent still
    gets its own plan as the skill's argument.
 
+   **With a "Parallel runs" section,** the block gains two lines, filled in:
+
+   ```text
+   Isolation: <the filled-in Isolation values>. Apply them to every test and server command.
+   Shared resources: run <command> only as `handoff-lock.py <name> --timeout 3600 -- <command>`.
+   ```
+
 5. **Scope check.** Read each report's scope note. Run a review again when it
    read another range than `<range>`.
 6. **One fix round.** For each finding, apply the test in Plan stage, step 4.
@@ -632,6 +794,36 @@ all land on the branch, and the main checkout stays clean.
       are signals as in Plan stage, step 8.
    4. Set the `done` marks as the project's rules say. They cite the squash
       commit's hash as it is after the fold, and the counts from step 2.
+
+   **With a "Parallel runs" section,** these sub-steps change:
+
+   - 1: just before the squash, run
+     `git diff --name-only --no-renames $(git merge-base <base> <branch>) <base>`.
+     When it lists a path outside the docs paths, signal
+     `<name>: <base> gained code since the checks (<paths>); rebase and rerun them?`
+     and wait. On the user's yes, run `git rebase <base>` in the worktree (on
+     a conflict, `git rebase --abort`, then signal), rerun the step 2 checks,
+     and check again. With no code path listed, squash-merge as one locked
+     command, with the message as an argument:
+
+     ```bash
+     handoff-lock.py main -- sh -c 'test -z "$(git diff --cached --name-only)" || { echo "staged changes in the main checkout" >&2; exit 1; }; git merge --squash "$1" && git commit -m "$2" && git rev-parse --short HEAD || { git reset --merge; exit 1; }' sh <branch> "$(cat <<'EOF'
+     <message>
+     EOF
+     )"
+     ```
+
+     Write the message lines and the `EOF` line at column 0, as in Plan
+     stage, step 7. The command refuses, and changes nothing, when something
+     is already staged in the main checkout. When the squash or the commit
+     fails, it runs `git reset --merge` inside the lock. On any failure,
+     signal. On success, it prints the squash commit's short hash inside the
+     lock: sub-step 4 cites that hash, not `HEAD`, which another run may
+     have moved since.
+   - 3: skip it. Nothing folds there.
+   - 4: each `done` mark edits a shared doc only as Plan stage, step 6 says,
+     and commits in the locked form of Plan stage, step 7.
+
    Then run "Finish".
 
 **In auto mode,** the review stage changes in these steps:
@@ -673,6 +865,39 @@ all land on the branch, and the main checkout stays clean.
 - Finish: the last line names the squash commit's short hash:
   `<name>: done; squash commit <hash>. Close this window, and start new work in a new session.`
 
+**With a "Parallel runs" section,** the review stage in auto mode changes
+again:
+
+- Step 2: right after the checks, run
+  `handoff-state.py set <slug> checked_base=$(git -C <worktree> merge-base <base> <branch>)`.
+- Step 6: once the fix round and its re-reviews are committed, run
+  `handoff-state.py set <slug> next=merge-retry`. A session whose state has
+  `next` at `merge-retry` starts at sub-step 1.
+- Sub-step 1 becomes one locked command. It writes `squash_subject` and
+  `next=merge`, squash-merges, commits, writes `next=worktree-remove`, and
+  prints the squash commit's short hash:
+
+  ```bash
+  handoff-lock.py main -- handoff-state.py merge <slug> -m "$(cat <<'EOF'
+  <message>
+  EOF
+  )"
+  ```
+
+  Write the message lines and the `EOF` line at column 0, as in Plan stage,
+  step 7. Add `--docs-paths <path> ...` last, as "Parallel runs" says.
+  Exit 4 means `<base>` gained code since `checked_base`. Then, in the
+  worktree, run `git rebase <base>` (on a conflict, `git rebase --abort`,
+  row 20), rerun the step 2 checks, set `checked_base` again as in step 2,
+  add 1 to `merge_retries` with
+  `handoff-state.py set <slug> merge_retries=<new value>`, and run the merge
+  again. When `merge_retries` would pass 3, stop (row 21).
+  Exit 5 is row 22. Any other failure is row 23.
+- Sub-step 3: skip the fold, and run `handoff-state.py set <slug> next=done`.
+  Nothing folds there.
+- Sub-step 4: each `done` mark edits a shared doc only as Plan stage, step 6
+  says, and commits in the locked form of Plan stage, step 7.
+
 ### Finish
 
 A stage finishes when it has launched the next stage, or after the review
@@ -694,5 +919,8 @@ reply rewrites all of it. If the user replies here anyway, first run
 - Do not message other sessions, even when the project's rules or memory
   say to claim a resource by message. When a shared resource (a test stack,
   a port, a shared file) is busy, or another session's work blocks you, that
-  is a gate: signal the user.
-- After a signal, stop. Never poll for another session.
+  is a gate: signal the user. The exception: a resource named under
+  **Shared resources** in the project's "Parallel runs" section is waited
+  for under its lock. Any other busy resource is still a gate.
+- After a signal, stop.
+- Wait only inside one `handoff-lock.py` command. Never poll another session across tool calls, and never message one.

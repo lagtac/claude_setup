@@ -14,10 +14,12 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "bin" / "handoff-state.py"
+LOCK = Path(__file__).resolve().parent.parent / "bin" / "handoff-lock.py"
 SPEC = "docs/plans/2026-10-12-widget-spec.md"
 PLAN = "docs/plans/2026-10-12-widget.md"
 SUBJECT = "feat(widget): the widget"
@@ -111,6 +113,23 @@ class StateTestCase(unittest.TestCase):
 
     def check(self):
         return run(self.repo, "check", "widget")
+
+    def hold(self, name, cwd, seconds=30):
+        """Start a holder of lock `name`, and return once it holds the lock."""
+        ready = self.tmp / f"ready-{name}"
+        holder = subprocess.Popen(
+            [sys.executable, str(LOCK), name, "--", "sh", "-c",
+             f'touch "$0"; exec sleep {seconds}', str(ready)],
+            cwd=cwd, env=clean_env(), stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL)
+        self.addCleanup(holder.wait)
+        self.addCleanup(holder.kill)
+        deadline = time.monotonic() + 10
+        while not ready.exists():
+            if time.monotonic() > deadline or holder.poll() is not None:
+                self.fail(f"holder of {name} never started")
+            time.sleep(0.05)
+        return holder
 
     def assertCheck(self, result, code, lines):
         self.assertEqual((result.returncode, result.stdout.splitlines()),
@@ -298,6 +317,199 @@ class CheckTest(StateTestCase):
     def test_check_from_the_worktree(self):
         self.full("review")
         self.assertCheck(run(self.worktree, "check", "widget"), 0, [])
+
+
+class FieldsTest(StateTestCase):
+    def test_new_fields_and_next_value(self):
+        self.state("slot=2", "checked_base=abc", "merge_retries=1", "next=merge-retry")
+        self.assertEqual({k: self.get()[k] for k in ("slot", "checked_base", "merge_retries", "next")},
+                         {"slot": "2", "checked_base": "abc", "merge_retries": "1",
+                          "next": "merge-retry"})
+
+    def test_check_merge_retry_needs_checked_base(self):
+        self.full("merge-retry")
+        self.assertCheck(self.check(), 1, ["missing field: checked_base"])
+
+    def test_check_merge_retry_matches(self):
+        self.full("merge-retry", checked_base=git(self.repo, "rev-parse", "main"))
+        self.assertCheck(self.check(), 0, [])
+
+
+class LiveTest(StateTestCase):
+    def test_live_lists_runs_that_are_not_finished(self):
+        run(self.repo, "set", "a", "slot=1", "next=code", "branch=feat/a")
+        run(self.repo, "set", "b", "slot=2", "next=finished")
+        run(self.repo, "set", "c", "slot=3", "next=review", "stopped=tests failed")
+        result = run(self.repo, "live")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.splitlines(),
+                         ["a\t1\tcode\t\tfeat/a", "c\t3\treview\ttests failed\t"])
+
+    def test_live_ignores_locks_and_temporary_files_and_counts_unreadable_ones(self):
+        folder = self.repo / ".git" / "my-handoff"
+        (folder / "locks").mkdir(parents=True)
+        (folder / "locks" / "main.lock").write_text("")
+        (folder / ".a.x1.tmp").write_text("{")
+        (folder / "d.json").write_text("{")
+        self.assertEqual(run(self.repo, "live").stdout.splitlines(), ["d\t\tunreadable\t\t"])
+
+
+class StartTest(StateTestCase):
+    def start(self, slug, n=2, *pairs):
+        return run(self.repo, "start", slug, "--max", str(n), "next=code", *pairs)
+
+    def test_start_takes_the_lowest_free_slot(self):
+        self.assertEqual(self.start("a").stdout.strip(), "1")
+        self.assertEqual(self.start("b").stdout.strip(), "2")
+        run(self.repo, "set", "a", "next=finished")
+        self.assertEqual(self.start("c").stdout.strip(), "1")
+        state = json.loads(run(self.repo, "get", "c").stdout)
+        self.assertEqual((state["slot"], state["merge_retries"], state["next"]), ("1", "0", "code"))
+
+    def test_cap_refuses_and_writes_nothing(self):
+        self.start("a")
+        self.start("b")
+        result = self.start("c")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("refused: 2 auto runs are live (a, b); the most is 2", result.stderr)
+        self.assertEqual(run(self.repo, "get", "c").returncode, 1)
+
+    def test_own_live_run_refuses_and_leaves_the_file(self):
+        self.start("a", 2, "spec=one")
+        result = self.start("a", 2, "spec=two")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("refused: a run for a exists; use resume", result.stderr)
+        self.assertEqual(json.loads(run(self.repo, "get", "a").stdout)["spec"], "one")
+
+    def test_finished_own_run_is_replaced(self):
+        run(self.repo, "set", "a", "next=finished", "stopped=old")
+        self.assertEqual(self.start("a").returncode, 0)
+        self.assertNotIn("stopped", json.loads(run(self.repo, "get", "a").stdout))
+
+    def test_usage_errors_write_nothing(self):
+        for args in (["start", "a", "--max", "0", "next=code"], ["start", "a", "--max", "x"],
+                     ["start", "a", "next=code"], ["start", "a", "--max", "2", "colour=red"],
+                     ["start", "a", "--max", "2", "next=nowhere"]):
+            with self.subTest(args=args):
+                self.assertEqual(run(self.repo, *args).returncode, 2, args)
+        self.assertEqual(run(self.repo, "get", "a").returncode, 1)
+
+    def test_unreadable_state_counts_toward_the_cap(self):
+        folder = self.repo / ".git" / "my-handoff"
+        folder.mkdir()
+        (folder / "d.json").write_text("{")
+        self.assertEqual(self.start("a", 1).returncode, 1)
+
+    def test_concurrent_locked_starts_never_pass_the_cap(self):
+        procs = [subprocess.Popen([sys.executable, str(LOCK), "main", "--", sys.executable,
+                                   str(SCRIPT), "start", f"s{i}", "--max", "2", "next=code"],
+                                  cwd=self.repo, env=clean_env(), stdout=subprocess.PIPE,
+                                  stderr=subprocess.DEVNULL, text=True)
+                 for i in range(4)]
+        outs = [(p.wait(timeout=60), p.stdout.read().strip()) for p in procs]
+        for p in procs:
+            p.stdout.close()
+        self.assertEqual(sorted(code for code, _ in outs), [0, 0, 1, 1])
+        self.assertEqual(sorted(slot for code, slot in outs if code == 0), ["1", "2"])
+
+    def test_lock_timeout_writes_nothing(self):
+        self.hold("main", self.repo)
+        result = subprocess.run([sys.executable, str(LOCK), "main", "--timeout", "0.5", "--",
+                                 sys.executable, str(SCRIPT), "start", "a", "--max", "2",
+                                 "next=code"],
+                                cwd=self.repo, env=clean_env(), capture_output=True, text=True)
+        self.assertEqual(result.returncode, 75)
+        self.assertEqual(run(self.repo, "get", "a").returncode, 1)
+
+
+class MergeTest(StateTestCase):
+    MESSAGE = SUBJECT + "\n\nThe body.\n\nCo-Authored-By: X <x@example.com>"
+
+    def ready(self, **extra):
+        self.full("merge-retry", checked_base=git(self.repo, "merge-base", "main", "feat/widget"),
+                  squash_subject="", **extra)
+
+    def merge(self, *extra):
+        return run(self.repo, "merge", "widget", "-m", self.MESSAGE, *extra)
+
+    def test_merge_lands_the_squash_and_moves_next(self):
+        self.ready()
+        result = self.merge()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.strip(), git(self.repo, "rev-parse", "--short", "HEAD"))
+        self.assertEqual(git(self.repo, "log", "-1", "--format=%s"), SUBJECT)
+        self.assertEqual(git(self.repo, "log", "-1", "--format=%B"), self.MESSAGE)
+        self.assertTrue((self.repo / "widget.py").exists())
+        state = self.get()
+        self.assertEqual((state["next"], state["squash_subject"]), ("worktree-remove", SUBJECT))
+
+    def test_refuses_staged_changes(self):
+        self.ready()
+        before = git(self.repo, "rev-parse", "HEAD")
+        (self.repo / "staged.md").write_text("x\n")
+        git(self.repo, "add", "staged.md")
+        result = self.merge()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("staged changes", result.stderr)
+        self.assertEqual((git(self.repo, "rev-parse", "HEAD"), self.get()["next"]),
+                         (before, "merge-retry"))
+
+    def test_refuses_when_code_moved_on_the_base(self):
+        self.ready()
+        commit(self.repo, "feat: other", {"other.py": "y = 2\n"})
+        before = git(self.repo, "rev-parse", "HEAD")
+        result = self.merge()
+        self.assertEqual(result.returncode, 4)
+        self.assertIn("other.py", result.stderr)
+        self.assertEqual((git(self.repo, "rev-parse", "HEAD"), self.get()["next"]),
+                         (before, "merge-retry"))
+
+    def test_docs_only_move_still_merges(self):
+        self.ready()
+        commit(self.repo, "docs: roadmap", {"ROADMAP.md": "row\n"})
+        result = self.merge()
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_docs_paths_option_changes_the_list(self):
+        self.ready()
+        commit(self.repo, "docs: notes", {"NOTES.md": "n\n"})
+        self.assertEqual(self.merge().returncode, 4)
+        result = self.merge("--docs-paths", "NOTES.md")
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_squash_conflict_resets_and_keeps_next_merge(self):
+        commit(self.worktree, "docs: branch roadmap", {"ROADMAP.md": "branch\n"})
+        self.ready()
+        commit(self.repo, "docs: main roadmap", {"ROADMAP.md": "main\n"})
+        before = git(self.repo, "rev-parse", "HEAD")
+        result = self.merge()
+        self.assertEqual(result.returncode, 5)
+        self.assertEqual(git(self.repo, "status", "--porcelain"), "")
+        self.assertEqual(git(self.repo, "rev-parse", "HEAD"), before)
+        self.assertEqual((self.get()["next"], self.get()["squash_subject"]), ("merge", SUBJECT))
+        self.assertFalse((self.repo / ".git" / "SQUASH_MSG").exists())
+
+    def test_failed_commit_resets(self):
+        self.ready()
+        hook = self.repo / ".git" / "hooks" / "pre-commit"
+        hook.write_text("#!/bin/sh\nexit 1\n")
+        hook.chmod(0o755)
+        self.assertEqual(self.merge().returncode, 5)
+        self.assertEqual(git(self.repo, "status", "--porcelain"), "")
+        self.assertFalse((self.repo / ".git" / "SQUASH_MSG").exists())
+
+    def test_missing_checked_base_refuses(self):
+        self.full("merge-retry")
+        result = self.merge()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("missing field: checked_base", result.stderr)
+        self.assertEqual(git(self.repo, "log", "-1", "--format=%s"),
+                         "docs(plans): plan for the widget")
+
+    def test_wrong_next_refuses(self):
+        self.ready()
+        self.state("next=review")
+        self.assertEqual(self.merge().returncode, 1)
 
 
 if __name__ == "__main__":

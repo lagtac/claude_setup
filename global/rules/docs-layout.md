@@ -165,6 +165,23 @@ its own commit, not a fixup of the spec.
 13. Mark the spec and plan `done` on `main`, citing the squash commit.
 14. The user pushes at their own pace.
 
+In a project whose `CLAUDE.md` or `CLAUDE.local.md` has a "Parallel runs" section (the `my:handoff`
+skill defines it), several auto runs share `main`. There, every commit in the main checkout runs
+under lock `main`, as one command that stages, commits and lists the commit, with the message in a
+quoted heredoc so that nothing in it runs:
+
+```bash
+handoff-lock.py main -- sh -c 'm=$1; shift; git add -- "$@" && git commit -m "$m" -- "$@" && git show --stat --format= HEAD' sh "$(cat <<'EOF'
+<message>
+EOF
+)" <paths>
+```
+
+Before it, read `git diff -- <paths>` and each new file whole: `git diff` does not show a file git
+does not track yet. After it, read the `git show --stat` list it printed. Steps 4 and 8 make normal
+commits, not fixups, and step 9 is skipped: a fold could give another run's cited commit a new hash.
+Four commits remain the goal elsewhere.
+
 - **No commit only changes a status.** There is no "in progress" commit. A status change goes into
   the commit that causes it.
 - **Cite only commits on `main`.** Never cite a commit that lives only on a local branch. A review

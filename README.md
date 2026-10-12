@@ -114,7 +114,9 @@ with one line and changes nothing. Your shell finds it through a symlink in
 `~/bin`, as for the md-tables filters. Its tests:
 `cd plugins/my && python3 -m unittest discover tests`.
 `handoff-state.py`, in the same folder, keeps the state of a `my:handoff auto`
-run, and its tests run with the same command.
+run, and its tests run with the same command. `handoff-lock.py`, in the same
+folder, runs one command under a named lock, so that parallel auto runs take
+turns in the main checkout.
 `status-scan.py`, in the same folder, prints the facts `my:status` judges:
 roadmap rows, open documents, worktrees, auto runs and branches that may hold
 unmerged work. It reads and never writes; its tests run with the same command.

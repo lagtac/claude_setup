@@ -10,12 +10,30 @@ Usage:
     handoff-state.py set <slug> <field>=<value> ...   write fields
     handoff-state.py get <slug>                       print the state
     handoff-state.py check <slug>                     compare the state with git
+    handoff-state.py live                             list the runs not finished
+    handoff-state.py start <slug> --max <n> <field>=<value> ...
+                                                      start a run, if the cap allows
+    handoff-state.py merge <slug> -m <message> [--docs-paths <path> ...]
+                                                      squash-merge the run's branch
 
 Fields: spec, task_doc, branch, worktree, next, squash_subject,
-head_before_fold, stopped. `next` is one of plan, code, review, merge,
-worktree-remove, fold, done, finished. An empty value is allowed, as in
-`stopped=`. `set` writes a temporary file in the same folder, then renames it
-over the state file, so a crash never leaves half a file.
+head_before_fold, stopped, slot, checked_base, merge_retries. `next` is one of
+plan, code, review, merge-retry, merge, worktree-remove, fold, done, finished.
+An empty value is allowed, as in `stopped=`. `set` writes a temporary file in
+the same folder, then renames it over the state file, so a crash never leaves
+half a file.
+
+`live` prints one line per state file whose `next` is not finished, sorted by
+slug, with five fields separated by tabs: slug, slot, next, stopped, branch. A
+missing field prints as empty. A file that is not valid JSON prints its slug
+with `unreadable` as next and the other fields empty, and counts as live.
+
+`start` writes a fresh state from the given fields, plus `slot` and
+`merge_retries=0`, and prints the slot: the lowest whole number from 1 that no
+live run uses. A finished state of the same slug is replaced. It refuses, and
+writes nothing, when the slug's own run is live, or when <n> other runs are
+live. Run it under `handoff-lock.py main`, so that two starts cannot both pass
+the cap.
 
 `check` prints one mismatch per line: no rebase, merge, cherry-pick or
 uncommitted squash in progress in the main checkout, every field that `next`
@@ -27,10 +45,26 @@ When `head_before_fold` is set and is no longer on the base branch, a fold
 rewrote history, and `check` refuses. The base branch is the branch checked
 out in the main checkout.
 
+`merge` runs in the main checkout, under `handoff-lock.py main`. It refuses,
+and changes nothing, when a rebase, merge or cherry-pick is in progress, when
+`branch` or `checked_base` is empty, when `next` is neither merge-retry nor
+merge, or when the main checkout has staged changes. It exits 4 when
+`git diff <checked_base> <base>` lists a path outside the docs paths: the base
+gained code that the checks never saw. Otherwise it writes `squash_subject`
+(the message's first line) and `next=merge`, runs `git merge --squash` and
+`git commit`, writes `next=worktree-remove` and prints the squash commit's
+short hash. --docs-paths comes last; without it, the docs paths are `docs/`,
+`ROADMAP.md` and `CHANGELOG.md`. A path that ends in `/` is a folder.
+
 Exit codes:
-    0  done; for check, everything matches
-    1  get or check found no state file; check found a mismatch
+    0  done; for check, everything matches; for start, started; for merge, merged
+    1  get or check found no state file; check found a mismatch; start or merge
+       refused
     2  usage error, unknown field or unknown next (nothing written)
+    4  merge: the base gained code since checked_base (nothing changed; the
+       paths are on stderr)
+    5  merge: the squash or its commit failed; `git reset --merge` ran, and
+       next stays merge
 """
 
 import json
@@ -41,13 +75,14 @@ import sys
 import tempfile
 
 FIELDS = ("spec", "task_doc", "branch", "worktree", "next", "squash_subject",
-          "head_before_fold", "stopped")
-STEPS = ("plan", "code", "review", "merge", "worktree-remove", "fold", "done",
-         "finished")
+          "head_before_fold", "stopped", "slot", "checked_base", "merge_retries")
+STEPS = ("plan", "code", "review", "merge-retry", "merge", "worktree-remove",
+         "fold", "done", "finished")
 NEEDS = {
     "plan": ("spec",),
     "code": ("task_doc",),
     "review": ("branch", "worktree"),
+    "merge-retry": ("branch", "worktree", "checked_base"),
     "merge": ("branch", "squash_subject"),
     "worktree-remove": ("branch", "worktree", "squash_subject"),
     "fold": ("branch", "worktree", "squash_subject"),
@@ -56,6 +91,7 @@ NEEDS = {
 }
 IN_PROGRESS = ("rebase-merge", "rebase-apply", "MERGE_HEAD", "CHERRY_PICK_HEAD",
                "REVERT_HEAD", "SQUASH_MSG")
+DOCS_PATHS = ("docs/", "ROADMAP.md", "CHANGELOG.md")
 SLUG = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 FIXUP = "fixup! "
 
@@ -105,20 +141,85 @@ def write_state(slug, state):
         raise
 
 
-def set_fields(slug, pairs):
+def parse_pairs(pairs):
+    """The pairs as a dict, or None after printing why one is not valid."""
     updates = {}
     for pair in pairs:
         field, _, value = pair.partition("=")
         if field not in FIELDS:
             print(f"unknown field: {field}", file=sys.stderr)
-            return 2
+            return None
         if field == "next" and value not in STEPS:
             print(f"unknown next: {value}", file=sys.stderr)
-            return 2
+            return None
         updates[field] = value
+    return updates
+
+
+def set_fields(slug, pairs):
+    updates = parse_pairs(pairs)
+    if updates is None:
+        return 2
     state = read_state(slug) or {}
     state.update(updates)
     write_state(slug, state)
+    return 0
+
+
+def live_states():
+    """(slug, state) for each state file whose next is not finished, sorted by
+    slug. The state is None for a file that is not valid JSON."""
+    folder = os.path.join(common_dir(), "my-handoff")
+    if not os.path.isdir(folder):
+        return []
+    live = []
+    for name in sorted(os.listdir(folder)):
+        if name.startswith(".") or not name.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(folder, name)) as handle:
+                state = json.load(handle)
+            if not isinstance(state, dict):
+                state = None
+        except (OSError, ValueError):
+            state = None
+        if state is None or state.get("next") != "finished":
+            live.append((name[:-len(".json")], state))
+    return live
+
+
+def print_live():
+    for slug, state in live_states():
+        if state is None:
+            print(f"{slug}\t\tunreadable\t\t")
+            continue
+        fields = (state.get(k, "") for k in ("slot", "next", "stopped", "branch"))
+        print("\t".join((slug, *fields)))
+    return 0
+
+
+def start(slug, rest):
+    if len(rest) < 2 or rest[0] != "--max" or not rest[1].isdigit() or int(rest[1]) < 1:
+        return usage()
+    cap, pairs = int(rest[1]), rest[2:]
+    if any("=" not in pair for pair in pairs):
+        return usage()
+    updates = parse_pairs(pairs)
+    if updates is None:
+        return 2
+    live = live_states()
+    if any(other == slug for other, _ in live):
+        print(f"refused: a run for {slug} exists; use resume", file=sys.stderr)
+        return 1
+    if len(live) >= cap:
+        names = ", ".join(other for other, _ in live)
+        print(f"refused: {len(live)} auto runs are live ({names}); the most is {cap}",
+              file=sys.stderr)
+        return 1
+    used = {state.get("slot") for _, state in live if state}
+    slot = next(n for n in range(1, len(live) + 2) if str(n) not in used)
+    write_state(slug, {**updates, "slot": str(slot), "merge_retries": "0"})
+    print(slot)
     return 0
 
 
@@ -181,7 +282,7 @@ def facts(repo, state, step):
     elif step == "code":
         if not repo.run("log", "-1", "--format=%h", repo.base, "--", state["task_doc"]):
             lines.append(f"task doc not committed on {repo.base}: {state['task_doc']}")
-    elif step == "review":
+    elif step in ("review", "merge-retry"):
         if not repo.has_branch(state["branch"]):
             lines.append(f"branch missing: {state['branch']}")
         elif repo.worktrees().get(repo.path(state["worktree"])) != state["branch"]:
@@ -247,6 +348,67 @@ def check(slug):
     return 1 if lines else 0
 
 
+def is_docs_path(path, docs_paths):
+    return any(path == entry or (entry.endswith("/") and path.startswith(entry))
+               for entry in docs_paths)
+
+
+def merge(slug, message, docs_paths):
+    state = read_state(slug)
+    if state is None:
+        print(f"no state for {slug}", file=sys.stderr)
+        return 1
+    repo = Repo()
+    reasons = [f"in progress: {name}" for name in IN_PROGRESS
+               if os.path.exists(os.path.join(repo.git_dir, name))]
+    reasons += [f"missing field: {f}" for f in ("branch", "checked_base") if not state.get(f)]
+    if state.get("next") not in ("merge-retry", "merge"):
+        reasons.append(f"next is {state.get('next', '')}, not merge-retry or merge")
+    if not repo.base:
+        reasons.append("no base branch")
+    if not reasons and repo.run("diff", "--cached", "--name-only"):
+        reasons.append("staged changes in the main checkout")
+    if reasons:
+        for reason in reasons:
+            print(f"refused: {reason}", file=sys.stderr)
+        return 1
+    moved = repo.run("diff", "--name-only", "--no-renames", state["checked_base"],
+                     repo.base).splitlines()
+    code = [path for path in moved if not is_docs_path(path, docs_paths)]
+    if code:
+        print(f"{repo.base} gained code since checked_base: {', '.join(code)}",
+              file=sys.stderr)
+        return 4
+    state.update(squash_subject=message.split("\n", 1)[0], next="merge")
+    write_state(slug, state)
+    for args in (("merge", "--squash", state["branch"]), ("commit", "-q", "-m", message)):
+        result = subprocess.run(["git", *args], cwd=repo.root, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"git {args[0]} failed: {(result.stderr or result.stdout).strip()}",
+                  file=sys.stderr)
+            repo.run("reset", "--merge", check=False)
+            if repo.run("status", "--porcelain", check=False):
+                print("the main checkout is not clean after git reset --merge",
+                      file=sys.stderr)
+            return 5
+    state["next"] = "worktree-remove"
+    write_state(slug, state)
+    print(repo.run("rev-parse", "--short", "HEAD"))
+    return 0
+
+
+def merge_args(rest):
+    """(message, docs paths) from merge's arguments after the slug, or None."""
+    if len(rest) < 2 or rest[0] != "-m":
+        return None
+    message, tail = rest[1], rest[2:]
+    if not tail:
+        return message, list(DOCS_PATHS)
+    if tail[0] != "--docs-paths" or len(tail) < 2:
+        return None
+    return message, tail[1:]
+
+
 def usage():
     block = __doc__[__doc__.index("Usage:"):].split("\n\n")[0]
     print(block, file=sys.stderr)
@@ -257,6 +419,12 @@ def main(argv):
     if argv in (["-h"], ["--help"]):
         print(__doc__)
         return 0
+    if argv == ["live"]:
+        try:
+            return print_live()
+        except GitError as error:
+            print(error, file=sys.stderr)
+            return 1
     if len(argv) < 2 or not SLUG.fullmatch(argv[1]):
         return usage()
     command, slug, rest = argv[0], argv[1], argv[2:]
@@ -276,6 +444,11 @@ def main(argv):
             return 0
         if command == "check":
             return check(slug)
+        if command == "start":
+            return start(slug, rest)
+        if command == "merge":
+            parsed = merge_args(rest)
+            return merge(slug, *parsed) if parsed else usage()
     except GitError as error:
         print(error, file=sys.stderr)
         return 1

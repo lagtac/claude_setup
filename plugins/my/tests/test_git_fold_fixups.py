@@ -417,5 +417,60 @@ class RefusalTest(FoldTestCase):
         self.assertEqual(self.head(), before)
 
 
+class CitationTest(FoldTestCase):
+    """The fold refuses to give a new hash to a commit that a docs file cites."""
+
+    def cited_after_target(self, cite_file="ROADMAP.md", full=False):
+        target = commit(self.repo, "docs: spec", {"spec.md": "one\n"})
+        code = commit(self.repo, "feat: code", {"x.py": "x = 1\n"})
+        cited = code if full else code[:7]
+        commit(self.repo, "docs: done", {cite_file: f"Shipped in {cited}.\n"})
+        commit(self.repo, "fixup! docs: spec", {"spec.md": "two\n"})
+        return target, code
+
+    def test_fold_refuses_a_cited_commit_after_the_target(self):
+        _, code = self.cited_after_target()
+        before = self.head()
+        result = run(self.repo)
+        self.assertRefused(result, f"commit {code[:7]} is cited in ROADMAP.md", before)
+
+    def test_check_refuses_a_cited_commit_after_the_target(self):
+        target, _ = self.cited_after_target()
+        self.assertRefused(run(self.repo, "check", target), "is cited in", self.head())
+
+    def test_fold_from_a_subfolder_still_refuses(self):
+        _, code = self.cited_after_target()
+        sub = os.path.join(self.repo, "sub")
+        os.makedirs(sub)
+        before = self.head()
+        self.assertRefused(run(sub), f"commit {code[:7]} is cited in ROADMAP.md", before)
+
+    def test_full_hash_counts_as_a_citation(self):
+        self.cited_after_target(full=True)
+        self.assertRefused(run(self.repo), "is cited in", self.head())
+
+    def test_uncited_code_commit_does_not_refuse(self):
+        commit(self.repo, "docs: spec", {"spec.md": "one\n"})
+        commit(self.repo, "feat: code", {"x.py": "x = 1\n"})
+        commit(self.repo, "fixup! docs: spec", {"spec.md": "two\n"})
+        result = run(self.repo)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn("fixup! docs: spec", subjects(self.repo))
+
+    def test_citation_outside_the_docs_paths_does_not_refuse(self):
+        self.cited_after_target(cite_file="NOTES.md")
+        result = run(self.repo)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_docs_paths_option_changes_the_list(self):
+        self.cited_after_target(cite_file="NOTES.md")
+        before = self.head()
+        self.assertRefused(run(self.repo, "--docs-paths", "NOTES.md"),
+                           "is cited in NOTES.md", before)
+
+    def test_docs_paths_without_a_path_is_a_usage_error(self):
+        self.assertEqual(run(self.repo, "--docs-paths").returncode, 2)
+
+
 if __name__ == "__main__":
     unittest.main()

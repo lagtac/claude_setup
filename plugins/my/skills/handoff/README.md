@@ -328,6 +328,53 @@ stop, it prints it.
 Close the old window first. Resume opens a window with the same name, and
 Launch refuses a name that is still in use.
 
+### Parallel runs
+
+By default only one auto run is live in a project: a second
+`/my:handoff auto` start refuses. A project allows more with a section
+titled `Parallel runs` in its `CLAUDE.md` or `CLAUDE.local.md`:
+
+```markdown
+## Parallel runs
+
+- **Max runs:** 2
+- **Docs paths:** `docs/`, `ROADMAP.md`, `CHANGELOG.md`
+- **Isolation:** `COMPOSE_PROJECT_NAME=app_<slug>`; `PORT=$((54310 + <slot>))`
+- **Shared resources:** `e2e`: `web/scripts/e2e-worktree.sh <path>`
+```
+
+**Max runs** is the most runs live at once. A missing key takes the value
+shown above, except **Isolation** (`none needed`) and **Shared resources**
+(`none`). **Isolation** is what each stage sets for every test and server
+command, so that two worktrees do not share a test stack or a port; `<slot>`
+is the run's place, 1 to **Max runs**. Each **Shared resources** command runs
+under its own lock, so only one run uses it at a time.
+
+What changes in such a project:
+
+- **The start takes a place.** A start past **Max runs** refuses and writes
+  nothing. A stopped run still holds its place. To end an abandoned run, say
+  so in a session: it removes the run's worktree, after your yes when that
+  needs `--force`, and marks the run finished. The branch stays.
+- **The main checkout takes turns.** Every commit there runs under one lock,
+  with `handoff-lock.py main -- …`, and the start and the merge do too. This
+  holds for your own Claude sessions in that project as well: `/my:commit`
+  and `my:architect` use the locked form there.
+- **A merge reruns the checks when `main` moved.** If another run merged code
+  after this run's checks, the merge refuses. The run rebases its branch,
+  reruns the end-of-branch checks and tries again, at most three times.
+- **Nobody makes fixups.** Every later edit to a spec, plan or review is a
+  normal commit, so a feature leaves about 5 to 7 commits instead of 4, and
+  nothing folds. A fold there could give another run's cited squash commit
+  a new hash. The fold script now refuses that in every project.
+- **Shared docs.** A run edits `ROADMAP.md`, `CHANGELOG.md` or the plans
+  index only when they hold no uncommitted edits. If you edit one by hand
+  while runs are live, the run that reaches it stops, and you resume it.
+
+Two runs keep about 6 `claude` processes; see "Memory" below. Spec:
+`docs/plans/2026-10-12-parallel-auto-runs-spec.md`. Plan:
+`docs/plans/2026-10-12-parallel-auto-runs.md`.
+
 ### Known problems
 
 - **An API error can stall a run without a sign.** If the connection drops

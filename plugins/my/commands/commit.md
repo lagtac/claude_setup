@@ -8,6 +8,8 @@ Follow these steps in order. Do not skip steps. Do not bundle unrelated changes 
 
 **Project rules first.** Read the project's `CLAUDE.md` (and `CLAUDE.local.md` when present) before step 4. Its commit rules win over the defaults below: allowed types and scopes, whether a body is required, trailers it forbids or requires, and CHANGELOG entries that must go in the same commit.
 
+**Parallel runs.** When the project's `CLAUDE.md` or `CLAUDE.local.md` has a "Parallel runs" section, and `git rev-parse --path-format=absolute --git-dir` equals `git rev-parse --path-format=absolute --git-common-dir` (this is the main checkout), several sessions may commit here at once. Then step 3 does not stage. Step 5 reads `git diff -- <paths>` for the group, and each new file in it whole, instead of `git diff --cached`: `git diff` does not show a file git does not track yet. Each group commits with one locked command that stages, commits and lists the commit inside the lock, with the message on its own lines in a quoted heredoc, even for one line, so that nothing in it runs: `handoff-lock.py main -- sh -c 'm=$1; shift; git add -- "$@" && git commit -m "$m" -- "$@" && git show --stat --format= HEAD' sh "$(cat <<'EOF' … EOF)" <paths>`. Step 7 reads the `git show --stat` list each command printed. Never make a `--fixup` commit there.
+
 1. **Inventory the changes.** Run `git status` and `git diff` (and `git diff --cached` if anything is staged). Read the actual diff — do not infer changes from filenames.
 
 2. **Refuse secrets.** If any staged or unstaged file looks like a secret (`.env`, `.env.*`, files containing API keys, tokens, private keys), stop and warn the user explicitly. Do not commit it.

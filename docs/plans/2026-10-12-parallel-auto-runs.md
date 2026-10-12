@@ -1139,6 +1139,53 @@ None. Python 3 standard library, git, tmux and Claude Code, as the spec says.
   for the `done` step until the user acts. The way out is the user's: keep
   the fixup as it is and fold it once the citation is gone, or leave it.
   No commit after this spec's target is cited in this repo's docs today.
+- **A docs path without a trailing `/` means one file in `handoff-state.py`,
+  but git reads it as a folder too.** So `**Docs paths:** docs` would make
+  `merge` treat every `docs/` change as code (exit 4, then row 21), while
+  `git-fold-fixups.py` would search the folder. The default list and the
+  "Parallel runs" rule both write folders with `/`, so no project produces
+  this today. Found by the end-of-branch code review.
+- **`gc.autoDetach=false` (Decision 2) runs git's automatic cleanup inside
+  lock `main`.** In a large repo a cleanup longer than the 90 s timeout makes
+  the other waiting runs time out (row 18). Keeping the cleanup inside the
+  lock is Decision 2's choice: a detached cleanup would outlive the lock.
+  Found by the end-of-branch code review; the decision stands unchanged.
+- **`live` joins state values as text.** A state value that is not a string,
+  for example from a hand edit, would crash `live` and `status-scan.py`'s
+  `runs` block. Every write path stores strings today. Found by the
+  end-of-branch code review.
+- **A locked command's own run time comes on top of the lock wait.** The
+  lock waits up to 90 s, and a slow commit hook can push the whole command
+  past the Bash tool's 120 s limit. A command killed mid-commit can leave
+  `index.lock` behind, which blocks later commits until it is removed.
+  Detection: the next commit names `index.lock`. Found by the end-of-branch
+  soundness review; it depends on each project's hooks.
+- **Decisions 7 and 10 and Task 8's Interfaces line still show the
+  pre-review forms:** a double-quoted `"<message>"`, the claim that a
+  backtick in it is safe, and a supervised squash that resets outside the
+  lock. The end-of-branch fix round replaced them; the prose files on the
+  branch, not this plan, hold the current forms. Found by the soundness
+  re-review.
+- **`merge`'s cleanness check after `git reset --merge` reads the whole
+  main checkout.** Another session's uncommitted file makes the exit 5 line
+  say the checkout is not clean, though the reset worked. Found by the code
+  re-review.
+- **`squash_subject` stores the message's raw first line.** A message whose
+  first paragraph has two lines, or whose subject ends in a space, no longer
+  matches git's `%s`, so `check` and the `done` step cannot find the squash
+  commit. The handoff messages have a one-line subject and a blank line
+  today. Found by the code re-review.
+- **Every child of a locked command holds the lock.** Turning off gc's
+  detaching covers one kind of long-lived child. A hook that starts a
+  background process, or git's fsmonitor daemon on macOS or Windows, would
+  hold lock `main` until it ends (row 18). Found by the code re-review.
+- **`start` checks `--max` with `isdigit()`,** which accepts digits such as
+  `²` that `int()` rejects, so such a value crashes instead of exiting 2.
+  The skill always passes an ASCII number. Found by the code re-review.
+- **The default docs paths and `--docs-paths` are copied into two
+  scripts,** which match paths in two ways (a git pathspec and a Python
+  prefix). A change in one script only makes them disagree. Found by the
+  code re-review.
 - **Blast radius of the fold change:** the callers listed under "File map".
   None passes `--docs-paths`; each gets the default list.
 
@@ -1151,6 +1198,17 @@ None. Python 3 standard library, git, tmux and Claude Code, as the spec says.
 - The Review Focus items are pinned by tests in Tasks 1 to 4.
 - Lint counts and greps for the prose tasks (6 to 9).
 - The rehearsal (Task 10), started by the user, before the `done` marks.
+
+Rehearsal, 2026-10-12: not run to the end. The three starts, `alpha`, `beta`
+and `gamma`, each refused and wrote nothing. Inside a Claude session, the
+installed plugin's `bin/` (the main checkout's) comes before the
+`--plugin-dir` copy on `PATH`, even when the tmux server starts with the
+branch's `bin/` first. So `handoff-state.py start` reached the old script,
+which exits 2. The user then chose to skip the rehearsal for now. It can run
+only after the squash-merge, or with the installed `my` plugin turned off.
+The spec asks for it before the spec is marked `done`, so the `done` marks
+wait for it, or for the user's explicit choice to mark `done` without it. The
+fixture also needs `__pycache__/` in `.gitignore`.
 
 ## Open Questions
 

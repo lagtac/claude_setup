@@ -60,7 +60,9 @@ turns out larger than its size, stop and say so before going on.
   commit the `approved` status, so commit it as a fixup of the spec commit,
   fold it with `git-fold-fixups.py`, then run `/my:handoff code <spec path>`. Fold
   before the hand-off: once the worktree sits on the `fixup!` commit, the
-  fold must wait until the branch is merged. When the spec has a Delegation
+  fold must wait until the branch is merged. In a project with a "Parallel
+  runs" section, the `approved` edit is a normal commit in the locked form of
+  Git Workflow, not a fixup, and nothing folds. When the spec has a Delegation
   section, ask "Hand off the code, supervised or auto?": supervised is the
   route above, and auto runs `/my:handoff auto code <spec path>` with the
   `approved` edit left uncommitted. The auto code stage commits and folds
@@ -167,7 +169,8 @@ We use **GitLab** unless stated otherwise in the project. There are no "pull req
 - Always squash-merge when integrating branches — no regular merges, whether via MR or local `git merge --squash`
 - Use `glab` CLI (not `gh`) for MR operations when you do open an MR
 - Use `glab mr create` instead of `gh pr create`
-- Read `git diff --cached` before every commit. The Edit tool has silently dropped a character, and a trailer the project forbids has slipped into a commit.
+- Read `git diff --cached` before every commit. The Edit tool has silently dropped a character, and a trailer the project forbids has slipped into a commit. The exception: in a project with a "Parallel runs" section, a commit in the main checkout reads `git diff -- <paths>` and each new file whole before the locked command in the next rule (`git diff` does not show a file git does not track yet), and reads the `git show --stat` list that the command prints. This replaces every `git diff --cached` reread this file names.
+- In a project whose `CLAUDE.md` or `CLAUDE.local.md` has a "Parallel runs" section (the `my:handoff` skill defines it), several auto runs share `main`. There, every commit in the main checkout runs under lock `main`, as one command that stages, commits and lists the commit inside the lock: `handoff-lock.py main -- sh -c 'm=$1; shift; git add -- "$@" && git commit -m "$m" -- "$@" && git show --stat --format= HEAD' sh "$(cat <<'EOF' … EOF)" <paths>`, with the message on its own lines between `<<'EOF'` and `EOF`. Always use the quoted heredoc, even for one line: inside plain double quotes, a backtick or `$(` in the message would run outside the lock. Nobody makes fixups there: every later edit to a spec, plan or review is a normal commit, and nothing folds. Commits in a worktree take no lock.
 
 ### One feature, four commits on `main`
 
