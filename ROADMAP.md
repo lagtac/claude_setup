@@ -90,6 +90,12 @@ Follow-ups spawned by the planner retirement. Spec:
 Make the harness reusable in new projects without forking copies. Spec:
 [`docs/plans/2026-06-16-harness-generalization-audit.md`](docs/plans/2026-06-16-harness-generalization-audit.md).
 
+- 📋 **Swappable methods** — split `global/CLAUDE.md` into a neutral core
+  and per-method files, and split `my` into `my` (the method) and `kit`
+  (neutral tools), so one project can try another method. Two batches; the
+  second is a one-sitting cutover.
+  [brief](docs/plans/2026-10-12-swappable-methods-architecture.md),
+  [spec](docs/plans/2026-10-12-swappable-methods-spec.md)
 - 💭 **Generalize the gates** — move the gate logic (`e2e-gate`, `review-gate`,
   `require-*`) into the plugin behind a per-repo `.claude/harness.json`, with a
   `/harness-init` bootstrap. Waits for a second project to adopt the gates;
