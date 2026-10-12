@@ -9,6 +9,18 @@ open rows come first.
 
 ---
 
+## Order of work
+
+- **"One script for the locked commit", then "Trim copied facts in
+  `my:handoff`" with "Name repeated cross-references" as one branch.** The
+  script removes text and one of the named terms before the trims, so they do
+  not edit lines that are about to go.
+- **Then "Split `my:handoff` by mode", then "Write review step 8 whole per
+  mode".** The split moves less text after the trims. Its gain is not measured
+  yet, so it also waits for "Measure the auto runs".
+
+Rows not named here are unordered.
+
 ## `my` plugin hygiene
 
 Follow-ups spawned by the planner retirement. Spec:
@@ -125,12 +137,12 @@ no row; the report says why.
 
 Findings of
 [`docs/reports/2026-10-12-handoff-instructions-audit.md`](docs/reports/2026-10-12-handoff-instructions-audit.md).
-Rows are unordered unless a row says what it waits for.
+Their order is in "Order of work" above.
 
 - 💭 **Split `my:handoff` by mode** — move auto-only and parallel-only text
   out of `SKILL.md` into files read through a pointer step, so a stage loads
   only its own branch. Rehearse a supervised and an auto run headless before
-  and after. Report P1.
+  and after. Waits for "Measure the auto runs". Report P1.
 - 💭 **Write review step 8 whole per mode** — the four versions of the merge
   step become one list per mode; smaller patches sit under the step they
   change. Waits for "Split `my:handoff` by mode". Report P2.
