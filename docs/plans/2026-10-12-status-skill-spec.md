@@ -211,6 +211,48 @@ None. Python standard library and git. `handoff-state.py live` is used when it e
 6. **Task 5 edits another approved spec.** If the parallel auto runs plan stage edits the same
    "Out of scope" line at the same time, the squash-merge conflicts. The edit is one line, so
    the merge stage resolves it by hand or stops.
+7. **Known limits from the end-of-branch reviews.** None of these inputs exists in the repos
+   checked on 2026-10-12, so they are recorded, not fixed:
+   - A branch with no comparable lines (only binary files, renames, mode changes or lines under
+     8 characters) gets a missing count of 0 and is not printed. Listing it would change D4.
+   - A state file that is valid JSON but not an object (`null`, `[]`) stops the script with
+     exit 1 in the fallback reader, and the blocks after `runs` do not print.
+   - `HERE` does not follow symlinks, and every exit 2 from `handoff-state.py` reads as "no
+     `live` yet". If `status-scan.py` is ever linked from another folder, it uses the fallback
+     reader for good.
+   - The fixup scan matches targets on its own. Unlike `git-fold-fixups.py`, it lists pushed
+     fixups, and it picks the nearest target when two commits share a subject, where the fold
+     refuses.
+   - One `rev-list --count` runs per local branch before the cap of 30 applies, and the
+     worktree list and `ROADMAP.md` are read twice. Merged branches are kept, so this grows.
+   - A worktree whose folder exists but where `git` fails turns the whole `worktrees` block into
+     one `error` line.
+   - The rehearsal (Task 4) suggested `git-fold-fixups.py` while worktrees held branches on top
+     of the fixup targets, so that fold would refuse. The skill does not check for that.
+8. **Known limits from the final re-reviews.** The one-fix-round rule sends these here, not into
+   a second fix. The first two happen on today's input and are the first candidates for a
+   follow-up:
+   - The skill's `git grep` check (step 2) can clear an unfinished branch. It may pick a name
+     that `main` already had, such as an edited function, or a name from the `-` lines. For a
+     branch with no shared history, the two-dot diff's `-` lines are mostly `main`'s own later
+     work. Names should come only from added lines that `main` lacked at the merge base.
+   - The overlap check (step 6) uses a started branch's committed diff alone. It misses
+     uncommitted edits in the worktree, and the plan's files not yet touched, so it can call two
+     items safe that overlap.
+   - Step 3 says **Max runs** defaults to 2, while step 6 allows one auto run when there is no
+     "Parallel runs" section. The default of 2 applies only when the section exists.
+   - D4 does not describe the fallback for a branch with no shared history (compare with the
+     whole history of `main`); only the code and its comment do.
+   - The base branch goes to `git log` bare. A top-level path with the same name makes the
+     `checkout` block, or the `branches` block when a branch shares no history, one `error`
+     line.
+   - In a repo made with `--separate-git-dir`, or in a submodule, the script stops with a
+     traceback instead of exit 2.
+   - The patch log is cached per fork commit, so many forks mean many overlapping logs.
+   - A `#` line inside a code fence in `## Order of work` ends the section early.
+   - The fallback runs reader prints JSON `null` as `None`, and a stop line with a newline
+     splits one row in two.
+   - No test covers the `live` path of `run_facts`, which does not exist on `main` yet.
 
 ## Testing
 

@@ -84,6 +84,8 @@ as `/my:<name>`.
   project for …" to start.
 - `my:briefing` — Writes a plain-English, decision-focused briefing for
   non-technical readers, in `docs/briefings/`.
+- `my:status` — Answers "where are we", "what is next" and "what can be done
+  in parallel" in one read-only report.
 - `my:roadmap-management` — Edits `ROADMAP.md`: adds rows and moves them between
   status tiers.
 - `my:changelog-management` — Edits `CHANGELOG.md` for shipped features, fixes
@@ -113,6 +115,9 @@ with one line and changes nothing. Your shell finds it through a symlink in
 `cd plugins/my && python3 -m unittest discover tests`.
 `handoff-state.py`, in the same folder, keeps the state of a `my:handoff auto`
 run, and its tests run with the same command.
+`status-scan.py`, in the same folder, prints the facts `my:status` judges:
+roadmap rows, open documents, worktrees, auto runs and branches that may hold
+unmerged work. It reads and never writes; its tests run with the same command.
 
 ## Commands
 

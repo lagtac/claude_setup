@@ -48,8 +48,9 @@ share one project:
 
 ## Out of scope
 
-- **Answering "what can we do in parallel?"** from the roadmap. A later spec
-  for `my:roadmap-management`. Until then the user picks the specs.
+- **Answering "what can we do in parallel?"** from the roadmap. Answered by
+  `my:status` ([spec](2026-10-12-status-skill-spec.md)); the auto runs still
+  start only when the user starts them.
 - **A three-way merge for shared docs.** A run stops instead when a shared doc
   holds someone else's edits (D5).
 - The user designing a spec alongside live runs, beyond the lock rule (D4).
