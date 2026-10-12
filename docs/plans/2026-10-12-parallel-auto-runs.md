@@ -1,6 +1,8 @@
 # Parallel auto runs Implementation Plan
 
-**Status:** approved, 2026-10-12. Written by the `my:handoff` plan stage from the approved spec.
+**Status:** done, 2026-10-12. Shipped in 38f6c34. End-of-branch checks: unit tests,
+128 passed, 0 failed; Markdown lint counts unchanged. The Task 10 rehearsal
+was not run, by the user's choice. Known limits are in the plan's Risk section.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use
 > superpowers:executing-plans to implement this plan task-by-task. The tasks

@@ -1,6 +1,8 @@
 # Spec: parallel auto runs, several approved specs at once in one project
 
-**Status:** approved, 2026-10-12. Rewritten smaller after two `my:spec-review` rounds; the third review (Problematic, 1 Critical) is answered.
+**Status:** done, 2026-10-12. Shipped in 38f6c34. End-of-branch checks: unit tests,
+128 passed, 0 failed; Markdown lint counts unchanged. The Task 10 rehearsal
+was not run, by the user's choice. Known limits are in the plan's Risk section.
 
 ## How to read this spec
 

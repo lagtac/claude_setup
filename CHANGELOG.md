@@ -16,6 +16,25 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-12 — Parallel auto runs (Design workflow)
+
+In a project whose `CLAUDE.md` or `CLAUDE.local.md` has a "Parallel runs"
+section, 2 to 4 `my:handoff auto` runs can go at once. Commits in the main
+checkout take turns under a lock, and a run merges only code whose checks
+ran on the current `main`. See the
+[spec](docs/plans/2026-10-12-parallel-auto-runs-spec.md) and the
+[plan](docs/plans/2026-10-12-parallel-auto-runs.md), whose **Risk** section
+lists the known limits.
+
+- New script `handoff-lock.py` runs one command under a named lock.
+- `handoff-state.py` gains `start`, which keeps a cap on live runs, `live`,
+  which lists them, and `merge`, which squash-merges under the lock.
+- `git-fold-fixups.py` refuses a fold that would give a commit cited in
+  `docs/`, `ROADMAP.md` or `CHANGELOG.md` a new hash, in every project.
+- In a project with the section, the global rules, `/my:commit` and
+  `my:architect` commit in the main checkout with one locked command, and
+  nobody makes fixups there. Projects without the section are unchanged.
+
 ### 2026-10-12 — `my:handoff auto` (Design workflow)
 
 `my:handoff` can take an approved spec to its `done` marks on `main` without

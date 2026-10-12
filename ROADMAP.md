@@ -56,9 +56,10 @@ Follow-ups spawned by the planner retirement. Spec:
   [brief](docs/plans/2026-10-11-autonomous-run-architecture.md),
   [spec](docs/plans/2026-10-12-autonomous-run-spec.md),
   [plan](docs/plans/2026-10-12-autonomous-run.md)
-- 🚧 **Parallel auto runs** — 2 to 4 `my:handoff auto` runs at once in a
+- ✅ **Parallel auto runs** — 2 to 4 `my:handoff auto` runs at once in a
   project with a "Parallel runs" section; commits in the main checkout take
   turns under a lock, and a merge reruns the checks when `main` moved.
+  Shipped in `38f6c34`; known limits are in the plan's Risk section.
   [brief](docs/plans/2026-10-12-parallel-auto-runs-architecture.md),
   [spec](docs/plans/2026-10-12-parallel-auto-runs-spec.md),
   [plan](docs/plans/2026-10-12-parallel-auto-runs.md)
