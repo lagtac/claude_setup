@@ -1,7 +1,6 @@
 # Spec: `my:handoff auto`, one feature from approved spec to `done` without the user
 
-**Status:** draft, 2026-10-12. Written from the brainstorming session that
-followed the architecture brief.
+**Status:** approved, 2026-10-12. Approved by the user after the spec review's nine fixes.
 
 ## How to read this spec
 
