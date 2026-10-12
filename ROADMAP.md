@@ -91,6 +91,11 @@ Follow-ups spawned by the planner retirement. Spec:
   [`docs/plans/2026-10-12-autonomous-run-spec.md`](docs/plans/2026-10-12-autonomous-run-spec.md),
   plan:
   [`docs/plans/2026-10-12-autonomous-run.md`](docs/plans/2026-10-12-autonomous-run.md).
+- 💭 **`my:spec-review` checks Delegation content** — when a spec has a
+  Delegation section, check that its values fit the design: the listed
+  dependencies match what the design adds, the check commands and test names
+  exist, and `decide` is flagged on a spec that changes stored data or a
+  contract. Not the format: the auto start check owns that. Small.
 
 ## Workflow efficiency
 
