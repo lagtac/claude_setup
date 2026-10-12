@@ -82,12 +82,15 @@ Follow-ups spawned by the planner retirement. Spec:
   `tutor` output style. Shipped in `1e69584`; known limits are in the spec's
   Risk section. Spec:
   [`docs/plans/2026-10-06-tutor-spec.md`](docs/plans/2026-10-06-tutor-spec.md).
-- 📋 **`my:handoff auto`** — one feature runs from an approved spec to its
+- ✅ **`my:handoff auto`** — one feature runs from an approved spec to its
   `done` marks with no user input, within a Delegation section the user
-  approves, and never pushes. Large. Brief:
+  approves, and never pushes. Shipped in `39737e1`; known limits are in the
+  plan's Risk section. Brief:
   [`docs/plans/2026-10-11-autonomous-run-architecture.md`](docs/plans/2026-10-11-autonomous-run-architecture.md),
   spec:
-  [`docs/plans/2026-10-12-autonomous-run-spec.md`](docs/plans/2026-10-12-autonomous-run-spec.md).
+  [`docs/plans/2026-10-12-autonomous-run-spec.md`](docs/plans/2026-10-12-autonomous-run-spec.md),
+  plan:
+  [`docs/plans/2026-10-12-autonomous-run.md`](docs/plans/2026-10-12-autonomous-run.md).
 
 ## Workflow efficiency
 

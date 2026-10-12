@@ -1,6 +1,8 @@
 # `my:handoff auto` Implementation Plan
 
-**Status:** approved, 2026-10-12. Written by the `my:handoff` plan stage from the approved spec.
+**Status:** done, 2026-10-12. Shipped in 39737e1. End-of-branch checks: unit tests,
+64 passed, 0 failed; Markdown lint counts unchanged; the Task 7 rehearsal
+record. Known limits are in the plan's Risk section.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use
 > superpowers:executing-plans to implement this plan task-by-task. The tasks

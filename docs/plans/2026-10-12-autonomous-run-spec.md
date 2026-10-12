@@ -1,6 +1,8 @@
 # Spec: `my:handoff auto`, one feature from approved spec to `done` without the user
 
-**Status:** approved, 2026-10-12. Approved by the user after the spec review's nine fixes.
+**Status:** done, 2026-10-12. Shipped in 39737e1. End-of-branch checks: unit tests,
+64 passed, 0 failed; Markdown lint counts unchanged; the Task 7 rehearsal
+record. Known limits are in the plan's Risk section.
 
 ## How to read this spec
 
