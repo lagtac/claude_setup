@@ -19,6 +19,10 @@ open rows come first.
   mode".** The split moves less text after the trims. Its gain is not measured
   yet, so it also waits for "Measure the auto runs".
 
+- **"Skill text loses `$1` and `$2`", then "Merges read a message file".**
+  The fix is live in parallel projects now; the merge row reworks the same
+  command later.
+
 Rows not named here are unordered.
 
 ## `my` plugin hygiene
@@ -150,6 +154,11 @@ Their order is in "Order of work" above.
   the message from a file replaces the five copies of the locked command and
   the commit's heredoc rule. Report P3.
   [spec](docs/plans/2026-10-12-locked-commit-spec.md)
+- 💭 **Skill text loses `$1` and `$2`** — fix: Claude Code replaces `$1` and
+  `$2` in a loaded skill with its arguments, so the parallel squash-merge in
+  `my:handoff` (`"$1"`, `"$2"`) merges a branch named after the stage. Live in
+  every project with a "Parallel runs" section. The locked commit's `m=$1`
+  goes with the locked-commit.py spec; check `commands/commit.md` too.
 - 💭 **Merges read a message file** — `handoff-state.py merge` and the
   parallel squash-merge take `-F <file>`, so the heredoc rule leaves
   `my:handoff`. Changes the `handoff-state.py` interface. Out of scope of the
