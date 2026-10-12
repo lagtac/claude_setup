@@ -1,7 +1,7 @@
 # Spec: `locked-commit.py`, one script for the locked commit
 
-**Status:** approved, 2026-10-12. Replaces the five copies of the locked commit command with one
-script that reads the message from a file.
+**Status:** done, 2026-10-12. Shipped in `39000ec`: one script, `locked-commit.py`, replaces the
+five copies of the locked commit command. End-of-branch checks: 145 passed, 0 failed.
 
 ## How to read this spec
 

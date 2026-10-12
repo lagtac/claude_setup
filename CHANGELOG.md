@@ -72,6 +72,15 @@ the known limits.
 
 ### Changed
 
+- In a project with a "Parallel runs" section, a commit in the main checkout
+  writes its message to a scratchpad file and runs
+  `locked-commit.py -F <file> <paths>`. The script takes lock `main` through
+  `handoff-lock.py`, and no shell reads the message, so the commit needs no
+  heredoc. The global rules, `/my:commit`, `my:architect` and `my:handoff`
+  use it. A commit that fails leaves its paths unstaged. Update the `my`
+  plugin to get the script. See the
+  [spec](docs/plans/2026-10-12-locked-commit-spec.md), whose **Risk** section
+  lists the known limits.
 - `my:handoff` prints one line per review finding, with its class (fix, gate
   or Risk) and the evidence, before the plan stage or the fix round fixes
   anything. The plan stage also prints why it picked the execution skill.

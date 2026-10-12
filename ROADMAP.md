@@ -150,9 +150,10 @@ Their order is in "Order of work" above.
 - 💭 **Write review step 8 whole per mode** — the four versions of the merge
   step become one list per mode; smaller patches sit under the step they
   change. Waits for "Split `my:handoff` by mode". Report P2.
-- 📋 **One script for the locked commit** — a `locked-commit.py` that reads
+- ✅ **One script for the locked commit** — a `locked-commit.py` that reads
   the message from a file replaces the five copies of the locked command and
-  the commit's heredoc rule. Report P3.
+  the commit's heredoc rule. Report P3. Shipped in `39000ec`; known limits are
+  in the spec's Risk section.
   [spec](docs/plans/2026-10-12-locked-commit-spec.md)
 - 💭 **Skill text loses `$1` and `$2`** — fix: Claude Code replaces `$1` and
   `$2` in a loaded skill with its arguments, so the parallel squash-merge in
