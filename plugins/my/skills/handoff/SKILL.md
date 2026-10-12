@@ -471,10 +471,11 @@ is none.
    `next` equals `<stage>`. For `run auto review`, `next` is one of
    `review`, `merge-retry`, `merge`, `worktree-remove`, `fold` and `done`:
    the steps after the merge also run as the review stage.
-7. `run auto code` with a spec as the task doc: the check "the plan is
-   committed on `<base>`" waits until sub-steps a to c, before the code
-   stage's step 1, have committed the spec's `approved` edit. The other
-   code-stage checks run as listed.
+7. `run auto code` with a spec as the task doc: the code-stage check "the
+   plan is committed on `<base>`" checks the spec here. When the spec's
+   `approved` edit is uncommitted, that check waits: it runs as sub-step c,
+   after sub-step a has committed the edit. When the edit is already
+   committed, it runs now, with the other code-stage checks.
 8. A `run auto` session that is a restart (see "Restarted stages", under
    "Resume") skips the checks that expect a fresh start: no plan yet, no
    branch yet, no worktree yet.
@@ -529,7 +530,7 @@ file would count as a live run.
    owns, a contract, the chosen option, or the scope? If no, its class is
    fix. If yes, it is a gate. Print one line per finding: the finding, its
    class, and the evidence for that class. Only then fix the findings whose
-   class is fix. The review stage adds a third class, Risk.
+   class is fix.
 5. Signal and stop on any gate: a finding whose fix would change a decision,
    or a spec decision that turns out to rest on a false premise. The signal
    names the files this stage wrote or edited and left uncommitted on
@@ -661,8 +662,8 @@ file would count as a live run.
 
 Before step 1, when the task doc is a spec and its `approved` edit is not
 committed (`git status --porcelain -- <spec>` prints it), commit that edit
-in the main checkout, in sub-steps a to c. This is the commit the plan
-stage makes for a Large change.
+in the main checkout with sub-steps a and b, then run sub-step c. This is
+the commit the plan stage makes for a Large change.
 
 - **a.** Find `<spec commit>`, the commit that added the spec, as in Plan
   stage, step 8. Run `git-fold-fixups.py check <spec commit>`. If it exits
@@ -675,8 +676,8 @@ stage makes for a Large change.
   fold as in Plan stage, step 8: a failed pre-rebase check, or a fold exit
   of 1 or 3, is row 5, a stop. If it prints anything, skip the fold. The
   review stage folds the waiting fixup after the merge.
-- **c.** Then run the start check that waited: the task doc is committed on
-  `<base>`.
+- **c.** Then run the start check that waited (start check 7 in auto
+  mode): the task doc is committed on `<base>`.
 
 **With a "Parallel runs" section,** sub-step a always makes a normal `docs:`
 commit, never `--fixup`, in the locked form of Plan stage, step 7, and
@@ -773,17 +774,21 @@ all land on the branch, and the main checkout stays clean.
 
 5. **Scope check.** Read each report's scope note. Run a review again when it
    read another range than `<range>`.
-6. **One fix round.** For each finding, apply the test in Plan stage, step 4.
-   A finding whose fix would change a decision is a gate. A finding about
-   input that today's code never produces goes into the plan's **Risk**
-   section as a known limit. Print the list as Plan stage, step 4 says,
-   before any fix. Fix the rest, test and commit as the project's rules say.
+6. **One fix round.** First give each finding one of three classes, tested
+   in this order, so the first match wins. Gate: the fix would change what a
+   component owns, a contract, the chosen option, or the scope. Risk: the
+   finding is about input that today's code never produces; it goes into the
+   plan's **Risk** section as a known limit. Fix: every other finding.
+   Print one line per finding: the finding, its class, and the evidence for
+   that class. If any finding is a gate, signal and stop before
+   any fix. Otherwise fix the findings whose class is fix, test and commit
+   as the project's rules say.
    Commit the review reports and the **Risk** edits on the branch, in the
    worktree: while the worktree exists, the plan is edited only
    there.
    Then run each review that led to a fix once more, with the same prompt
-   block. That re-review is final: a new Critical finding is a gate, and a
-   lesser one goes into **Risk**.
+   block. That re-review is final: a new Critical finding is a stop for the
+   user, whatever its class (row 13), and a lesser one goes into **Risk**.
 7. Signal `<name>: ready to squash-merge <branch>` and stop.
 8. After the user's yes, typed in this window, run these in order. Keep the
    branch: never run `git branch -d` or `-D` on it. Never push.
@@ -841,9 +846,11 @@ all land on the branch, and the main checkout stays clean.
   Delegation [Failing end-of-branch tests] lists by its exact name does not
   stop the run, and the `done` mark names it (row 10). Any other failed test
   is a stop.
-- Step 6: a finding whose fix would change a decision is row 12. With
-  `decide`, fix it and record it in the task doc's **Risk** section, in the
-  worktree. A new Critical finding in the re-review is row 13, a stop.
+- Step 6: a finding of class gate is row 12. With `decide`, fix it as well
+  and record it in the task doc's **Risk** section, in the worktree; its
+  printed line keeps the class gate. A new Critical finding in the
+  re-review is row 13, a stop, whatever its class: `decide` never covers
+  it.
 - Step 7: do not signal. Go on to step 8 without a yes (row 14).
 - Step 8 runs as these sub-steps instead. Run them from the main checkout.
   A session whose state has `next` past `review` starts at the sub-step

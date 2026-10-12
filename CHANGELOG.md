@@ -75,6 +75,10 @@ the known limits.
 - `my:handoff` prints one line per review finding, with its class (fix, gate
   or Risk) and the evidence, before the plan stage or the fix round fixes
   anything. The plan stage also prints why it picked the execution skill.
+  The fix round tests gate before Risk, so a finding whose fix would change
+  a contract reaches the user, and a gate stops the round before any fix. A
+  new Critical finding in the re-review always stops the run, even with
+  `decide`.
   See the [audit](docs/reports/2026-10-12-handoff-instructions-audit.md), R2.
 - `/my:status` lists two items that use the same **Shared resources** lock
   as safe to run together, and says they take turns on that lock. Before,
@@ -103,6 +107,8 @@ the known limits.
   stage's auto sub-steps are lettered a to c, so "step 1" no longer names two
   steps. The README says that its advice of one auto run at a time is
   stricter than the **Max runs** default of 2. Audit R1, R3 and R4.
+- `my:handoff auto code` checks that the spec is committed also when its
+  `approved` edit was committed before the run started.
 - `git-fold-fixups.py check` runs the fold's own rules, so it no longer
   passes a target that the fold then refuses.
 - The md-tables docs describe the scripts' current command line in
