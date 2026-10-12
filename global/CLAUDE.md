@@ -60,7 +60,11 @@ turns out larger than its size, stop and say so before going on.
   commit the `approved` status, so commit it as a fixup of the spec commit,
   fold it with `git-fold-fixups.py`, then run `/my:handoff code <spec path>`. Fold
   before the hand-off: once the worktree sits on the `fixup!` commit, the
-  fold must wait until the branch is merged. Where the project keeps a plans
+  fold must wait until the branch is merged. When the spec has a Delegation
+  section, ask "Hand off the code, supervised or auto?": supervised is the
+  route above, and auto runs `/my:handoff auto code <spec path>` with the
+  `approved` edit left uncommitted. The auto code stage commits and folds
+  that edit itself. Where the project keeps a plans
   index, its row goes into the spec commit. Wherever this file says "the
   plan" for a Medium change, read "the spec": its **Tasks** section and its
   **Risk** section play the plan's part.
@@ -94,9 +98,9 @@ If brainstorming upgrades a task to architectural partway through, and the task 
 
 When `superpowers:brainstorming` produces a deliverable, keep spec and plan as **separate files** (Large changes only; a Medium change keeps its tasks in the spec):
 
-1. **Spec** → `docs/plans/YYYY-MM-DD-<slug>-spec.md` — product-level (what/why, design decisions, architecture, trade-offs, risk; new UI gets a **Visual Language** section mapping elements to design-system primitives/semantic classes/motion). Self-contained: a cold reader could write the plan from it alone. First section is **"How to read this spec"** — all related docs (specs, plans, ROADMAP, CHANGELOG, sources, skills) with paths, in reading order. When an architecture brief exists, it is listed first.
+1. **Spec** → `docs/plans/YYYY-MM-DD-<slug>-spec.md` — product-level (what/why, design decisions, architecture, trade-offs, risk; new UI gets a **Visual Language** section mapping elements to design-system primitives/semantic classes/motion). Self-contained: a cold reader could write the plan from it alone. First section is **"How to read this spec"** — all related docs (specs, plans, ROADMAP, CHANGELOG, sources, skills) with paths, in reading order. When an architecture brief exists, it is listed first. Ask the user whether the spec may run in auto mode (`/my:handoff auto`); on yes, add a **Delegation** section with the four keys that the `my:handoff` skill defines in its "Delegation" section.
 2. Self-review the spec (placeholders, consistency, scope, ambiguity, self-containment). Then run `my:spec-review <spec path>` and act on its report: fix every `editorial` finding — but first check whether the fix changes what a component owns, a contract, the chosen option, or the scope, and if it does treat it as `design`; never fix a `design` finding — ask the user in the "No silent reinterpretation" form below; list rejected findings with one line of reasoning each. Then ask the user to review the spec, the report and the open design questions before proceeding.
-3. **Plan** → `docs/plans/YYYY-MM-DD-<slug>.md` via `superpowers:writing-plans` — execution-level: TDD steps, test code, commit breakdown. After the user approves the spec, set its status to `approved`, leave that edit uncommitted (the plan stage commits it), and ask "Hand off the plan?"; on yes, run `/my:handoff plan <spec path>`, which writes the plan, then the code, then runs the end-of-branch reviews, each in a new session.
+3. **Plan** → `docs/plans/YYYY-MM-DD-<slug>.md` via `superpowers:writing-plans` — execution-level: TDD steps, test code, commit breakdown. After the user approves the spec, set its status to `approved`, leave that edit uncommitted (the plan stage commits it), and ask "Hand off the plan?"; on yes, run `/my:handoff plan <spec path>`, which writes the plan, then the code, then runs the end-of-branch reviews, each in a new session. When the approved spec has a Delegation section, ask "Hand off the plan, supervised or auto?" instead: supervised runs `/my:handoff plan <spec path>`, and auto runs `/my:handoff auto plan <spec path>`, which goes on to the squash-merge and the `done` marks without the user, as far as the Delegation section allows, and never pushes.
 
 If plan mode auto-engages mid-brainstorming, its `~/.claude/plans/` file is scratch — write the durable spec + plan to `docs/plans/` on `ExitPlanMode` regardless.
 

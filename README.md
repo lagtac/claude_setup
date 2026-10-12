@@ -74,6 +74,9 @@ as `/my:<name>`.
   squash-merge after the user's yes. How it works:
   `plugins/my/skills/handoff/README.md`.
   `/my:handoff <stage> <doc>` launches; `/my:handoff run <stage> <doc>` runs.
+  `/my:handoff auto plan|code <spec>` runs the whole cycle to the `done`
+  marks without the user, as far as the spec's Delegation section allows,
+  and never pushes; `/my:handoff auto resume <spec>` continues a stopped run.
 - `my:tutor` — A learning mode. Sets up a learning workspace (a new repo, a
   repo made for learning, or a clone of a real project that cannot push), and
   runs the sessions: the student writes the code, the tutor sets exercises,
@@ -108,6 +111,8 @@ no argument it folds every waiting `fixup!` commit on the branch, or refuses
 with one line and changes nothing. Your shell finds it through a symlink in
 `~/bin`, as for the md-tables filters. Its tests:
 `cd plugins/my && python3 -m unittest discover tests`.
+`handoff-state.py`, in the same folder, keeps the state of a `my:handoff auto`
+run, and its tests run with the same command.
 
 ## Commands
 

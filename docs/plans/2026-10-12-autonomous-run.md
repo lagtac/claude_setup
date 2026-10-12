@@ -841,7 +841,61 @@ all installed.
 - **The guard's word splitting is an approximation of the shell.**
   `bash -c "git push"`, `eval`, `env git push`, `sudo git push` and pushes
   from a script slip through (spec Risk). A parse failure that mentions
-  `git` and `push` blocks a command that bash would refuse anyway.
+  `git` and `push` blocks the command. Since the fix round, `#` is not a
+  comment, so a command that bash accepts can also fail to parse and be
+  blocked, such as `git status  # don't push yet`. This only blocks too
+  much. A quoted
+  `<<WORD`, as in `echo "use <<EOF"`, is taken for a heredoc, so the lines
+  after it are not checked. This has the same cause as the gaps above: the
+  guard reads the heredoc before it reads quotes. The end-of-branch review
+  found it; the fix round fixed the other gaps it found (comments, shell
+  keywords, `--git-dir`).
+- **More pushes the guard does not see (final re-review).** None is fixed,
+  because the re-review is final. With `MY_AUTORUN` set, each of these exits
+  0: a push inside a double-quoted `$(...)` or inside backticks, such as
+  `out="$(git push 2>&1)"`; the wrappers `timeout`, `nice`, `stdbuf`,
+  `xargs` and `time -p`; a leading redirect, `>log git push`; the git option
+  `--config-env`; and a backslash-newline line continuation between `git`
+  and `push`. Of these, `$(...)` is the most likely in an agent's commands.
+  The guard is a second line of defence: the stages never run `git push`
+  by their own text. Detection: `git -C <bare> show-ref`, or the remote's
+  log, after a run.
+- **Heredoc forms the guard misreads.** `<<\EOF` is not recognised, and a
+  tab before the end word also ends a plain `<<WORD`. Both only block too
+  much, never too little.
+- **A fold that succeeded, then a crash, blocks resume.** Since the fix
+  round, `check` refuses `next=fold` when `head_before_fold` is no longer on
+  `<base>`. A successful fold also rewrites history, so a crash between the
+  fold's exit 0 and `set next=done` makes every resume print
+  `history rewritten`, though nothing is wrong. The way out: read
+  `git log <base>`. When no `fixup!` commit is left and the tree looks
+  right, run `handoff-state.py set <slug> next=done head_before_fold=`,
+  then resume. A row-17 exit 3 that the user accepts needs the same step.
+- **A finished fix round, then a crash, blocks resume.** The review restart
+  stops with `the fix round already ran` whenever the branch has a
+  committed review report, also when the fix round ended cleanly and only
+  the merge was left. The way out: run
+  `handoff-state.py set <slug> next=merge` after checking the branch, then
+  resume. It fails safe.
+- **Small `check` gaps.** When the work branch is gone, `next=merge` looks
+  for the squash subject in all of `<base>`, so an older commit with the
+  same subject is taken for the merge. A detached HEAD in the main checkout,
+  or a state file that is not valid JSON, ends in a traceback, so resume's
+  refusal shows no reason. A missing branch prints two lines that say the
+  same thing. Each needs a hand edit or a deleted branch first.
+- **The hook starts Python on every call.** A shell test of `MY_AUTORUN`
+  in `hooks.json`, before Python, would remove the cost (see "Blast radius
+  of the hook").
+- **`handoff-state.py` repeats code from `git-fold-fixups.py`:** the `git()`
+  wrapper, the list of in-progress files and the search for waiting fixups.
+  The two copies can drift, and then `check` and the fold disagree about
+  whether fixups wait. Both scripts are standalone on `PATH`, so sharing a
+  module would need an import path. Detection: a resume that `check` passes
+  while the fold refuses, or the reverse.
+- **`handoff-state.py` takes `<base>` from the main checkout's branch.**
+  `SKILL.md` takes it from the project's rules first. In a project whose
+  rules name another base, the two disagree, and `check` compares with the
+  wrong branch. No project in use names one today.
 - **The `Task: <N>` trailer is a new convention.** If the executor forgets it
   on a commit, a restarted code stage redoes that task. Detection: the
   redone task fails its "test fails first" step, which stops the run.
@@ -849,6 +903,19 @@ all installed.
   in every session with the plugin. Without `MY_AUTORUN` it exits before it
   reads stdin; Task 1 tests that. A Python start-up costs about 20 ms per
   call.
+- **An API error stalls a run silently.** In the rehearsal, `review-autow`
+  lost its connection mid-response and sat idle at the prompt. That is not a
+  stop point: no `⚠` mark, no notification, nothing in `stopped`. The state
+  file still names the right `next`. A typed `continue` in that window
+  recovers at once. `resume` works only after the stalled window is closed:
+  it launches a window with the same name, and Launch refuses a name that
+  is still in use. Detection: a window with no mark that has not changed for
+  a long time. This breaks the spec's Goal, end state 2, where a stopped
+  run's window says what it needs. Not fixed in this branch; the user
+  accepted it as a known limit on 2026-10-12.
+- **Memory.** Every stage is a full `claude` process. The rehearsal ran four
+  runs at once and reached 13 processes, which left 1.8 GB free on a 15 GB
+  machine. One run at a time keeps about 3 processes.
 
 ## Testing Strategy
 
@@ -859,6 +926,27 @@ all installed.
 - Skill start checks and `resume`: headless runs a1 to a9 and r1 to r3.
 - The full cycle: Task 7, the four runs of the spec's Testing section.
 
+Rehearsal, 2026-10-12. Each run used its own slug, so Launch's check for a
+session with the same name could not collide.
+
+- Plain run (`plainw`): pass. The review stage stopped at
+  `ready to squash-merge feat/plainw`, and no window had `MY_AUTORUN`.
+- Auto run (`autow`): pass, with one input. After an API connection error,
+  `review-autow` sat idle until a typed `continue` (Risk). It then
+  squash-merged, set the `done` mark citing the squash commit, and set
+  `next` to `finished`. Every launched window had `MY_AUTORUN=autow`, and
+  the bare `origin` was unchanged.
+- Unlisted dependency (`depw`): pass. The code stage stopped before it made
+  a worktree, with `next` `code` and a `stopped` reason naming `requests`.
+- Resume (`resw`): pass. The run stopped with `next` `fold` while
+  `notes.txt` was untracked. After the window was closed and the file
+  removed, `auto resume` launched the review stage, which folded the fixup
+  and set the `done` mark. No `fixup!` commit was left, and `origin` was
+  unchanged. This run shows a run without input: its code stage, reviews,
+  fix round, re-review and merge all ran with none, up to the planned stop
+  at the fold.
+
 ## Open Questions
 
-None.
+None. The silent stall after an API error (Risk) was accepted as a known
+limit by the user on 2026-10-12, before the squash-merge.

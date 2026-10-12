@@ -68,6 +68,11 @@ not committed as `approved`.
 
 You normally type only the first launch. Each stage launches the next.
 
+Auto mode adds three forms: `/my:handoff auto plan <spec>`,
+`/my:handoff auto code <spec>` and `/my:handoff auto resume <spec>`. Launch
+types a fourth, `/my:handoff run auto <stage> <doc>`, into each window. See
+"Auto mode" below.
+
 ## How a launch works
 
 1. **Name.** The window and session get the name `<stage>-<slug>`. The slug is
@@ -194,9 +199,153 @@ over its whole context. When two sessions do collide, it shows: a failed e2e
 run, a port that will not bind, or a duplicate number. A message from another
 session never counts as your approval.
 
+## Auto mode
+
+Auto mode takes one approved spec to its `done` marks on `main` without you.
+It merges and folds on its own, but it never pushes. It stops only for a
+case that you have not decided in advance in the spec. The design and its
+reasons are in `docs/plans/2026-10-12-autonomous-run-spec.md`.
+
+### The commands
+
+- `/my:handoff auto plan <spec>`: for a Large change, a spec without a
+  **Tasks** section. The run writes the plan, the code and the reviews.
+- `/my:handoff auto code <spec>`: for a Medium change, a spec with a
+  **Tasks** section. The run commits the spec's `approved` edit itself.
+- `/my:handoff auto resume <spec>`: continues a stopped run whose window is
+  gone.
+
+Without the word `auto`, handoff works as described above, even when the
+spec has a Delegation section. The command you type says what will happen.
+
+### The Delegation section
+
+The spec says what the run may decide without you, in a section titled
+`Delegation` with exactly four keys:
+
+```markdown
+## Delegation
+
+- **Dependencies:** `none`
+- **Design-changing findings:** `stop`
+- **Failing end-of-branch tests:** `none`
+- **End-of-branch checks:** `python3 -m unittest discover tests`
+```
+
+- **Dependencies:** `none`, or the packages the code stage may add. Any
+  other new dependency stops the run.
+- **Design-changing findings:** `stop`, or `decide`. With `decide`, the
+  stage picks the fix it judges best and writes one line about it into the
+  **Risk** section of the plan, or of the spec for a Medium change. Read
+  those lines before you push.
+- **Failing end-of-branch tests:** `none`, or the names of tests that may
+  fail. The `done` mark names each one that did.
+- **End-of-branch checks:** the commands to run at the end of the branch
+  when the project's rules name none, or `none`.
+
+A missing key, an unknown key or a value in another form stops the run
+before it starts. Names are compared exactly.
+
+### Start an auto run
+
+1. **Write the spec** in your own session, with `superpowers:brainstorming`.
+   The spec rules in `global/CLAUDE.md` make it ask whether the spec may run
+   in auto mode. On yes, it adds the Delegation section. You can also add
+   the section by hand.
+2. **Review the spec** with `my:spec-review <spec>`, and fix what it finds.
+   The review does not check the Delegation section's format. The start
+   check of the auto run does that.
+3. **Approve the spec:** set its status to `approved`. You can leave that
+   edit uncommitted. The plan stage commits it for `auto plan`, and the code
+   stage commits it for `auto code`. The supervised route for a Medium
+   change asks you to commit and fold it first; auto mode does not.
+4. **Start the run** from a session inside tmux, in `auto` or
+   `bypassPermissions` mode:
+   - `/my:handoff auto plan <spec>` when the spec has no **Tasks** section.
+   - `/my:handoff auto code <spec>` when it has one.
+5. **Watch the window names.** Each stage opens the next one in a new
+   window. `⚠` means the run waits for you. A window with no mark that has
+   not changed for a long time may be stalled (see "Known problems").
+6. **After the run,** the last window prints `done; squash commit <hash>`.
+   Before you push:
+   - Read the lines that a `decide` added to the **Risk** section of the
+     plan, or of the spec for a Medium change.
+   - Check the `done` mark for tests that were allowed to fail.
+   - Run `git log origin/main..main` to see what the push will send. The
+     run never pushes, so `origin/main` should be where it was before.
+   - Push yourself. The run keeps the branch and removes the worktree.
+
+### It never pushes
+
+Each window of a run starts with the environment variable `MY_AUTORUN` set
+to the slug. While it is set, a hook of this plugin
+(`plugins/my/hooks/block-autorun-push.py`) blocks every `git push` that the
+session runs through the `Bash` or `Monitor` tool. Your own sessions do not
+have the variable, so your pushes and `my:push` work as before.
+
+The guard has a known gap. It reads the command text, so a push from inside
+a script the session writes and then runs is not seen. Neither are forms
+such as `bash -c "git push"`, `eval` or a command built from variables.
+After a run, `git log origin/main` shows whether anything was pushed.
+
+### Where the state lives
+
+A run keeps its state in `.git/my-handoff/<slug>.json`, in the main
+checkout's git folder. That is outside the work tree, so `git status` never
+shows it. `handoff-state.py`, in `plugins/my/bin/`, writes and reads it:
+`handoff-state.py get <slug>` prints it. The field `next` names the next
+step, and `stopped` holds the reason of the last stop. The script is on
+`PATH` only inside a Claude session that loads this plugin. For your own
+shell, add a symlink in `~/bin`, as for `git-fold-fixups.py`:
+`ln -s <this repo>/plugins/my/bin/handoff-state.py ~/bin/`.
+
+### When a run stops
+
+A stop looks like a stop without auto mode: the `⚠` mark, a notification
+and one line. The state file records the reason. Answer in that window,
+and the run goes on in auto mode.
+
+These cases stop a run: a failed start check, a window that cannot open,
+another session's edit in a file the run commits, a new dependency or a
+failing test that the Delegation section does not list, a design finding
+with `stop`, a change outside the project's scope, a test that still fails
+after debugging, a weakened test, a new Critical finding in the re-review,
+a merge conflict, and a fold that cannot run or fails. The full table is in
+`SKILL.md`, "Stop points in auto mode". "Ready to squash-merge" does not
+stop a run.
+
+### Resume
+
+If the window of a stopped run is gone, after a crash, a reboot or a
+closed window, run `/my:handoff auto resume <spec>`. It compares the state
+file with git. When they disagree, it refuses and prints the first
+difference. Otherwise it opens the next stage in a new window, with
+`MY_AUTORUN` set. A merge that happened before a crash is found, so it
+never runs twice. A squash that a crash left staged, or a fold that
+rewrote history, makes it refuse. Before it clears the reason of the last
+stop, it prints it.
+
+Close the old window first. Resume opens a window with the same name, and
+Launch refuses a name that is still in use.
+
+### Known problems
+
+- **An API error can stall a run without a sign.** If the connection drops
+  in the middle of a reply, the window sits idle at the prompt. It shows no
+  `⚠` mark, sends no notification and writes nothing to `stopped`. The
+  state file still names the right next step. Type `continue` in that
+  window, and the run goes on. Or close the window and run
+  `/my:handoff auto resume <spec>`. The only sign is a window with no mark
+  that has not changed for a long time.
+- **Memory.** Every stage is a full `claude` process. A rehearsal with
+  four runs at once reached 13 processes and left 1.8 GB free on a 15 GB
+  machine. Run one auto run at a time; it keeps about 3 processes.
+
 ## What you need
 
 - tmux, with the session running inside it.
 - A session in `auto` or `bypassPermissions` mode, for windows to open on their
   own.
 - The tools `ListAgents` and `PushNotification`.
+- For auto mode, `python3`: the push guard and `handoff-state.py` are Python
+  scripts.

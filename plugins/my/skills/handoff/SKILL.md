@@ -9,7 +9,10 @@ description: >
   Stages: plan (writes and reviews the plan from an approved spec), code
   (implements a committed plan, or a spec with a Tasks section, in a
   worktree) and review (runs the end-of-branch checks and reviews, one fix
-  round, then the squash-merge after the user's yes). NOT for dispatching
+  round, then the squash-merge after the user's yes). "/my:handoff auto plan
+  <spec>" or "auto code <spec>" runs the whole cycle to the done marks
+  without the user, as far as the spec's Delegation section allows, and
+  "auto resume <spec>" continues a stopped auto run. NOT for dispatching
   subagents inside one session.
 ---
 
@@ -27,6 +30,20 @@ The args are one of:
 - `<stage> <doc>` — **launch**: open the stage in a new tmux window. Go to
   "Launch".
 - `run <stage> <doc>` — **run**: this session is the stage. Go to "Run".
+- `auto <plan|code> <spec>` — **auto launch**: check the spec, create the
+  run's state, and open the stage in auto mode. Go to "Start checks in auto
+  mode", then "Launch". `auto plan` is for a spec without a Tasks section
+  (Large); `auto code` is for a spec with one (Medium).
+- `auto resume <spec>` — **resume**: continue a stopped auto run whose window
+  is gone. Go to "Resume".
+- `run auto <stage> <doc>` — **auto run**: this session is the stage, in auto
+  mode. Launch types this form into the new window. Go to "Run".
+
+Without the word `auto`, every step reads as written, even when the spec has
+a Delegation section. The rules marked **In auto mode** apply only to the
+three auto forms. In them, a run goes from an approved spec to the `done`
+marks on `<base>` without the user, never pushes, and stops only where the
+table in "Stop points in auto mode" says.
 
 `<stage>` is `plan`, `code` or `review`. `<doc>` is one path under
 `docs/plans/`. Each stage reads `<doc>` by the role it plays, not by its
@@ -49,11 +66,13 @@ type or the execution skill, use the fallback the step names. Where a step
 names no fallback, signal and ask. Never guess silently.
 
 Any other args: stop and print
-`Usage: /my:handoff [run] <plan|code|review> <docs/plans/…md>`.
+`Usage: /my:handoff [run] [auto] <plan|code|review> <docs/plans/…md>, or /my:handoff auto resume <docs/plans/…-spec.md>`.
+The auto launch takes only `plan` or `code`, and only a spec.
 
 `<slug>` is the doc's filename without the `YYYY-MM-DD-` prefix and without
 `-spec.md` or `.md`. Example: `docs/plans/2026-09-21-landing-match-grade-spec.md`
 → `landing-match-grade`. `<name>` is `<stage>-<slug>`.
+For `auto resume`, `<name>` is `resume-<slug>`.
 
 `<base>` is the branch that specs and plans are committed on and that work
 branches squash-merge into. Take it from the project's rules when they name
@@ -62,6 +81,31 @@ checkout: `git -C <repo root> branch --show-current`, with `<repo root>` as in
 Launch step 3. It is often `main`, but can be `master`, `develop` or another
 name. If that command prints nothing (a detached HEAD), signal
 `<name>: start check failed: no base branch` and stop.
+
+### Delegation
+
+An auto run needs a section titled `Delegation` in the spec, at any heading
+level, with exactly these four keys:
+
+```markdown
+## Delegation
+
+- **Dependencies:** `none`
+- **Design-changing findings:** `stop`
+- **Failing end-of-branch tests:** `none`
+- **End-of-branch checks:** `python3 -m unittest discover tests`
+```
+
+| Key | Allowed values | Meaning |
+| --- | --- | --- |
+| Dependencies | `none`, or a list of package names with an optional version | The code stage may add exactly these. Any other new dependency stops the run. |
+| Design-changing findings | `stop` or `decide` | `decide`: the stage picks the fix it judges best and records it (see "Stop points in auto mode"). `stop`: as without auto. |
+| Failing end-of-branch tests | `none`, or a list of test names | These tests may fail without stopping the run. Any other failure stops it. |
+| End-of-branch checks | `none`, or a list of commands | The checks to run when the project's rules name none. When the rules name checks, the rules win. `none` makes the `done` mark say `no end-of-branch checks run`. |
+
+Compare by exact name: a package or a test is listed only when its name is
+written there. A missing key, an unknown key, or a value outside these forms
+fails the start check. Anything the section does not list stops the run.
 
 ## Signal
 
@@ -85,6 +129,48 @@ Signal at exactly four points: a gate, an error you cannot fix, "ready to
 squash-merge", and the code stage's "done" when the work ends before the
 branch does. Any question you would ask the user is a gate: signal first,
 then ask.
+
+**In auto mode,** the table in "Stop points in auto mode" replaces that list:
+it says, for each of those points, whether the stage stops or goes on. A
+stop is a signal with one step before it: run
+`handoff-state.py set <slug> stopped="<the line>"`, with the `next` value
+the row names, if any. A failed start check and a refused `resume` are the
+exception: they write nothing. After the user's reply, run
+`handoff-state.py set <slug> stopped=`, then go on in auto mode.
+
+## Stop points in auto mode
+
+"Delegation [Key]" means: read that key of the spec's Delegation section. Go
+on when the case is listed there, and stop when it is not. Compare by exact
+name.
+
+| Row | Stage | Stop point without auto | Auto mode |
+| --- | --- | --- | --- |
+| 1 | any | A start check fails | stop |
+| 2 | any | Launch cannot open a window (no tmux, or a mode other than `auto` or `bypassPermissions`) | stop |
+| 3 | any | A shared resource is busy, or another session's edit is in a file the stage commits | stop |
+| 4 | plan | A finding whose fix changes a decision, or a false premise | Delegation [Design-changing findings] |
+| 5 | plan | Spec fixups wait: the pre-rebase check fails, or the fold exits 1 or 3 | stop |
+| 6 | code | A new dependency | Delegation [Dependencies] |
+| 7 | code | A change outside the project's scope | stop |
+| 8 | code | A test still fails after `superpowers:systematic-debugging` | stop |
+| 9 | code | A test assertion was removed or weakened | stop |
+| 10 | review | An end-of-branch test fails | Delegation [Failing end-of-branch tests] |
+| 11 | review | The project's rules name no end-of-branch checks | Delegation [End-of-branch checks] |
+| 12 | review | A finding whose fix changes a decision | Delegation [Design-changing findings] |
+| 13 | review | A new Critical finding in the re-review | stop |
+| 14 | review | Ready to squash-merge | go on |
+| 15 | review | `git merge --squash` conflicts, because `<base>` moved during the run | run `git reset --merge`, check that `git status --porcelain` prints nothing, then stop with `next=merge`. If the tree is still not clean, the stop line says so. (`git merge --abort` does not work here: a squash merge writes no `MERGE_HEAD`.) |
+| 16 | review | After the merge, `<base>` is not clean, so the fold must wait | stop with `next=fold` |
+| 17 | review | The fold exits 1 or 3 | stop with `next=fold`. Exit 3 also records the HEAD from before the fold. |
+
+With `decide` in Delegation [Design-changing findings], the stage picks the
+fix it judges best, applies it, and writes one line into the task doc's
+**Risk** section: the finding, the choice and the reason. The task doc is
+the plan (Large) or the spec (Medium). While the worktree exists, that edit
+is made and committed in the worktree. With a failing test listed in
+Delegation [Failing end-of-branch tests], the run goes on, and the `done`
+mark names the test.
 
 ## Launch
 
@@ -115,6 +201,20 @@ Run these steps in order.
 
    When the mode flag is empty, add: `Pick a permission mode in the new
    session; in manual or acceptEdits mode it will wait at its first command.`
+
+   **In auto mode,** the command sets `MY_AUTORUN` and types the auto run
+   form. `MY_AUTORUN` turns on the plugin's push guard, a hook that blocks
+   `git push` in that session:
+
+   ```bash
+   cd <repo root> && MY_AUTORUN=<slug> claude -n <name> <plugin-dir flags> <mode flag> '/my:handoff run auto <stage> <doc>'
+   ```
+
+   When the auto launch or `resume` falls back, print the command as above:
+   the user is at this window. When a `run auto` stage falls back while it
+   launches the next stage, that is a stop (row 2 of "Stop points in auto
+   mode"): signal `<name>: cannot open a window for <next name>: <reason>`.
+   The state file already names the next stage, so `resume` can launch it.
 5. **Open.**
 
    ```bash
@@ -123,9 +223,89 @@ Run these steps in order.
    ```
 
    `-d` keeps the user's view where it is.
+
+   **In auto mode:**
+
+   ```bash
+   tmux new-window -d -n <name> -c <repo root> \
+     "MY_AUTORUN=<slug> claude -n <name> <plugin-dir flags> <mode flag> '/my:handoff run auto <stage> <doc>'"
+   ```
+
 6. **Report.** Print `Launched <name> in a new tmux window.` and stop (in a
    Run session, go on to "Finish"). Do not wait for the new session and do not
    poll for it.
+
+## Resume
+
+`auto resume <spec>` continues an auto run whose window is gone: after a
+crash, a reboot or a closed window. `<name>` is `resume-<slug>`. It runs in
+the user's own session, which has no `MY_AUTORUN`, so it never does the
+stage's work itself: it launches the stage in a new window.
+
+1. Run `handoff-state.py check <slug>`. It compares the state file with git
+   and prints one mismatch per line. If it exits 1, signal
+   `<name>: resume refused: <first mismatch>` and stop. Write nothing, and
+   never guess. When it prints `merge done`, the merge happened before a
+   crash, and `check` has already moved `next` on to `worktree-remove`.
+2. Read `next` with `handoff-state.py get <slug>`. If it is `finished`, print
+   `<name>: the run for <slug> is finished; nothing to resume.` and stop.
+3. Pick the stage and its doc from the state:
+   - `plan`: if `task_doc`, the plan, is committed on `<base>`
+     (`git log -1 --format=%h <base> -- <task_doc>` prints a hash), the plan
+     stage got that far: run `handoff-state.py set <slug> next=code`, and
+     take the next line. Otherwise the stage is `plan` and the doc is
+     `spec`.
+   - `code`: the stage is `code` and the doc is `task_doc`.
+   - `review`, `merge`, `worktree-remove`, `fold` or `done`: the stage is
+     `review` and the doc is `task_doc`. The steps after the merge run as
+     the review stage.
+4. If the state's `stopped` field is not empty, print
+   `<name>: the earlier stop was: <stopped>`. Then run
+   `handoff-state.py set <slug> stopped=`, and run "Launch" in auto mode
+   for that stage and doc, with the name `<stage>-<slug>`: it opens
+   `run auto <stage> <doc>` with `MY_AUTORUN=<slug>`. Then "Finish".
+
+### Restarted stages
+
+A `run auto` session is a restart when it finds what a fresh start expects to
+be absent:
+
+- `plan`: the plan file exists.
+- `code`: the state's `branch` field is not empty. The code stage writes it
+  just after it creates the worktree (Code stage, step 1). A branch
+  `*/<slug>` with an empty `branch` field is not a restart: it is left over
+  from an earlier, finished run, and the start check "no branch `*/<slug>`"
+  stops the stage.
+- `review`: every start is a restart.
+
+A restart skips the start checks that expect a fresh start: no plan yet, no
+branch yet, no worktree yet. The other start checks run. `check` verified the
+state before `resume` launched the stage. When `next` is `worktree-remove`,
+`fold` or `done`, the merge has happened, so the review stage's start checks
+on the branch and its worktree are skipped too: the worktree may be gone.
+Then:
+
+1. **Uncommitted files.** List what the crashed session left uncommitted:
+   for `plan`, `git status --porcelain` in the main checkout for the plan,
+   its review and the plans index (the spec's `approved` edit is expected
+   and does not count); for `code` and `review`, while the worktree exists,
+   `git -C <worktree> status --porcelain`. If anything is listed, stop with
+   `<name>: uncommitted files from the earlier session: <paths>`. The user
+   decides whether to keep them.
+2. **Where each stage goes on.**
+   - `plan`: start the plan stage again at step 1.
+   - `code`: continue at the first task of the task doc that no commit on
+     the branch carries. The tasks done are the `Task: <N>` trailers that
+     `git log --format='%(trailers:key=Task,valueonly)' <base>..<branch>`
+     prints. A task commit without the trailer counts as not done.
+   - `review` with `next` at `review`: if the branch has a commit that adds a
+     review report,
+     `git log --diff-filter=A --name-only --format= <base>..<branch> -- 'docs/plans/*review*.md'`
+     prints a path, and the fix round already ran. Stop with
+     `<name>: the fix round already ran; a second one would break the one-fix-round rule`.
+     Otherwise start the reviews again at step 1.
+   - `review` with `next` past `review`: start at the sub-step of step 8
+     that `next` names.
 
 ## Run
 
@@ -168,6 +348,56 @@ Before any other work, check the doc. If a check fails, signal
 
 When something already exists, do not guess whether to resume or restart. The
 user decides.
+
+### Start checks in auto mode
+
+The auto launch (`auto plan`, `auto code`) and every `run auto` session run
+these checks, in this order. A `run auto` session then runs the list above
+too, with the changes below. The auto launch runs only these. If a check
+fails, signal `<name>: start check failed: <reason>` and stop. A failed check
+writes nothing: it never calls `handoff-state.py set`, not even to record the
+stop, because the state file may belong to another run.
+
+`handoff-state.py` is on `PATH` in every session that loads this plugin. It
+keeps the run's state in `<git common dir>/my-handoff/<slug>.json`, outside
+the work tree. `handoff-state.py get <slug>` prints it, or exits 1 when there
+is none.
+
+1. `run auto` only, before any other check: `printenv MY_AUTORUN` prints
+   exactly `<slug>`. If not, the reason is
+   `MY_AUTORUN is not set to <slug>; the push guard is off`.
+2. The spec's status is `approved`. For `run auto code` and
+   `run auto review`, the spec is the task doc's design doc.
+3. The spec has a valid Delegation section (see "Delegation"). A failure
+   names the key: missing, unknown, or with a value outside its forms.
+4. `auto plan`: the spec has no section titled Tasks. `auto code`: it has
+   one.
+5. The auto launch: `handoff-state.py get <slug>` exits 1, or its `next` is
+   `finished`. If not, the reason is `a run for <slug> exists; use resume`.
+6. `run auto <stage>`: `handoff-state.py get <slug>` prints a state, and its
+   `next` equals `<stage>`. For `run auto review`, `next` is one of
+   `review`, `merge`, `worktree-remove`, `fold` and `done`: the steps after
+   the merge also run as the review stage.
+7. `run auto code` with a spec as the task doc: today's check "the plan is
+   committed on `<base>`" waits for the code stage's first step, which
+   commits the spec's `approved` edit. The other code-stage checks run as
+   listed.
+8. A `run auto` session that is a restart (see "Restarted stages", under
+   "Resume") skips the checks that expect a fresh start: no plan yet, no
+   branch yet, no worktree yet.
+
+When the checks pass, the auto launch creates the state and then goes to
+"Launch":
+
+```bash
+handoff-state.py set <slug> spec=<spec> task_doc=<task doc> next=<stage> \
+  branch= worktree= squash_subject= head_before_fold= stopped=
+```
+
+`<task doc>` is the spec for `auto code`, and
+`docs/plans/<spec date>-<slug>.md`, the plan still to be written, for
+`auto plan`. The empty fields clear what a `finished` run left. Launch then
+types `run auto <stage> <spec>` into the new window.
 
 ### Plan stage
 
@@ -238,6 +468,18 @@ user decides.
    them after the merge.` just before Finish's last line, so that line stays
    last.
 
+**In auto mode,** the plan stage changes in these steps:
+
+- Step 5: a finding whose fix would change a decision, or a false premise,
+  is row 4. With `decide`, fix it and record it in the plan's **Risk**
+  section; with `stop`, stop as written.
+- Step 6: another session's edit is row 3, a stop.
+- Step 8: a failed pre-rebase check, or a fold exit of 1 or 3, is row 5, a
+  stop.
+- Step 9: just before "Launch", run
+  `handoff-state.py set <slug> task_doc=<plan path> next=code`. Launch then
+  opens `run auto code <plan path>`.
+
 ### Code stage
 
 1. Take `<type>` from the plan: the Conventional Commits type of the work
@@ -263,6 +505,43 @@ user decides.
    done, for example because a batch squash-merges only after its last plan,
    signal `<name>: done; <the stop point the plan names>` and stop.
 5. Otherwise run "Launch" with `review <plan path>`, then "Finish".
+
+**In auto mode,** the code stage changes as follows.
+
+Before step 1, when the task doc is a spec and its `approved` edit is not
+committed (`git status --porcelain -- <spec>` prints it), commit that edit
+in the main checkout. This is the commit the plan stage makes for a Large
+change.
+
+1. Find `<spec commit>`, the commit that added the spec, as in Plan stage,
+   step 8. Run `git-fold-fixups.py check <spec commit>`. If it exits 1,
+   commit the edit as a normal `docs:` commit, with the scope the project's
+   rules give docs. Otherwise commit it with
+   `git commit --fixup <spec commit> -- <spec>`. Either way, commit only the
+   spec: `git commit … -- <spec>`, then check that
+   `git show --stat --format= HEAD` lists only the spec.
+2. If `git status --porcelain` in the main checkout prints nothing, fold as
+   in Plan stage, step 8: a failed pre-rebase check, or a fold exit of 1 or
+   3, is row 5, a stop. If it prints anything, skip the fold. The review
+   stage folds the waiting fixup after the merge.
+3. Then run the start check that waited: the task doc is committed on
+   `<base>`.
+
+In the steps:
+
+- Step 1: after the worktree exists, run
+  `handoff-state.py set <slug> branch=<branch> worktree=<worktree path>`,
+  with the path as given to `git worktree add`.
+- Every task commit carries the git trailer `Task: <N>`, where `<N>` is the
+  task's position in the task doc's list of tasks, counted from 1. Add it
+  with `git commit --trailer "Task: <N>"`. A restarted code stage uses it to
+  find the first task not yet done (see "Resume").
+- Step 3: a new dependency is row 6. Go on only when Delegation
+  [Dependencies] lists the package by its exact name. A change outside the
+  project's scope, a test failure that survives debugging, and a removed or
+  weakened assertion are rows 7, 8 and 9: stops.
+- Step 5: just before "Launch", run `handoff-state.py set <slug> next=review`.
+  Launch then opens `run auto review <task doc>`.
 
 ### Review stage
 
@@ -354,6 +633,45 @@ all land on the branch, and the main checkout stays clean.
    4. Set the `done` marks as the project's rules say. They cite the squash
       commit's hash as it is after the fold, and the counts from step 2.
    Then run "Finish".
+
+**In auto mode,** the review stage changes in these steps:
+
+- Step 2: when the project's rules name no end-of-branch checks, run the
+  commands in Delegation [End-of-branch checks] (row 11). With `none`, the
+  `done` mark says `no end-of-branch checks run`. A failed test that
+  Delegation [Failing end-of-branch tests] lists by its exact name does not
+  stop the run, and the `done` mark names it (row 10). Any other failed test
+  is a stop.
+- Step 6: a finding whose fix would change a decision is row 12. With
+  `decide`, fix it and record it in the task doc's **Risk** section, in the
+  worktree. A new Critical finding in the re-review is row 13, a stop.
+- Step 7: do not signal. Go on to step 8 without a yes (row 14).
+- Step 8 runs as these sub-steps instead. Run them from the main checkout.
+  A session whose state has `next` past `review` starts at the sub-step
+  that `next` names: `merge` at 1, `worktree-remove` at 2, `fold` at 3,
+  `done` at 4.
+  1. Write the squash commit's subject as the project's rules say. Run
+     `handoff-state.py set <slug> squash_subject="<subject>" next=merge`,
+     then `git merge --squash <branch>`. On a conflict, follow row 15. When
+     the commit is made, run
+     `handoff-state.py set <slug> next=worktree-remove`.
+  2. Run `git worktree remove <worktree>`, then
+     `handoff-state.py set <slug> next=fold`. When `git worktree list` no
+     longer shows `<worktree>`, a crash came after the remove: skip it.
+  3. Find waiting fixups of the spec and the task doc as in Plan stage, step
+     8. When none wait, go to the last line of this sub-step. When `<base>`
+     is not clean, or the project's pre-rebase check fails, follow row 16.
+     Otherwise run
+     `handoff-state.py set <slug> head_before_fold=$(git rev-parse HEAD)`,
+     then `git-fold-fixups.py`. Exit 1 or 3 is row 17. After the fold, or
+     when none waited, run `handoff-state.py set <slug> next=done`.
+  4. Find the squash commit by its subject: the one commit on `<base>` whose
+     subject equals `squash_subject` in `handoff-state.py get <slug>`. The
+     fold has changed its hash. Set the `done` marks, citing that hash, as
+     the project's rules say. Then run
+     `handoff-state.py set <slug> next=finished stopped=`.
+- Finish: the last line names the squash commit's short hash:
+  `<name>: done; squash commit <hash>. Close this window, and start new work in a new session.`
 
 ### Finish
 
