@@ -1,0 +1,614 @@
+{
+ "branches": [
+  {
+   "branch": "chore/make-db",
+   "commits": 1,
+   "first_at": 1789571218,
+   "squash": "9b68536",
+   "squash_ct": 1789574127,
+   "hours": 0.8080555555555555
+  },
+  {
+   "branch": "chore/web-preview",
+   "commits": 1,
+   "first_at": 1789566580,
+   "squash": "b94da53",
+   "squash_ct": 1789567327,
+   "hours": 0.2075
+  },
+  {
+   "branch": "client-requests-1",
+   "commits": 14,
+   "first_at": 1790684834,
+   "squash": "f5bc088",
+   "squash_ct": 1790699542,
+   "hours": 4.085555555555556
+  },
+  {
+   "branch": "client-requests-2",
+   "commits": 12,
+   "first_at": 1790699905,
+   "squash": "fd558eb",
+   "squash_ct": 1790711200,
+   "hours": 3.1375
+  },
+  {
+   "branch": "client-requests-3",
+   "commits": 10,
+   "first_at": 1790716623,
+   "squash": "a994351",
+   "squash_ct": 1790745221,
+   "hours": 7.943888888888889
+  },
+  {
+   "branch": "client-requests-4",
+   "commits": 8,
+   "first_at": 1790755665,
+   "squash": "b549ba6",
+   "squash_ct": 1790772354,
+   "hours": 4.635833333333333
+  },
+  {
+   "branch": "client-requests-5",
+   "commits": 25,
+   "first_at": 1790836512,
+   "squash": "3396923",
+   "squash_ct": 1791270759,
+   "hours": 120.62416666666667
+  },
+  {
+   "branch": "client-requests-6",
+   "commits": 3,
+   "first_at": 1791272037,
+   "squash": "90b484a",
+   "squash_ct": 1791282192,
+   "hours": 2.8208333333333333
+  },
+  {
+   "branch": "client-requests-7",
+   "commits": 27,
+   "first_at": 1791458981,
+   "squash": "a39165e",
+   "squash_ct": 1791469214,
+   "hours": 2.8425
+  },
+  {
+   "branch": "client-requests-8",
+   "commits": 10,
+   "first_at": 1791550930,
+   "squash": "a2ec297",
+   "squash_ct": 1791554269,
+   "hours": 0.9275
+  },
+  {
+   "branch": "feat/account-menu",
+   "commits": 7,
+   "first_at": 1790006269,
+   "squash": "00ecd87",
+   "squash_ct": 1790007921,
+   "hours": 0.4588888888888889
+  },
+  {
+   "branch": "feat/agent-subscription-state",
+   "commits": 14,
+   "first_at": 1791747471,
+   "squash": "516e613",
+   "squash_ct": 1791791751,
+   "hours": 12.3
+  },
+  {
+   "branch": "feat/composed-titles",
+   "commits": 8,
+   "first_at": 1791469632,
+   "squash": "1443bca",
+   "squash_ct": 1791483754,
+   "hours": 3.9227777777777777
+  },
+  {
+   "branch": "feat/consent-confirm",
+   "commits": 8,
+   "first_at": 1789925372,
+   "squash": "e3e417e",
+   "squash_ct": 1789927857,
+   "hours": 0.6902777777777778
+  },
+  {
+   "branch": "feat/design-tokens",
+   "commits": 42,
+   "first_at": 1789712961,
+   "squash": "a6e64ea",
+   "squash_ct": 1789743997,
+   "hours": 8.62111111111111
+  },
+  {
+   "branch": "feat/faq-page",
+   "commits": 4,
+   "first_at": 1789937206,
+   "squash": "191c99e",
+   "squash_ct": 1789940748,
+   "hours": 0.9838888888888889
+  },
+  {
+   "branch": "feat/guest-burger-menu",
+   "commits": 12,
+   "first_at": 1791291250,
+   "squash": "e969600",
+   "squash_ct": 1791310026,
+   "hours": 5.2155555555555555
+  },
+  {
+   "branch": "feat/hero-explainer-video",
+   "commits": 16,
+   "first_at": 1789966872,
+   "squash": "6662ba1",
+   "squash_ct": 1789968575,
+   "hours": 0.47305555555555556
+  },
+  {
+   "branch": "feat/landing-hero-video",
+   "commits": 4,
+   "first_at": 1789843047,
+   "squash": "e259e67",
+   "squash_ct": 1789844432,
+   "hours": 0.38472222222222224
+  },
+  {
+   "branch": "feat/landing-match-grade",
+   "commits": 9,
+   "first_at": 1790008266,
+   "squash": "7629844",
+   "squash_ct": 1790016380,
+   "hours": 2.253888888888889
+  },
+  {
+   "branch": "feat/landing-motion",
+   "commits": 13,
+   "first_at": 1789974196,
+   "squash": "2b3be91",
+   "squash_ct": 1789978416,
+   "hours": 1.1722222222222223
+  },
+  {
+   "branch": "feat/landing-text-colour",
+   "commits": 3,
+   "first_at": 1789839535,
+   "squash": "dffcb2a",
+   "squash_ct": 1789839974,
+   "hours": 0.12194444444444444
+  },
+  {
+   "branch": "feat/landing-type-rhythm",
+   "commits": 3,
+   "first_at": 1789841359,
+   "squash": "cda1405",
+   "squash_ct": 1789841841,
+   "hours": 0.1338888888888889
+  },
+  {
+   "branch": "feat/phone-type-roles",
+   "commits": 2,
+   "first_at": 1790021612,
+   "squash": "cc28801",
+   "squash_ct": 1790022395,
+   "hours": 0.2175
+  },
+  {
+   "branch": "feat/plans-agent-only",
+   "commits": 2,
+   "first_at": 1791439555,
+   "squash": "057f8e8",
+   "squash_ct": 1791440163,
+   "hours": 0.1688888888888889
+  },
+  {
+   "branch": "feat/pricing-card",
+   "commits": 10,
+   "first_at": 1789836260,
+   "squash": "c86b35b",
+   "squash_ct": 1789837949,
+   "hours": 0.4691666666666667
+  },
+  {
+   "branch": "feat/pricing-tier-names",
+   "commits": 3,
+   "first_at": 1790671522,
+   "squash": "203f545",
+   "squash_ct": 1790680632,
+   "hours": 2.5305555555555554
+  },
+  {
+   "branch": "feat/profile-page-cards",
+   "commits": 2,
+   "first_at": 1789989551,
+   "squash": "0ee4d31",
+   "squash_ct": 1790005875,
+   "hours": 4.5344444444444445
+  },
+  {
+   "branch": "feat/radius-motion-tokens",
+   "commits": 4,
+   "first_at": 1789925592,
+   "squash": "b3ca146",
+   "squash_ct": 1789927050,
+   "hours": 0.405
+  },
+  {
+   "branch": "feat/raised-floor-api",
+   "commits": 3,
+   "first_at": 1791441005,
+   "squash": "465c4f5",
+   "squash_ct": 1791441648,
+   "hours": 0.1786111111111111
+  },
+  {
+   "branch": "feat/request-detail",
+   "commits": 14,
+   "first_at": 1791649381,
+   "squash": "066a93b",
+   "squash_ct": 1791711786,
+   "hours": 17.334722222222222
+  },
+  {
+   "branch": "feat/seo-meta",
+   "commits": 5,
+   "first_at": 1789914992,
+   "squash": "d6a7bad",
+   "squash_ct": 1789916596,
+   "hours": 0.44555555555555554
+  },
+  {
+   "branch": "feat/zbutton-states",
+   "commits": 3,
+   "first_at": 1790068579,
+   "squash": "0062fc5",
+   "squash_ct": 1790076063,
+   "hours": 2.078888888888889
+  },
+  {
+   "branch": "fix/busy-buttons",
+   "commits": 3,
+   "first_at": 1790096644,
+   "squash": "1fd7b39",
+   "squash_ct": 1790157362,
+   "hours": 16.86611111111111
+  },
+  {
+   "branch": "fix/consent-gate",
+   "commits": 5,
+   "first_at": 1789908974,
+   "squash": "a0fb485",
+   "squash_ct": 1789911050,
+   "hours": 0.5766666666666667
+  },
+  {
+   "branch": "fix/fainter-text",
+   "commits": 3,
+   "first_at": 1789972544,
+   "squash": "43c836e",
+   "squash_ct": 1789978285,
+   "hours": 1.5947222222222222
+  },
+  {
+   "branch": "fix/focus-ring",
+   "commits": 7,
+   "first_at": 1789909626,
+   "squash": "a053f84",
+   "squash_ct": 1789911809,
+   "hours": 0.6063888888888889
+  },
+  {
+   "branch": "fix/header-active-link",
+   "commits": 4,
+   "first_at": 1789902518,
+   "squash": "0b69f3b",
+   "squash_ct": 1789904719,
+   "hours": 0.6113888888888889
+  },
+  {
+   "branch": "fix/landing",
+   "commits": 2,
+   "first_at": 1789565518,
+   "squash": "cf0b551",
+   "squash_ct": 1789567301,
+   "hours": 0.49527777777777776
+  },
+  {
+   "branch": "fix/landing-critique-fixes",
+   "commits": 12,
+   "first_at": 1789712961,
+   "squash": "6716f5e",
+   "squash_ct": 1789743997,
+   "hours": 8.62111111111111
+  },
+  {
+   "branch": "fix/landing-hero-frame-cap",
+   "commits": 2,
+   "first_at": 1789852958,
+   "squash": "3958b5c",
+   "squash_ct": 1789853331,
+   "hours": 0.10361111111111111
+  },
+  {
+   "branch": "fix/landing-nice-bars",
+   "commits": 3,
+   "first_at": 1790230390,
+   "squash": "81fe93c",
+   "squash_ct": 1790232163,
+   "hours": 0.4925
+  },
+  {
+   "branch": "fix/landing-small-fixes",
+   "commits": 10,
+   "first_at": 1789745441,
+   "squash": "fbb4fbd",
+   "squash_ct": 1789826666,
+   "hours": 22.5625
+  },
+  {
+   "branch": "fix/match-crawlable",
+   "commits": 2,
+   "first_at": 1789575542,
+   "squash": "c7c58e7",
+   "squash_ct": 1789585139,
+   "hours": 2.6658333333333335
+  },
+  {
+   "branch": "fix/phone-layouts",
+   "commits": 5,
+   "first_at": 1789856295,
+   "squash": "16df66c",
+   "squash_ct": 1789857741,
+   "hours": 0.40166666666666667
+  },
+  {
+   "branch": "fix/pricing-defects",
+   "commits": 4,
+   "first_at": 1789828372,
+   "squash": "b4a6917",
+   "squash_ct": 1789828899,
+   "hours": 0.1463888888888889
+  },
+  {
+   "branch": "fix/request-page-fixes",
+   "commits": 6,
+   "first_at": 1791713386,
+   "squash": "f4724a8",
+   "squash_ct": 1791791751,
+   "hours": 21.768055555555556
+  },
+  {
+   "branch": "fix/small-controls",
+   "commits": 6,
+   "first_at": 1789893357,
+   "squash": "bd87050",
+   "squash_ct": 1789895494,
+   "hours": 0.5936111111111111
+  },
+  {
+   "branch": "kostas-release-fixes",
+   "commits": 5,
+   "first_at": 1791568297,
+   "squash": "75d37d2",
+   "squash_ct": 1791569382,
+   "hours": 0.3013888888888889
+  },
+  {
+   "branch": "refactor/shared-page-classes",
+   "commits": 4,
+   "first_at": 1790160081,
+   "squash": "a04438a",
+   "squash_ct": 1790163571,
+   "hours": 0.9694444444444444
+  },
+  {
+   "branch": "refactor/two-visual-generations-6a",
+   "commits": 4,
+   "first_at": 1790271112,
+   "squash": "75bc9a0",
+   "squash_ct": 1790327726,
+   "hours": 15.726111111111111
+  },
+  {
+   "branch": "refactor/two-visual-generations-6b",
+   "commits": 9,
+   "first_at": 1790432878,
+   "squash": "1aa3376",
+   "squash_ct": 1790501842,
+   "hours": 19.156666666666666
+  },
+  {
+   "branch": "refactor/two-visual-generations-6c",
+   "commits": 3,
+   "first_at": 1790599593,
+   "squash": "aa0f53a",
+   "squash_ct": 1790602991,
+   "hours": 0.9438888888888889
+  },
+  {
+   "branch": "small-fixes-1",
+   "commits": 5,
+   "first_at": 1791621323,
+   "squash": "3853c90",
+   "squash_ct": 1791625123,
+   "hours": 1.0555555555555556
+  },
+  {
+   "branch": "small-fixes-2",
+   "commits": 12,
+   "first_at": 1791747471,
+   "squash": "900a819",
+   "squash_ct": 1791791751,
+   "hours": 12.3
+  }
+ ],
+ "specs": [
+  {
+   "slug": "2026-09-18-design-tokens",
+   "spec_at": 1789720810,
+   "plan_at": 1789730106,
+   "done_at": 1789741660
+  },
+  {
+   "slug": "2026-09-19-landing-hero-video",
+   "spec_at": 1789842392,
+   "plan_at": 1789842943,
+   "done_at": 1789844432
+  },
+  {
+   "slug": "2026-09-19-landing-type-rhythm",
+   "spec_at": 1789840675,
+   "plan_at": 1789841218,
+   "done_at": 1789841841
+  },
+  {
+   "slug": "2026-09-19-pricing-card",
+   "spec_at": 1789834795,
+   "plan_at": 1789835996,
+   "done_at": 1789837949
+  },
+  {
+   "slug": "2026-09-20-consent-confirm",
+   "spec_at": 1789914079,
+   "plan_at": 1789925194,
+   "done_at": 1789927898
+  },
+  {
+   "slug": "2026-09-20-faq-page",
+   "spec_at": 1789926485,
+   "plan_at": 1789936833,
+   "done_at": 1789940931
+  },
+  {
+   "slug": "2026-09-20-hero-explainer-video",
+   "spec_at": 1789966872,
+   "plan_at": 1789968169,
+   "done_at": 1789968717
+  },
+  {
+   "slug": "2026-09-20-radius-motion-tokens",
+   "spec_at": 1789914740,
+   "plan_at": 1789925011,
+   "done_at": 1789927249
+  },
+  {
+   "slug": "2026-09-20-seo-meta",
+   "spec_at": 1789912645,
+   "plan_at": 1789914479,
+   "done_at": 1789916679
+  },
+  {
+   "slug": "2026-09-21-account-menu",
+   "spec_at": 1789990201,
+   "plan_at": 1790004509,
+   "done_at": 1790007939
+  },
+  {
+   "slug": "2026-09-21-landing-match-grade",
+   "spec_at": 1790005384,
+   "plan_at": 1790008091,
+   "done_at": 1790016470
+  },
+  {
+   "slug": "2026-09-21-landing-motion",
+   "spec_at": 1789971758,
+   "plan_at": 1789973959,
+   "done_at": 1789978462
+  },
+  {
+   "slug": "2026-09-21-phone-type-roles",
+   "spec_at": 1790020343,
+   "plan_at": 1790021240,
+   "done_at": 1790022456
+  },
+  {
+   "slug": "2026-09-22-busy-buttons",
+   "spec_at": 1790093566,
+   "plan_at": 1790094433,
+   "done_at": 1790157439
+  },
+  {
+   "slug": "2026-09-22-shared-page-classes",
+   "spec_at": 1790094471,
+   "plan_at": 1790157986,
+   "done_at": 1790163657
+  },
+  {
+   "slug": "2026-09-22-zbutton-states",
+   "spec_at": 1790064609,
+   "plan_at": 1790065275,
+   "done_at": 1790076123
+  },
+  {
+   "slug": "2026-09-24-two-visual-generations",
+   "spec_at": 1790261777,
+   "plan_at": null,
+   "done_at": 1790603076
+  },
+  {
+   "slug": "2026-09-29-option-boxes",
+   "spec_at": 1790714611,
+   "plan_at": 1790715520,
+   "done_at": 1790745276
+  },
+  {
+   "slug": "2026-09-29-role-names",
+   "spec_at": 1790680477,
+   "plan_at": 1790683936,
+   "done_at": 1790699589
+  },
+  {
+   "slug": "2026-09-29-typed-numbers",
+   "spec_at": 1790696159,
+   "plan_at": 1790697871,
+   "done_at": 1790711293
+  },
+  {
+   "slug": "2026-09-30-raised-floors",
+   "spec_at": 1790753663,
+   "plan_at": 1790754796,
+   "done_at": 1790772432
+  },
+  {
+   "slug": "2026-10-01-guest-way-in",
+   "spec_at": 1790836512,
+   "plan_at": 1791186917,
+   "done_at": 1791270836
+  },
+  {
+   "slug": "2026-10-06-guest-burger-menu",
+   "spec_at": 1791290927,
+   "plan_at": null,
+   "done_at": 1791310093
+  },
+  {
+   "slug": "2026-10-08-composed-titles",
+   "spec_at": 1791462844,
+   "plan_at": null,
+   "done_at": 1791483773
+  },
+  {
+   "slug": "2026-10-08-matching-requests",
+   "spec_at": 1791458981,
+   "plan_at": 1791463893,
+   "done_at": 1791469256
+  },
+  {
+   "slug": "2026-10-09-match-grade-shape",
+   "spec_at": 1791550076,
+   "plan_at": null,
+   "done_at": 1791567842
+  },
+  {
+   "slug": "2026-10-10-request-detail",
+   "spec_at": 1791647499,
+   "plan_at": 1791649075,
+   "done_at": 1791711855
+  },
+  {
+   "slug": "2026-10-11-agent-subscription-state",
+   "spec_at": 1791750852,
+   "plan_at": 1791782297,
+   "done_at": 1791786278
+  }
+ ]
+}

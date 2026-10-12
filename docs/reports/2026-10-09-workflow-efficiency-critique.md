@@ -16,6 +16,9 @@
   They come from the zitamu report
   `real-estate-webapp/docs/reports/2026-10-12-commit-size-audit.md`, sections "Pace" and "Where
   the branch `fix` commits came from", committed on zitamu's `main` in `f865401` and `d441494`.
+- **Charts:** M1 to M3 each have a chart in `assets/2026-10-09-workflow-efficiency/`.
+  `extract.py` reads zitamu's git history into `data.json`, and `plot.py` draws the SVG files
+  from it. The usage line is at the top of each script.
 
 ## Short answer
 
@@ -160,6 +163,12 @@ short branches: its median branch lived 3.6 hours. This suggests that throughput
 specs are ready, not on how fast agents write code. Git cannot prove it, because it does not
 record waiting.
 
+![Branch lead time per week, one dot per branch](<assets/2026-10-09-workflow-efficiency/m1-branch-lead-time.svg>)
+
+The chart also shows that the weekly median grew: 0.5, 1.4, 3.6 and 2.8 hours. Branches grew too,
+with the client batches. The chart finds each branch's squash commit in a simpler way than the
+zitamu report, so its median is 1.0 hours, not 1.1.
+
 **Fix:** none. Making the agents write code faster would change little.
 
 ### M2. Waits between stages make the long cycles
@@ -167,6 +176,8 @@ record waiting.
 The average spec takes 12.7 hours, almost three times the median. The five specs that took over
 12 hours each had one gap of 17 hours or more between two stages: spec to plan, or plan to `done`.
 Such a gap looks like a night with no session, not like slow work.
+
+![Hours per spec, split by stage, longest first](<assets/2026-10-09-workflow-efficiency/m2-spec-stages.svg>)
 
 **Fix:** none new. `my:handoff auto` (shipped in `39737e1`, on 2026-10-12) runs the stages without
 waiting for the user. The measured weeks are all before it, so its effect is not known yet.
@@ -182,6 +193,11 @@ building (11), and 5 whose message does not say.
 7 of the 40 messages say that the user chose the answer, on 6 of the 55 branches. So with
 "Design-changing findings: `stop`" in a Delegation section, about 1 auto run in 9 would stop for a
 review finding.
+
+![Causes of the 105 branch fix commits](<assets/2026-10-09-workflow-efficiency/m3-fix-causes.svg>)
+
+The chart copies the zitamu report's counts. The commits were sorted by reading each message,
+so no script repeats the count.
 
 **Fix:** none. This supports one review round per branch, and S3's "no action".
 
