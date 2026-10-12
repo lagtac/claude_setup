@@ -176,6 +176,11 @@ Their order is in "Order of work" above.
 - 💭 **Name repeated cross-references** — *locked commit*, *shared-doc
   check* and *waiting fixups* replace "as in Plan stage, step N". Small.
   Report P5.
+- 💭 **Launch from a session outside tmux** — fix: Launch reads only `TMUX`,
+  so a background session falls back to printing the command even when a
+  tmux server runs. When `TMUX` is empty, pick the target session from
+  `tmux ls` (for example the one named after the repo) and open the window
+  with `-t <session>:`. Found on 2026-10-13; not from the audit report.
 - ✅ **Rubric fixes in `my:handoff`** — `PushNotification` is loaded before
   use, findings are classified in writing before a fix, and the code stage's
   auto sub-steps have their own letters. Small. Report R1 to R4.
