@@ -85,6 +85,10 @@ no row; the report says why.
 - 💭 **E2E tests check the result** — extend "End-to-end coverage" in
   `global/CLAUDE.md`: the test checks what the user gets (the video plays),
   not only the markup. Report M4.
+- 💭 **Spec writers decide off-path events** — the spec rules in
+  `global/CLAUDE.md` ask a spec that adds UI to decide the events
+  `my:spec-review` now checks, next to Visual Language, so the review finds
+  fewer gaps. Report M4.
 - ✅ **Spec review checks off-path events** — `my:spec-review` asks a spec
   that adds UI to decide Back and Forward, a deleted or restored record, an
   element that hides, a language change, and empty and error text. Small.
