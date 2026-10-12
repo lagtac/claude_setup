@@ -146,9 +146,14 @@ Their order is in "Order of work" above.
 - 💭 **Write review step 8 whole per mode** — the four versions of the merge
   step become one list per mode; smaller patches sit under the step they
   change. Waits for "Split `my:handoff` by mode". Report P2.
-- 💭 **One script for the locked commit** — a `locked-commit.py` that reads
-  the message from stdin replaces the five copies of the locked command and
-  the heredoc rule. Report P3.
+- 📋 **One script for the locked commit** — a `locked-commit.py` that reads
+  the message from a file replaces the five copies of the locked command and
+  the commit's heredoc rule. Report P3.
+  [spec](docs/plans/2026-10-12-locked-commit-spec.md)
+- 💭 **Merges read a message file** — `handoff-state.py merge` and the
+  parallel squash-merge take `-F <file>`, so the heredoc rule leaves
+  `my:handoff`. Changes the `handoff-state.py` interface. Out of scope of the
+  [locked commit spec](docs/plans/2026-10-12-locked-commit-spec.md).
 - 💭 **Trim copied facts in `my:handoff`** — the lock exit-code table points
   to `handoff-lock.py --help`, and design explanations stay in the specs.
   Small. Report P4.
