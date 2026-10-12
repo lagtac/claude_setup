@@ -238,7 +238,7 @@ name.
 | 20 | review | The worktree rebase after `merge` exit 4 conflicts | run `git rebase --abort`, then stop with `next=merge-retry` |
 | 21 | review | The base moved a fourth time | stop with `next=merge-retry` |
 | 22 | review | `handoff-state.py merge` exits 5: the squash conflicts, or its commit fails | stop with `next=merge`, as row 15 |
-| 23 | any | Any other failure of `handoff-lock.py` or `handoff-state.py merge` | stop, with the script's message in the stop line |
+| 23 | any | Any other failure of `handoff-lock.py`, `locked-commit.py` or `handoff-state.py merge` | stop, with the script's message in the stop line |
 
 Rows 18 to 23 arise only in a project with a "Parallel runs" section. Rows 5,
 16 and 17 cannot arise there, because nothing folds. A refused start is not a
@@ -566,24 +566,19 @@ file would count as a live run.
    under lock `main`, so the commit is one locked command that stages and
    commits. First read `git diff -- <paths>`: it shows what the command will
    stage, except the new plan and review, which this stage wrote whole. Then
-   run:
+   write the message with the Write tool to a new file in the session's
+   scratchpad, and run:
 
    ```bash
-   handoff-lock.py main -- sh -c 'm=$1; shift; git add -- "$@" && git commit -m "$m" -- "$@" && git show --stat --format= HEAD' sh "$(cat <<'EOF'
-   <message>
-   EOF
-   )" <paths>
+   locked-commit.py -F <message file> <paths>
    ```
 
-   The message always goes in through the quoted heredoc, so nothing in it
-   runs: not an apostrophe, a backtick or `$(`. Write the heredoc even for a
-   one-line message. In the command you run, the message lines and the `EOF`
-   line start at column 0, with no spaces before them: bash ends a heredoc
-   only on a line that is exactly `EOF`. The indent above only keeps the list
-   intact. This holds for every heredoc in this skill. The command ends with
-   `git show --stat --format= HEAD` inside the lock, so it lists the commit
-   this command made, even when another run commits right after. Check its
-   list as above. A lock timeout is row 18.
+   `locked-commit.py`, on `PATH` like `handoff-lock.py`, stages and commits
+   the paths under lock `main`, and no shell reads the message. It deletes
+   the message file after the commit, and keeps it when a step fails. It
+   ends with `git show --stat --format= HEAD` inside the lock, so it lists
+   the commit this command made, even when another run commits right after.
+   Check its list as above. A lock timeout is row 18.
 8. Fold waiting fixups only when `<base>` is clean. The spec has fixups
    waiting when `git log --format='%h %s' <spec commit>..<base>` shows a
    commit whose subject is `fixup!`, a space, then the spec commit's
@@ -680,8 +675,8 @@ the commit the plan stage makes for a Large change.
   mode): the task doc is committed on `<base>`.
 
 **With a "Parallel runs" section,** sub-step a always makes a normal `docs:`
-commit, never `--fixup`, in the locked form of Plan stage, step 7, and
-sub-step b is skipped: nothing folds there.
+commit, never `--fixup`, with `locked-commit.py` as in Plan stage, step 7,
+and sub-step b is skipped: nothing folds there.
 
 In the code stage's numbered steps:
 
@@ -825,16 +820,18 @@ all land on the branch, and the main checkout stays clean.
      )"
      ```
 
-     Write the message lines and the `EOF` line at column 0, as in Plan
-     stage, step 7. The command refuses, and changes nothing, when something
-     is already staged in the main checkout. When the squash or the commit
+     In the command you run, the message lines and the `EOF` line start at
+     column 0, because bash ends a heredoc only on a line that is exactly
+     `EOF`; the indent above only keeps the list intact. The command
+     refuses, and changes nothing, when something is already staged in the
+     main checkout. When the squash or the commit
      fails, it runs `git reset --merge` inside the lock. On any failure,
      signal. On success, it prints the squash commit's short hash inside the
      lock: sub-step 4 cites that hash, not `HEAD`, which another run may
      have moved since.
    - 3: skip it. Nothing folds there.
    - 4: each `done` mark edits a shared doc only as Plan stage, step 6 says,
-     and commits in the locked form of Plan stage, step 7.
+     and commits with `locked-commit.py`, as in Plan stage, step 7.
 
    Then run "Finish".
 
@@ -898,8 +895,9 @@ again:
   )"
   ```
 
-  Write the message lines and the `EOF` line at column 0, as in Plan stage,
-  step 7. Add `--docs-paths <path> ...` last, as "Parallel runs" says.
+  Write the message lines and the `EOF` line at column 0, as in Review
+  stage, step 8, sub-step 1. Add `--docs-paths <path> ...` last, as
+  "Parallel runs" says.
   Exit 4 means `<base>` gained code since `checked_base`. Then, in the
   worktree, run `git rebase <base>` (on a conflict, `git rebase --abort`,
   row 20), rerun the step 2 checks, set `checked_base` again as in step 2,
@@ -910,7 +908,7 @@ again:
 - Sub-step 3: skip the fold, and run `handoff-state.py set <slug> next=done`.
   Nothing folds there.
 - Sub-step 4: each `done` mark edits a shared doc only as Plan stage, step 6
-  says, and commits in the locked form of Plan stage, step 7.
+  says, and commits with `locked-commit.py`, as in Plan stage, step 7.
 
 ### Finish
 

@@ -249,13 +249,10 @@ git add <BRIEF_PATH> && git commit -m "docs(plans): add architecture brief for <
 In a project whose `CLAUDE.md` or `CLAUDE.local.md` has a "Parallel runs" section, commit the brief with the locked form instead, so that it takes turns with the auto runs in the main checkout:
 
 ```bash
-handoff-lock.py main -- sh -c 'm=$1; shift; git add -- "$@" && git commit -m "$m" -- "$@" && git show --stat --format= HEAD' sh "$(cat <<'EOF'
-<message>
-EOF
-)" <paths>
+locked-commit.py -F <message file> <BRIEF_PATH>
 ```
 
-Here `<message>` is `docs(plans): add architecture brief for <SLUG>` and `<paths>` is `<BRIEF_PATH>`. Read the brief whole before the command. The command prints `git show --stat` inside the lock: check that it lists only the brief.
+First write `docs(plans): add architecture brief for <SLUG>` with the Write tool to `<message file>`, a new file in the session's scratchpad. Read the brief whole before the command. The command prints `git show --stat` inside the lock: check that it lists only the brief.
 
 If `REPO_ROOT` is `none`, skip the commit and print `(No git repository: the brief is written but not committed.)`.
 

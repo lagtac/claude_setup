@@ -167,14 +167,11 @@ its own commit, not a fixup of the spec.
 
 In a project whose `CLAUDE.md` or `CLAUDE.local.md` has a "Parallel runs" section (the `my:handoff`
 skill defines it), several auto runs share `main`. There, every commit in the main checkout runs
-under lock `main`, as one command that stages, commits and lists the commit, with the message in a
-quoted heredoc so that nothing in it runs:
+under lock `main`, as one command that stages, commits and lists the commit. Write the message
+with the Write tool to a new file in the session's scratchpad, then run:
 
 ```bash
-handoff-lock.py main -- sh -c 'm=$1; shift; git add -- "$@" && git commit -m "$m" -- "$@" && git show --stat --format= HEAD' sh "$(cat <<'EOF'
-<message>
-EOF
-)" <paths>
+locked-commit.py -F <message file> <paths>
 ```
 
 Before it, read `git diff -- <paths>` and each new file whole: `git diff` does not show a file git

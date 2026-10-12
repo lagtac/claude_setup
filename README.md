@@ -116,7 +116,9 @@ with one line and changes nothing. Your shell finds it through a symlink in
 `handoff-state.py`, in the same folder, keeps the state of a `my:handoff auto`
 run, and its tests run with the same command. `handoff-lock.py`, in the same
 folder, runs one command under a named lock, so that parallel auto runs take
-turns in the main checkout.
+turns in the main checkout. `locked-commit.py`, in the same folder, makes the
+commit in such a main checkout under that lock, with the message read from a
+file.
 `status-scan.py`, in the same folder, prints the facts `my:status` judges:
 roadmap rows, open documents, worktrees, auto runs and branches that may hold
 unmerged work. It reads and never writes; its tests run with the same command.

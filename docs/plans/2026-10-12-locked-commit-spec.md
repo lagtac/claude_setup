@@ -214,6 +214,41 @@ None. Python standard library, `sh` and git. `handoff-lock.py` already ships in 
 5. **The `README.md` and audit line numbers drift.** The line numbers in this spec are from
    2026-10-12, at commit `0386275`. The code stage finds each site by its text, not its
    number.
+6. **Lint: no new errors, not zero.** Task 4 asks for 0 `markdownlint-cli2` errors on every
+   changed file. On `main`, `global/CLAUDE.md`, `global/rules/docs-layout.md`,
+   `plugins/my/commands/commit.md` and `plugins/my/skills/architect/SKILL.md` already have 79,
+   70, 10 and 95 errors, almost all MD013 line length; `plugins/my/skills/handoff/SKILL.md` has 3.
+   The code stage checked that no changed file gains an error, and rewrapped none of them:
+   rewrapping whole files is out of scope.
+7. **The rules go live before the installed plugin has the script.** `~/.claude/CLAUDE.md` and
+   the folder `~/.claude/rules` are symlinks into the main checkout, so their new text applies at
+   the squash-merge. The installed plugin gains `bin/locked-commit.py` only when the user updates
+   it. Until then, a parallel project's commit fails with "command not found". Manual step after
+   the merge: update the `my` plugin.
+8. **Known limits of the script, from the end-of-branch review.** No instruction or tool today
+   produces these inputs:
+   - a message file that is a symlink: the script deletes the link's target after a commit;
+   - `git show --stat` failing after a good commit: the exit is non-zero and the message file is
+     kept, though the commit exists;
+   - `git` missing under the lock, or `handoff-lock.py` missing next to the script: the exit code
+     does not match the table in D4;
+   - options written after the paths, a repeated `-F`, or `-F` followed by an option: the parser
+     takes them as paths or values instead of refusing with 64.
+9. **Known limits from the final re-review.** The one-fix-round rule puts these here, not into a
+   second fix:
+   - when `git add` fails partway, for example on an ignored path next to a good one, the good
+     paths stay staged: the reset runs only after a failed commit. The next locked squash-merge
+     then refuses with "staged changes in the main checkout" until someone unstages them;
+   - the reset after a failed commit sets the paths back to `HEAD` in the index, so a partial
+     staging of the same path made before the call is lost (the add had already replaced it);
+   - D2 lists four steps and D4 does not name the reset: the script's docstring is the full
+     account of the failure path;
+   - after a failed commit the message file is kept, and the Write tool refuses to overwrite it
+     unread, so a retry needs a Read first or a new file name;
+   - `global/CLAUDE.md` (Medium sizes) and `my:architect` still say "the locked form", which now
+     means the `locked-commit.py` line in Git Workflow;
+   - `fail()` and the help printing repeat code from `handoff-lock.py`, and the locked steps stay
+     a `sh -c` string with one failure handler per step.
 
 ## Testing
 

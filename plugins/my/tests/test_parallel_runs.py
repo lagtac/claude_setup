@@ -20,8 +20,6 @@ from pathlib import Path
 BIN = Path(__file__).resolve().parent.parent / "bin"
 APP = "def alpha():\n    return 1\n" + "\n" * 10 + "def beta():\n    return 2\n"
 BODIES = {"alpha": ("return 1", "return 'alpha'"), "beta": ("return 2", "return 'beta'")}
-# The commit form of D4, with the message passed as an argument (plan, Decision 10).
-LOCKED_COMMIT = 'm=$1; shift; git add -- "$@" && git commit -q -m "$m" -- "$@"'
 
 
 def clean_env():
@@ -126,8 +124,9 @@ class ParallelRunsTest(unittest.TestCase):
         spec.write_text(re.sub(r"\*\*Status:\*\*.*",
                                f"**Status:** done, 2026-10-12. Shipped in {short}.",
                                spec.read_text()))
-        result = sh(self.repo, "handoff-lock.py", "main", "--", "sh", "-c", LOCKED_COMMIT,
-                    "sh", f"docs(plans): mark {slug} done", path)
+        msg = self.tmp / f"done-{slug}.txt"
+        msg.write_text(f"docs(plans): mark {slug} done\n")
+        result = sh(self.repo, "locked-commit.py", "-F", str(msg), path)
         self.assertEqual(result.returncode, 0, result.stderr)
 
     def fold(self, *args):

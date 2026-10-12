@@ -357,10 +357,12 @@ What changes in such a project:
   nothing. A stopped run still holds its place. To end an abandoned run, say
   so in a session: it removes the run's worktree, after your yes when that
   needs `--force`, and marks the run finished. The branch stays.
-- **The main checkout takes turns.** Every commit there runs under one lock,
-  with `handoff-lock.py main -- …`, and the start and the merge do too. This
-  holds for your own Claude sessions in that project as well: `/my:commit`
-  and `my:architect` use the locked form there.
+- **The main checkout takes turns.** Every commit there runs under one lock:
+  `locked-commit.py -F <message file> <paths>` takes it through
+  `handoff-lock.py main`, and the start and the merge take it with
+  `handoff-lock.py main -- …`. This holds for your own Claude sessions in that
+  project as well: `/my:commit` and `my:architect` commit with
+  `locked-commit.py` there.
 - **A merge reruns the checks when `main` moved.** If another run merged code
   after this run's checks, the merge refuses. The run rebases its branch,
   reruns the end-of-branch checks and tries again, at most three times.
