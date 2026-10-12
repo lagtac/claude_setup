@@ -54,6 +54,11 @@ the known limits.
 
 ### Added
 
+- `/my:status` answers "where are we", "what is next" and "what can run in
+  parallel" in one short report, and writes nothing. A new script,
+  `status-scan.py`, collects the facts: roadmap rows, open documents, the
+  main checkout, worktrees, auto runs, and branches that may hold unmerged
+  work. See the [spec](docs/plans/2026-10-12-status-skill-spec.md).
 - `git-fold-fixups.py` folds waiting `docs:` fixup commits into their target
   in one step, or refuses with a reason. See the
   [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md).

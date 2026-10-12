@@ -1,6 +1,8 @@
 # Spec: `my:status`, where we are, what is next, and what can run in parallel
 
-**Status:** approved, 2026-10-12. Medium: one spec with a Tasks section; the review's Critical finding (D4) and its six Warnings are answered.
+**Status:** done, 2026-10-12. Shipped in c4d3832. End-of-branch checks:
+`python3 -m unittest discover plugins/my/tests`, 85 passed, 0 failed. Known
+limits are in the Risk section, items 7 and 8.
 
 ## How to read this spec
 
