@@ -1,33 +1,13 @@
 # Harness Roadmap
 
 Living index of work on the Claude harness (global instructions, `my` plugin,
-rules, hooks). Keep it short — details live in the linked `docs/plans/` docs.
-Most history is tracked only as dated `docs/plans/` files; this file exists so
-deferred follow-ups don't get buried inside one of them.
+rules, hooks). Keep it short: details live in the linked `docs/plans/` docs,
+and what shipped when is in [`CHANGELOG.md`](CHANGELOG.md). In each section,
+open rows come first.
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
 ---
-
-## Harness generalization
-
-Make the harness reusable in new projects without forking copies. Spec:
-[`docs/plans/2026-06-16-harness-generalization-audit.md`](docs/plans/2026-06-16-harness-generalization-audit.md).
-
-- ✅ **Global orphan-plan hook** — promoted `check-orphan-plans.sh` into the `my`
-  plugin (SessionStart, all repos). `150bb44`; annotator-local copy removed
-  (`0ec215c`).
-- ✅ **Runtime-command contract — DRAFT** — schema + annotator + Node/Python
-  examples, written down but not adopted. `e7d6a3b` →
-  [`docs/harness-runtime-contract-DRAFT.md`](docs/harness-runtime-contract-DRAFT.md).
-- 💭 **Generalize the gates — deferred, no second consumer yet.** Promoting the
-  gate logic (`e2e-gate`/`review-gate`/`require-*`) into the plugin behind a
-  per-repo `.claude/harness.json`, the core + stack/domain pack split, and a
-  `/harness-init` bootstrap are all designed in the spec but blocked on one
-  trigger: a real project adopting the gates. Today they live in exactly one
-  subproject (`diagoradisa-annotator`); no other repo — Laravel or Python — pulls
-  on them. Rule of three: don't crystallize the `harness.json` schema on n=1, and
-  adoption ⚠ rewrites safety machinery → re-run the live e2e rehearsal first.
 
 ## `my` plugin hygiene
 
@@ -35,93 +15,83 @@ Follow-ups spawned by the planner retirement. Spec:
 [`docs/plans/2026-09-11-retire-planner-path-spec.md`](docs/plans/2026-09-11-retire-planner-path-spec.md)
 (see its "Out of scope").
 
-- ✅ **Retire the planner path** — deleted `/my:plan`, the `my:planner` agent and
-  `/my:task`; Superpowers owns planning. Plan template moved to the lazy
-  `global/rules/plan-format.md`. Supersedes the unexecuted
-  [`2026-05-28-single-source-planning-standards.md`](docs/plans/2026-05-28-single-source-planning-standards.md).
-- ✅ **`clean-plans` scans abolished paths** — now scans only `docs/plans/`
-  and names plans with no `-plan` suffix. `d58da69`.
-- ✅ **`tune-claude-instructions` is a model behind** — wording no longer pins
-  Opus 4.7; adds a tool check for tools subagents never get. `6958704`.
-- ✅ **Plugin docs drift** — `README.md` documents all skills, agents and hooks;
-  `plugin.json` names skills and hooks. `965d423`.
-- ✅ **`summarizer` plan-path convention** — reads and writes dated files in
-  `docs/plans/`, and reads the diff itself. `dd45902`;
-  the same `$planDirectory` fix for `optimize-prompt` in `60f6b67`.
-- ✅ **md-tables tests fail on `main`** — fix: the scripts moved to
-  `~/src/scripts/` and changed there, so this repo's old tests went stale. They
-  moved into the suite in `~/src/scripts/`, which owns the scripts; `SKILL.md`
-  and `README.md` now describe the new command line. Small.
 - 📋 **Deny list has no effect** — fix: the repo-root `settings.json` deny list
   is read by nothing (Claude Code reads `.claude/settings.json`, and a plugin
   `settings.json` drops permission rules), yet `CLAUDE.md` and `README.md`
   describe it as active. Found while writing the
   [spec](docs/plans/2026-10-12-autonomous-run-spec.md) for `my:handoff auto`
   (its D4).
+- ✅ **Retire the planner path** — `/my:plan`, `my:planner` and `/my:task`
+  removed; Superpowers owns planning.
+- ✅ **`clean-plans` scans abolished paths** — scans only `docs/plans/`.
+- ✅ **`tune-claude-instructions` is a model behind** — no Opus 4.7 pin; checks
+  for tools subagents never get.
+- ✅ **Plugin docs drift** — `README.md` documents all skills, agents and hooks.
+- ✅ **`summarizer` plan-path convention** — dated files in `docs/plans/`; same
+  fix for `optimize-prompt`.
+- ✅ **md-tables tests fail on `main`** — fix: the tests moved to
+  `~/src/scripts/`, which owns the scripts. Small.
 
 ## Design workflow
 
-- ✅ **`my:architect`** — forces-first architecture brief before brainstorming:
-  labelled forces, collapse gate, parallel candidates, evaluation and estimate
-  scripts. Shipped in `3d9a7f9`; `global/CLAUDE.md` now runs it before
-  brainstorming for new systems and contract changes. Spec:
-  [`docs/plans/2026-09-17-architect-skill-spec.md`](docs/plans/2026-09-17-architect-skill-spec.md),
-  plan: [`docs/plans/2026-09-17-architect-skill.md`](docs/plans/2026-09-17-architect-skill.md).
-- ✅ **`my:handoff`** — the plan, code and review stages run in their own
-  top-level sessions, opened in tmux windows, so each stage reads the real
-  `CLAUDE.md` rules. Shipped in `88afd8a`; the review stage was added on
-  2026-09-29. Spec:
-  [`docs/plans/2026-09-21-handoff-spec.md`](docs/plans/2026-09-21-handoff-spec.md),
-  plan: [`docs/plans/2026-09-21-handoff.md`](docs/plans/2026-09-21-handoff.md).
-  `my:soundness-review --plan-only` shipped in `7740bf7`, so a busy `main`
-  no longer stops the plan stage. Spec:
-  [`docs/plans/2026-09-30-soundness-plan-only-spec.md`](docs/plans/2026-09-30-soundness-plan-only-spec.md),
-  plan: [`docs/plans/2026-09-30-soundness-plan-only.md`](docs/plans/2026-09-30-soundness-plan-only.md).
-- ✅ **`my:tutor`** — a learning mode: the student writes the code, the tutor
-  sets exercises, gives hints and keeps notes in `docs/learning/`, with the
-  `tutor` output style. Shipped in `1e69584`; known limits are in the spec's
-  Risk section. Spec:
-  [`docs/plans/2026-10-06-tutor-spec.md`](docs/plans/2026-10-06-tutor-spec.md).
-- ✅ **`my:handoff auto`** — one feature runs from an approved spec to its
-  `done` marks with no user input, within a Delegation section the user
-  approves, and never pushes. Shipped in `39737e1`; known limits are in the
-  plan's Risk section. Brief:
-  [`docs/plans/2026-10-11-autonomous-run-architecture.md`](docs/plans/2026-10-11-autonomous-run-architecture.md),
-  spec:
-  [`docs/plans/2026-10-12-autonomous-run-spec.md`](docs/plans/2026-10-12-autonomous-run-spec.md),
-  plan:
-  [`docs/plans/2026-10-12-autonomous-run.md`](docs/plans/2026-10-12-autonomous-run.md).
 - 💭 **`my:spec-review` checks Delegation content** — when a spec has a
   Delegation section, check that its values fit the design: the listed
   dependencies match what the design adds, the check commands and test names
   exist, and `decide` is flagged on a spec that changes stored data or a
   contract. Not the format: the auto start check owns that. Small.
+- ✅ **`my:architect`** — forces-first architecture brief before brainstorming.
+  [spec](docs/plans/2026-09-17-architect-skill-spec.md),
+  [plan](docs/plans/2026-09-17-architect-skill.md)
+- ✅ **`my:handoff`** — plan, code and review stages run in their own sessions
+  in tmux windows. [spec](docs/plans/2026-09-21-handoff-spec.md),
+  [plan](docs/plans/2026-09-21-handoff.md); `--plan-only` for
+  `my:soundness-review`:
+  [spec](docs/plans/2026-09-30-soundness-plan-only-spec.md),
+  [plan](docs/plans/2026-09-30-soundness-plan-only.md)
+- ✅ **`my:tutor`** — a learning mode where the student writes the code; known
+  limits in the spec's Risk section. [spec](docs/plans/2026-10-06-tutor-spec.md)
+- ✅ **`my:handoff auto`** — an approved spec runs to its `done` marks without
+  the user, within its Delegation section, and never pushes; known limits in
+  the plan's Risk section.
+  [brief](docs/plans/2026-10-11-autonomous-run-architecture.md),
+  [spec](docs/plans/2026-10-12-autonomous-run-spec.md),
+  [plan](docs/plans/2026-10-12-autonomous-run.md)
+
+## Harness generalization
+
+Make the harness reusable in new projects without forking copies. Spec:
+[`docs/plans/2026-06-16-harness-generalization-audit.md`](docs/plans/2026-06-16-harness-generalization-audit.md).
+
+- 💭 **Generalize the gates** — move the gate logic (`e2e-gate`, `review-gate`,
+  `require-*`) into the plugin behind a per-repo `.claude/harness.json`, with a
+  `/harness-init` bootstrap. Waits for a second project to adopt the gates;
+  today only `diagoradisa-annotator` uses them. Design and reasons in the spec.
+- ✅ **Global orphan-plan hook** — `check-orphan-plans.sh` runs in the `my`
+  plugin at session start, in all repos.
+- ✅ **Runtime-command contract — DRAFT** — written down, not adopted:
+  [`docs/harness-runtime-contract-DRAFT.md`](docs/harness-runtime-contract-DRAFT.md).
 
 ## Workflow efficiency
 
 Findings of
 [`docs/reports/2026-10-09-workflow-efficiency-critique.md`](docs/reports/2026-10-09-workflow-efficiency-critique.md).
 Rows are unordered unless a row says what it waits for. S2 and S3 got no row;
-the report says why.
+the report says why. All rows are shipped.
 
-- ✅ **Trigger table contradictions** — fix: the "Invoke first" rows for
-  integrating and reviewing now name the Git Workflow steps and the
-  end-of-branch reviews. Report C1, C2.
-- ✅ **UI rule has a Small case** — a Small change that adds no screen or state
-  needs no design canvas. Report S1.
-- ✅ **Fold script for docs fixups** — the fixup, `branch --contains` and
-  autosquash steps become one script that refuses with a reason. Report G1.
+- ✅ **Trigger table contradictions** — fix: the "Invoke first" rows name the
+  Git Workflow steps and the end-of-branch reviews. Report C1, C2.
+- ✅ **UI rule has a Small case** — no design canvas for a Small change without
+  a new screen or state. Report S1.
+- ✅ **Fold script for docs fixups** — one script that folds or refuses with a
+  reason. Report G1. [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md)
+- ✅ **Git steps leave the always-loaded file** — the feature steps moved to
+  `docs-layout.md`. Report G2.
   [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md)
-- ✅ **Git steps leave the always-loaded file** — the fourteen feature steps
-  move to `docs-layout.md`, with a pointer in `CLAUDE.md`. Same spec as the
-  fold script. Report G2. [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md)
-- ✅ **`check` asks the fold** — fix: `git-fold-fixups.py check <sha>` runs the
-  fold's own rules on the fixup it would create, so it no longer passes a target
-  that the fold then refuses on every run. Small. Detail in the
-  [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md)'s D2 and Risk sections.
+- ✅ **`check` asks the fold** — fix: `git-fold-fixups.py check` runs the
+  fold's own rules. Small. [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md)
 
 ## Other
 
-Historical, self-contained efforts are tracked as dated specs in `docs/plans/`
-(code-review consolidation, planning-standards single-source, briefing skill,
-Opus prompt tuning, …) — not re-indexed here unless they spawn open follow-ups.
+Older self-contained efforts (code-review consolidation, planning-standards
+single-source, briefing skill, Opus prompt tuning, …) are dated specs in
+`docs/plans/`. They are not indexed here unless they spawn open follow-ups.
