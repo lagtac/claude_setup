@@ -78,6 +78,17 @@ Findings of
 Rows are unordered unless a row says what it waits for. S2, S3, M1 and M3 got
 no row; the report says why.
 
+- 💭 **Plan names the layouts to check** — `plan-format.md` asks a plan that
+  changes UI to list the widths at its breakpoint edges, every language the
+  project ships, and its longest real text, and to measure them in e2e tests.
+  Report M4.
+- 💭 **Spec review checks off-path events** — `my:spec-review` checks that a
+  spec decides what happens on browser Back and Forward, when a record is
+  deleted or restored, when an element hides, and when the language changes.
+  Report M4.
+- 💭 **E2E tests check the result** — extend "End-to-end coverage" in
+  `global/CLAUDE.md`: the test checks what the user gets (the video plays),
+  not only the markup. Report M4.
 - ✅ **Trigger table contradictions** — fix: the "Invoke first" rows name the
   Git Workflow steps and the end-of-branch reviews. Report C1, C2.
 - ✅ **UI rule has a Small case** — no design canvas for a Small change without

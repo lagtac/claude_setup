@@ -1,0 +1,416 @@
+[
+ {
+  "n": 1,
+  "h": "e56ab85",
+  "branch": "backup-scripts",
+  "subject": "fix(infra): the code review's round on the backup scripts",
+  "class": "X",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 2,
+  "h": "e5eb268",
+  "branch": "client-requests-1",
+  "subject": "fix(web): the review round: a truthful signup note, a phone header that wraps only with a kind pill, and ONBOARDING at 464px",
+  "class": "S",
+  "test_also_weak": false,
+  "user_chose": true
+ },
+ {
+  "n": 3,
+  "h": "c86a902",
+  "branch": "client-requests-2",
+  "subject": "fix(web): a tap beside a range field closes its list on iOS",
+  "class": "C",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 4,
+  "h": "b3d35cc",
+  "branch": "client-requests-2",
+  "subject": "fix(web): a typed range row is offered only for a value its field accepts",
+  "class": "P",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 5,
+  "h": "b08915c",
+  "branch": "client-requests-3",
+  "subject": "fix(web): the wizard sends a later URL past step 0 back to step 0 with no category",
+  "class": "C",
+  "test_also_weak": false,
+  "user_chose": true
+ },
+ {
+  "n": 6,
+  "h": "e318ac1",
+  "branch": "client-requests-3",
+  "subject": "fix(web): the wizard's switch dialog closes when the step leaves 0",
+  "class": "S",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 7,
+  "h": "da947e1",
+  "branch": "client-requests-5",
+  "subject": "fix(web): Terms \u00a79 uses the defined term and carries a new revision date",
+  "class": "C",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 8,
+  "h": "861ce93",
+  "branch": "client-requests-5",
+  "subject": "fix(web): /signup's h1 comes before the photo's h2",
+  "class": "C",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 9,
+  "h": "bfdc176",
+  "branch": "client-requests-5",
+  "subject": "fix(web): on /signup only the guest link for the chosen role is the current page",
+  "class": "P",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 10,
+  "h": "cc8c6dc",
+  "branch": "client-requests-5",
+  "subject": "fix(web): /pricing's manage row waits for mount, so hydration matches",
+  "class": "C",
+  "test_also_weak": true,
+  "user_chose": false
+ },
+ {
+  "n": 11,
+  "h": "7e30763",
+  "branch": "client-requests-5",
+  "subject": "fix(web): /match sends a session that ends on a 401 to sign in",
+  "class": "C",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 12,
+  "h": "b7d7865",
+  "branch": "client-requests-6",
+  "subject": "fix(web): anything the buyer does inside the card click's wait cancels the move to step 1",
+  "class": "C",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 13,
+  "h": "998627c",
+  "branch": "client-requests-7",
+  "subject": "fix(web): the sold-listing decline dialog promises no finality",
+  "class": "S",
+  "test_also_weak": false,
+  "user_chose": true
+ },
+ {
+  "n": 14,
+  "h": "9296cbc",
+  "branch": "client-requests-7",
+  "subject": "fix(api): only time ends the seller's mask on a decline",
+  "class": "S",
+  "test_also_weak": false,
+  "user_chose": true
+ },
+ {
+  "n": 15,
+  "h": "46641fc",
+  "branch": "client-requests-8",
+  "subject": "fix(web): the match card's grade row wraps, and the grade word's contrast is tested",
+  "class": "L",
+  "test_also_weak": true,
+  "user_chose": false
+ },
+ {
+  "n": 16,
+  "h": "4270c93",
+  "branch": "feat/account-menu",
+  "subject": "fix(web): the account menu keeps keyboard focus when the header hides",
+  "class": "S",
+  "test_also_weak": false,
+  "user_chose": true
+ },
+ {
+  "n": 17,
+  "h": "d2dba91",
+  "branch": "feat/agent-subscription-state",
+  "subject": "fix(web,api): the stored user's flags, a phone chat that fits, a clock-safe test",
+  "class": "X",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 18,
+  "h": "b46ff27",
+  "branch": "feat/agent-subscription-state",
+  "subject": "fix(web,api): the request page's chat, phone layout and malformed uuids",
+  "class": "X",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 19,
+  "h": "917a035",
+  "branch": "feat/composed-titles",
+  "subject": "fix(web): a title of only spaces counts as cleared and refills",
+  "class": "C",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 20,
+  "h": "0cd4246",
+  "branch": "feat/design-tokens",
+  "subject": "fix(web): three landing defects from the design critique",
+  "class": "X",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 21,
+  "h": "6880293",
+  "branch": "feat/faq-page",
+  "subject": "fix(web): the FAQ links read as links before anyone hovers them",
+  "class": "C",
+  "test_also_weak": true,
+  "user_chose": false
+ },
+ {
+  "n": 22,
+  "h": "e2a4345",
+  "branch": "feat/guest-burger-menu",
+  "subject": "fix(web): the guest menu keeps the bar's centred wordmark, and a link to the current page gives focus back",
+  "class": "S",
+  "test_also_weak": false,
+  "user_chose": true
+ },
+ {
+  "n": 23,
+  "h": "117115f",
+  "branch": "feat/guest-burger-menu",
+  "subject": "fix(web): the guest menu stays open for a link opened elsewhere, and names its panel only while open",
+  "class": "C",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 24,
+  "h": "9bcfd20",
+  "branch": "feat/hero-explainer-video",
+  "subject": "fix(web): the poster is bound too, and two assertions stop being toothless",
+  "class": "P",
+  "test_also_weak": true,
+  "user_chose": false
+ },
+ {
+  "n": 25,
+  "h": "28695ab",
+  "branch": "feat/hero-explainer-video",
+  "subject": "fix(web): the explainer video has a source, and can be played to the end",
+  "class": "T",
+  "test_also_weak": true,
+  "user_chose": false
+ },
+ {
+  "n": 26,
+  "h": "53138b2",
+  "branch": "feat/landing-hero-video",
+  "subject": "fix(web): the hero text keeps its spacing beside a taller frame",
+  "class": "L",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 27,
+  "h": "d578d9f",
+  "branch": "feat/landing-type-rhythm",
+  "subject": "fix(web): the landing's comments describe the shared type roles",
+  "class": "D",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 28,
+  "h": "91a93b6",
+  "branch": "feat/pricing-card",
+  "subject": "fix(web): the three /pricing cards are equal from 960px",
+  "class": "L",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 29,
+  "h": "833e14e",
+  "branch": "feat/profile-page-cards",
+  "subject": "fix(web): the search page's counts stack on small phones, and the type check names its roles",
+  "class": "L",
+  "test_also_weak": true,
+  "user_chose": false
+ },
+ {
+  "n": 30,
+  "h": "cbe30c6",
+  "branch": "feat/raised-floor-api",
+  "subject": "fix(api): a field that already failed keeps its own error, not the raised-floor one",
+  "class": "C",
+  "test_also_weak": true,
+  "user_chose": false
+ },
+ {
+  "n": 31,
+  "h": "d10e69b",
+  "branch": "feat/request-detail",
+  "subject": "fix(web): a request keeps its answer error and shows chat errors on a phone",
+  "class": "C",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 32,
+  "h": "b1600c3",
+  "branch": "fix/busy-buttons",
+  "subject": "fix(web): the admin busy test reads the success text, and the changelog names the match list",
+  "class": "C",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 33,
+  "h": "0edc3f7",
+  "branch": "fix/focus-ring",
+  "subject": "fix(web): the sweep check counts ring rules per file, not per file name",
+  "class": "T",
+  "test_also_weak": true,
+  "user_chose": false
+ },
+ {
+  "n": 34,
+  "h": "d656ff4",
+  "branch": "fix/header-active-link",
+  "subject": "fix(web): the header menu measures again when the language changes",
+  "class": "L",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 35,
+  "h": "f90a22d",
+  "branch": "fix/landing-nice-bars",
+  "subject": "fix(web): the review's fix round for the nice-to-have bars",
+  "class": "T",
+  "test_also_weak": true,
+  "user_chose": false
+ },
+ {
+  "n": 36,
+  "h": "2c51834",
+  "branch": "fix/landing-small-fixes",
+  "subject": "fix(web): the footer's rounded corners show the matching section, not the page ground",
+  "class": "L",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 37,
+  "h": "7c21987",
+  "branch": "fix/match-crawlable",
+  "subject": "fix(web): crawlers read the professional pitch on /match",
+  "class": "S",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 38,
+  "h": "1571644",
+  "branch": "fix/phone-layouts",
+  "subject": "fix(web): the phone layouts survive a narrower screen and a long name",
+  "class": "L",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 39,
+  "h": "38fe898",
+  "branch": "fix/pricing-defects",
+  "subject": "fix(web): a /pricing buy button that is starting a checkout is named by its busy text",
+  "class": "C",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 40,
+  "h": "a8d208e",
+  "branch": "fix/request-page-fixes",
+  "subject": "fix(web): the chat cap uses svh, and its comment holds on a phone",
+  "class": "P",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 41,
+  "h": "d588734",
+  "branch": "fix/request-page-fixes",
+  "subject": "fix(web): the folded listing keeps its photo and map at full size",
+  "class": "L",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 42,
+  "h": "a52b5e8",
+  "branch": "fix/small-controls",
+  "subject": "fix(web): a fresh hover or focus clears the (i) hint's dismissal",
+  "class": "C",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 43,
+  "h": "cf02683",
+  "branch": "kostas-release-fixes",
+  "subject": "fix(infra): the deploy checks see the photo worker, and the contract has the feed's 201",
+  "class": "C",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 44,
+  "h": "c1f4f34",
+  "branch": "refactor/two-visual-generations-6b",
+  "subject": "fix(web): the reserves around grown text hold it again",
+  "class": "L",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 45,
+  "h": "b57b272",
+  "branch": "small-fixes-1",
+  "subject": "fix(web,infra): the fix round of the small fixes branch",
+  "class": "C",
+  "test_also_weak": false,
+  "user_chose": false
+ },
+ {
+  "n": 46,
+  "h": "8e6ac7d",
+  "branch": "small-fixes-2",
+  "subject": "fix(web): the review round of the phone chat's measured height",
+  "class": "L",
+  "test_also_weak": false,
+  "user_chose": false
+ }
+]

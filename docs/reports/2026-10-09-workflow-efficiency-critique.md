@@ -1,6 +1,6 @@
 # Critique: the development workflow, efficiency
 
-**Status:** current, 2026-10-12. Findings on whether the global rules, Superpowers and the `my:` skills make coding faster; C1, C2, S1, G1 and G2 are fixed; S2 and S3 need no action; the measurements of 2026-10-12 (M1 to M3) need none either, and a roadmap row measures again later.
+**Status:** current, 2026-10-12. Findings on whether the global rules, Superpowers and the `my:` skills make coding faster; C1, C2, S1, G1 and G2 are fixed; S2 and S3 need no action; the measurements of 2026-10-12 (M1 to M3) need none either, and a roadmap row measures again later; M4 gives three rows.
 
 ## How to read this
 
@@ -16,9 +16,10 @@
   They come from the zitamu report
   `real-estate-webapp/docs/reports/2026-10-12-commit-size-audit.md`, sections "Pace" and "Where
   the branch `fix` commits came from", committed on zitamu's `main` in `f865401` and `d441494`.
-- **Charts:** M1 to M3 each have a chart in `assets/2026-10-09-workflow-efficiency/`.
+- **Charts:** M1 to M4 each have a chart in `assets/2026-10-09-workflow-efficiency/`.
   `extract.py` reads zitamu's git history into `data.json`, and `plot.py` draws the SVG files
-  from it. The usage line is at the top of each script.
+  from it. `review_fixes.py` lists M4's candidate commits; `review_fix_classes.json` holds the
+  class given to each by hand. The usage line is at the top of each script.
 
 ## Short answer
 
@@ -201,6 +202,39 @@ so no script repeats the count.
 
 **Fix:** none. This supports one review round per branch, and S3's "no action".
 
+### M4. A spec or plan could have prevented about half of the review fixes
+
+M4 sorts the review fixes by where each defect started. It counts 42, not 40, because it takes
+every branch `fix` commit that changes application code and names a review in its message. Four
+more such commits were left out: planned work, a design critique, and a branch made after the
+audit. Each message was read and given one class.
+
+| Where the defect started | Fixes | Could a spec or plan prevent it? |
+| --- | --- | --- |
+| The code broke a rule the spec already stated | 17 | No. Review exists for this. |
+| Layout broke at a width, a language or a text length nobody checked | 10 | Yes, the plan |
+| The spec missed or got wrong a decision | 7 | Yes, the spec |
+| Browser or framework behaviour | 4 | No |
+| The test checked the wrong thing | 3 | Yes, the plan |
+| Comments only | 1 | — |
+
+![Where the 42 review fixes started](<assets/2026-10-09-workflow-efficiency/m4-review-fix-sources.svg>)
+
+- **Layout is the largest group a plan could prevent.** The same widths recur: 320 to 380 px,
+  820 px, 960 px, 1440 px and up. So do a language switch and text that grew.
+- **All six fixes the user decided are spec gaps.** They are off-path events the spec did not
+  cover: Back and Forward, deleting a listing, a header that hides, copy for an edge case. These
+  are the findings that stop an auto run.
+- **9 of the 42 messages also say a test was weak or missing.** One example: the video with no
+  source passed tests of its poster and tracks, but no test checked that it plays.
+
+The class is a judgment from the message. Some fixes fit two classes, and the line between layout
+and code is the softest.
+
+**Fix:** three rows. A plan that changes UI names the layouts to check. `my:spec-review` checks
+that the spec decides off-path events, such as Back or a deleted record. The existing "End-to-end
+coverage" rule asks the test to check the result a user gets, not only the markup.
+
 ## Evidence limits
 
 - No session was timed. "Fast" above means few commits and short calendar time on `main`. M1 to
@@ -224,3 +258,4 @@ All rows are in `ROADMAP.md`, section "Workflow efficiency".
 | S3 | No action, the user's choice of 2026-10-10. No evidence the files cost time; the change would touch three skills. |
 | M1, M3 | No action. They support the current flow. |
 | M2 | No action now; `my:handoff auto` answers it. Row "Measure the auto runs" checks its effect. |
+| M4 | Rows "Plan names the layouts to check", "Spec review checks off-path events" and "E2E tests check the result". |

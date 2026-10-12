@@ -1,9 +1,10 @@
 # /// script
 # dependencies = ["matplotlib", "numpy"]
 # ///
-"""Draw M1 to M3 of the workflow-efficiency critique as SVG.
+"""Draw M1 to M4 of the workflow-efficiency critique as SVG.
 
 Usage: uv run plot.py data.json .
+M4 reads review_fix_classes.json from the folder of data.json.
 """
 import json
 import statistics
@@ -30,7 +31,7 @@ plt.rcParams.update({
     "figure.facecolor": SURFACE, "axes.facecolor": SURFACE, "savefig.facecolor": SURFACE,
     "axes.edgecolor": AXIS, "axes.labelcolor": INK2, "xtick.color": MUTED, "ytick.color": INK2,
     "axes.spines.top": False, "axes.spines.right": False, "axes.grid": False,
-    "svg.fonttype": "none",
+    "svg.fonttype": "none", "svg.hashsalt": "workflow-efficiency",
 })
 
 
@@ -73,7 +74,7 @@ ax.tick_params(axis="y", length=0)
 ax.set_xlabel("Hours from the branch's first commit to its squash-merge (log scale)")
 title(fig, "M1. Most branches merge within a few hours",
       f"{len(data['branches'])} branches. Each dot is one branch; the black tick is the week's median. The last week is partial.")
-fig.savefig(out / "m1-branch-lead-time.svg")
+fig.savefig(out / "m1-branch-lead-time.svg", metadata={"Date": None})
 
 # M2: spec stages, one bar per done spec
 specs = sorted(data["specs"], key=lambda s: s["done_at"] - s["spec_at"], reverse=True)
@@ -104,7 +105,7 @@ ax.legend(handles=[Patch(color=BLUE, label="Spec to plan committed"),
           loc="lower right", frameon=False, labelcolor=INK2)
 title(fig, "M2. The long cycles are one long wait between two stages",
       f"{len(specs)} specs marked done, longest at the top. Each long bar is mostly one colour: one wait.")
-fig.savefig(out / "m2-spec-stages.svg")
+fig.savefig(out / "m2-spec-stages.svg", metadata={"Date": None})
 
 # M3: where the 105 branch fix commits came from (counts from the zitamu audit)
 causes = [("The end-of-branch reviews found it", 40), ("Planned work: the branch exists to fix it", 49),
@@ -123,5 +124,29 @@ for side in ("left", "bottom"):
     ax.spines[side].set_visible(False)
 title(fig, "M3. Reviews found 40 of the 105 fix commits on branches",
       "Sorted by commit message. 29 of 55 branches had a review fix; 21 had exactly one.")
-fig.savefig(out / "m3-fix-causes.svg")
+fig.savefig(out / "m3-fix-causes.svg", metadata={"Date": None})
+# M4: where the review-found defects started (classes in review_fix_classes.json)
+NAMES = {"C": "Code broke a rule the spec stated", "L": "Layout broke at an unchecked width or language",
+         "S": "The spec missed or got a decision wrong", "P": "Browser or framework behaviour",
+         "T": "The test checked the wrong thing", "D": "Comments only"}
+UPSTREAM = {"L", "S", "T"}
+rows = [r for r in json.load(open(Path(sys.argv[1]).parent / "review_fix_classes.json")) if r["class"] != "X"]
+counts = sorted(((c, sum(r["class"] == c for r in rows)) for c in NAMES), key=lambda c: c[1])
+fig, ax = plt.subplots(figsize=(8, 3.6))
+fig.subplots_adjust(left=0.45, right=0.93, top=0.74, bottom=0.12)
+for i, (c, n) in enumerate(counts):
+    ax.barh(i, n, height=0.55, color=BLUE if c in UPSTREAM else AXIS)
+    ax.text(n + 0.3, i, str(n), va="center", color=INK, fontsize=10)
+ax.set_yticks(range(len(counts)))
+ax.set_yticklabels([NAMES[c] for c, _ in counts])
+ax.tick_params(axis="y", length=0)
+ax.set_xticks([])
+for side in ("left", "bottom"):
+    ax.spines[side].set_visible(False)
+ax.legend(handles=[Patch(color=BLUE, label="A spec or plan could prevent it"), Patch(color=AXIS, label="It could not")],
+          loc="lower right", frameon=False, labelcolor=INK2)
+up = sum(n for c, n in counts if c in UPSTREAM)
+title(fig, f"M4. A spec or plan could have prevented {up} of the {len(rows)} review fixes",
+      "Each fix sorted by hand from its commit message into the one place the defect started.")
+fig.savefig(out / "m4-review-fix-sources.svg", metadata={"Date": None})
 print("wrote", sorted(p.name for p in out.glob("*.svg")))

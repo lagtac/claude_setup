@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="576pt" height="259.2pt" viewBox="0 0 576 259.2" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 259.2 
+L 576 259.2 
+L 576 0 
+L 0 0 
+z
+" style="fill: #fcfcfb"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 259.2 228.096 
+L 535.68 228.096 
+L 535.68 67.392 
+L 259.2 67.392 
+z
+" style="fill: #fcfcfb"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 259.2 220.791273 
+L 274.689076 220.791273 
+L 274.689076 206.313435 
+L 259.2 206.313435 
+z
+" clip-path="url(#p12d7a86df7)" style="fill: #c3c2b7"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 259.2 194.467931 
+L 305.667227 194.467931 
+L 305.667227 179.990093 
+L 259.2 179.990093 
+z
+" clip-path="url(#p12d7a86df7)" style="fill: #2a78d6"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 259.2 168.14459 
+L 321.156303 168.14459 
+L 321.156303 153.666752 
+L 259.2 153.666752 
+z
+" clip-path="url(#p12d7a86df7)" style="fill: #c3c2b7"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 259.2 141.821248 
+L 367.623529 141.821248 
+L 367.623529 127.34341 
+L 259.2 127.34341 
+z
+" clip-path="url(#p12d7a86df7)" style="fill: #2a78d6"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 259.2 115.497907 
+L 414.090756 115.497907 
+L 414.090756 101.020069 
+L 259.2 101.020069 
+z
+" clip-path="url(#p12d7a86df7)" style="fill: #2a78d6"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 259.2 89.174565 
+L 522.514286 89.174565 
+L 522.514286 74.696727 
+L 259.2 74.696727 
+z
+" clip-path="url(#p12d7a86df7)" style="fill: #c3c2b7"/>
+   </g>
+   <g id="matplotlib.axis_1"/>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_1"/>
+     <g id="text_1">
+      <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #52514e" x="255.7" y="217.351573" transform="rotate(-0 255.7 217.351573)">Comments only</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_2"/>
+     <g id="text_2">
+      <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #52514e" x="255.7" y="191.028231" transform="rotate(-0 255.7 191.028231)">The test checked the wrong thing</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_3"/>
+     <g id="text_3">
+      <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #52514e" x="255.7" y="164.70489" transform="rotate(-0 255.7 164.70489)">Browser or framework behaviour</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_4"/>
+     <g id="text_4">
+      <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #52514e" x="255.7" y="138.381548" transform="rotate(-0 255.7 138.381548)">The spec missed or got a decision wrong</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_5"/>
+     <g id="text_5">
+      <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #52514e" x="255.7" y="112.058206" transform="rotate(-0 255.7 112.058206)">Layout broke at an unchecked width or language</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_6"/>
+     <g id="text_6">
+      <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #52514e" x="255.7" y="85.734865" transform="rotate(-0 255.7 85.734865)">Code broke a rule the spec stated</text>
+     </g>
+    </g>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #0b0b0b" x="279.335798" y="216.15001" transform="rotate(-0 279.335798 216.15001)">1</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #0b0b0b" x="310.31395" y="189.826669" transform="rotate(-0 310.31395 189.826669)">3</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #0b0b0b" x="325.803025" y="163.503327" transform="rotate(-0 325.803025 163.503327)">4</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #0b0b0b" x="372.270252" y="137.179985" transform="rotate(-0 372.270252 137.179985)">7</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #0b0b0b" x="418.737479" y="110.856644" transform="rotate(-0 418.737479 110.856644)">10</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #0b0b0b" x="527.161008" y="84.533302" transform="rotate(-0 527.161008 84.533302)">17</text>
+   </g>
+   <g id="legend_1">
+    <g id="patch_9">
+     <path d="M 345.237813 201.692875 
+L 365.237813 201.692875 
+L 365.237813 194.692875 
+L 345.237813 194.692875 
+z
+" style="fill: #2a78d6; stroke: #2a78d6; stroke-linejoin: miter"/>
+    </g>
+    <g id="text_13">
+     <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #52514e" x="373.237813" y="201.692875" transform="rotate(-0 373.237813 201.692875)">A spec or plan could prevent it</text>
+    </g>
+    <g id="patch_10">
+     <path d="M 345.237813 216.693656 
+L 365.237813 216.693656 
+L 365.237813 209.693656 
+L 345.237813 209.693656 
+z
+" style="fill: #c3c2b7; stroke: #c3c2b7; stroke-linejoin: miter"/>
+    </g>
+    <g id="text_14">
+     <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #52514e" x="373.237813" y="216.693656" transform="rotate(-0 373.237813 216.693656)">It could not</text>
+    </g>
+   </g>
+  </g>
+  <g id="text_15">
+   <text style="font-weight: 700; font-size: 13px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #0b0b0b" x="11.52" y="17.653969" transform="rotate(-0 11.52 17.653969)">M4. A spec or plan could have prevented 20 of the 42 review fixes</text>
+  </g>
+  <g id="text_16">
+   <text style="font-size: 10px; font-family: 'Inter', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #52514e" x="11.52" y="36.974437" transform="rotate(-0 11.52 36.974437)">Each fix sorted by hand from its commit message into the one place the defect started.</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p12d7a86df7">
+   <rect x="259.2" y="67.392" width="276.48" height="160.704"/>
+  </clipPath>
+ </defs>
+</svg>
