@@ -63,6 +63,9 @@ Follow-ups spawned by the planner retirement. Spec:
   [brief](docs/plans/2026-10-12-parallel-auto-runs-architecture.md),
   [spec](docs/plans/2026-10-12-parallel-auto-runs-spec.md),
   [plan](docs/plans/2026-10-12-parallel-auto-runs.md)
+- ✅ **`my:status`** — one read-only report of where we are, what is next,
+  and what can run in parallel. Shipped in `c4d3832`; known limits are in the
+  spec's Risk section. [spec](docs/plans/2026-10-12-status-skill-spec.md)
 
 ## Harness generalization
 
