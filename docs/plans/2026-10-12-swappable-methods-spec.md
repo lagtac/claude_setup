@@ -1,6 +1,6 @@
 # Spec: swappable methods
 
-**Status:** draft, 2026-10-12. Splits the global rules into a neutral core and per-method files, and splits the `my` plugin into `my` (the method) and `kit` (neutral tools).
+**Status:** approved, 2026-10-13. Splits the global rules into a neutral core and per-method files, and splits the `my` plugin into `my` (the method) and `kit` (neutral tools).
 
 ## How to read this spec
 
