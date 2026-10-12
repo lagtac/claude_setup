@@ -1,6 +1,6 @@
 # Spec: parallel auto runs, several approved specs at once in one project
 
-**Status:** draft, 2026-10-12. Rewritten smaller after two `my:spec-review` rounds; the third review (Problematic, 1 Critical) is answered; waiting for the user's approval.
+**Status:** approved, 2026-10-12. Rewritten smaller after two `my:spec-review` rounds; the third review (Problematic, 1 Critical) is answered.
 
 ## How to read this spec
 
