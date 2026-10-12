@@ -280,17 +280,20 @@ Spike 1 (run; code thrown away):
 - A `paths:` rule in the project's `.claude/rules/` loaded only after a matching file was read.
 - The approval is stored per project path in `~/.claude.json` (`hasClaudeMdExternalIncludesApproved`). `my:handoff` opens every stage at the repo root, so one approval covers its sessions.
 - Whether a size warning appears at 42,000 chars was not observable from a headless session.
+- Superpowers is installed as `superpowers@synced` (from the claude.ai account), not through `~/.claude/settings.json`. A scratch project with `"superpowers@synced": false` in its `.claude/settings.json` had no superpowers text in context; with `true` it had. So the project switch works for it.
 
 ## Open for brainstorming
 
 - Force 9 (cost): unknown, assumed tokens matter somewhat.
-- The neutral-core boundary, section by section. Candidates to place: Mandatory Exploration, Reference Sweep, Simplicity Rules, Test Standards, UI Design, "Before any review" (LSP mapping).
+- The neutral-core boundary, section by section. Candidates to place: the top bullets of `# Instructions` (the `docs/plans/` and `docs/reports/` path rules, which estimate 1 counted as neutral but which belong to the method), Mandatory Exploration, Reference Sweep, Simplicity Rules, Test Standards, UI Design, "Before any review" (LSP mapping).
 - The method's name, the two plugins' names, and which skills go where (`roadmap-management`, `changelog-management`, `status`, `tutor`, `clean-plans`, `commit`, `push`).
 - Whether `my:tutor` becomes a method of its own, replacing the "Learning workspaces" override list.
 - Whether superpowers stays on at user scope (today's projects unchanged) or turns on per project.
 - Whether other agent tools (Codex, Copilot through `AGENTS.md`) must be able to use our method; the `@import` and the hooks are Claude Code only.
 - The combined memory-size warning: threshold undocumented; spike 1 could not observe it headless.
-- What the guard does when the import is unapproved: warn only, or also inject a pointer to the method file.
+- Where the guard lives. In the method plugin it runs only when that plugin is on, so it catches "plugin on, import missing" but not "plugin off, import still there" (a project moved to another method that still loads our rules). In the neutral plugin it can check both. Also: what it does when the import is unapproved, warn only or also inject a pointer to the method file.
+- Where the current hooks and scripts go: the squash-merge hook that triggers `my:roadmap-management`, `check-orphan-plans.sh`, the `my:tutor` marker hook, `block-autorun-push.py`, and the scripts in `plugins/my/bin` (`handoff-lock.py`, `git-fold-fixups.py`, `status-scan.py`), which `docs-layout.md` calls.
+- Plugins loaded with `--plugin-dir` come from a launch flag, which ranks above project settings, so a project cannot turn them off. `my:handoff` copies these flags into the sessions it launches.
 - Headless `claude -p` runs in a never-approved project skip the method; whether any script needs it.
 
 ## Appendix: candidate drafts
