@@ -51,6 +51,14 @@ Judge each criterion against the System Model. Mark a genuinely-inapplicable cri
 1. **Boundaries.** Each component has one clear job. No two components own the same thing. No component exists only to pass calls along.
 2. **Contracts and flow.** Every connection has a defined input, output and owner. Each piece of state has exactly one source of truth. Data and control flow have no gaps, and no cycles the spec does not state.
 3. **Failures and interactions.** For each connection: what happens when one side fails or changes? The spec must say whether the failure stops, spreads, or is hidden. Look for behaviour that only appears in combination: loops, races, ordering needs.
+   - **Off-path events**, **only** when the spec adds or changes UI. For each screen, flow and record the UI shows, the spec must decide what happens when the user or the data leaves the main path. Check at least these:
+     - browser Back and Forward, a reload, and a link straight to a later step;
+     - the record is deleted, restored, or changes state while another view shows it, and whether the text shown about it, such as "cannot be undone", stays true;
+     - an element hides, closes or is removed while it has focus or an open panel or dialog;
+     - the user changes the language mid-flow;
+     - the text of an empty, error or edge state.
+
+     Skip an event that cannot happen in this product, such as a language change when it ships one language. A missing decision is a `Warning` and a `design` finding: the author decides the behaviour. When the spec adds no UI, skip this check and do not flag it, as with Visual Language under criterion 6.
 4. **Fit with what exists.** The repo does not already solve the problem. The design follows existing patterns. The rejected options were real choices with stated reasons, not options added only to be rejected.
 5. **Grounding.** Every file, symbol, command and claim about current behaviour is checked against the repo. For a symbol the spec removes or renames, run a plain text search for the name token across the whole repo — it also finds string references (route names, config keys, template names), which symbol tools miss. Say the sweep was text-only. Each false claim goes under `## Grounding`.
 6. **Spec rules.** The author's standing rules for a spec:

@@ -48,6 +48,11 @@ the known limits.
 
 ### Changed
 
+- `my:spec-review` checks that a spec which adds UI decides off-path events:
+  browser Back and Forward, a reload or deep link, a record deleted or
+  restored while shown, an element that hides with focus or a panel open, a
+  language change, and empty and error text. A missing decision is a
+  `design` finding, so the author decides it.
 - The fourteen feature steps moved from `global/CLAUDE.md` to
   `global/rules/docs-layout.md`, which loads only when a file in
   `docs/plans/` is touched.

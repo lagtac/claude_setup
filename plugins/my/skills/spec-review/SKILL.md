@@ -3,12 +3,12 @@ name: spec-review
 description: >
   System-thinking review of one design spec (`docs/plans/*-spec.md`) before its implementation plan is
   written. Builds a model of the spec's components and connections, then judges boundaries, contracts
-  and state ownership, failure spread, fit with existing code, grounding against the repo, and the
-  spec rules (How to read this spec, self-containment, Risk/Dependencies/Trade-offs, Visual Language
-  for UI). Every finding is labelled editorial (fix freely) or design (ask the author). Writes a
-  durable report to docs/plans/. Use when asked to review a spec or design doc, and as the required
-  review step of the Spec → Plan flow. NOT for implementation plans, diffs or code — those go to
-  `my:soundness-review`.
+  and state ownership, failure spread and off-path events in UI, fit with existing code, grounding
+  against the repo, and the spec rules (How to read this spec, self-containment,
+  Risk/Dependencies/Trade-offs, Visual Language for UI). Every finding is labelled editorial (fix
+  freely) or design (ask the author). Writes a durable report to docs/plans/. Use when asked to review
+  a spec or design doc, and as the required review step of the Spec → Plan flow. NOT for
+  implementation plans, diffs or code — those go to `my:soundness-review`.
 ---
 
 # Spec Review
