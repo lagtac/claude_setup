@@ -11,10 +11,9 @@ open rows come first.
 
 ## Order of work
 
-- **"One script for the locked commit", then "Trim copied facts in
-  `my:handoff`" with "Name repeated cross-references" as one branch.** The
-  script removes text and one of the named terms before the trims, so they do
-  not edit lines that are about to go.
+- **"Trim copied facts in `my:handoff`" with "Name repeated
+  cross-references", as one branch.** Both are small edits to the same
+  `SKILL.md` text.
 - **Then "Split `my:handoff` by mode", then "Write review step 8 whole per
   mode".** The split moves less text after the trims. Its gain is not measured
   yet, so it also waits for "Measure the auto runs".
@@ -35,7 +34,7 @@ Follow-ups spawned by the planner retirement. Spec:
 [`docs/plans/2026-09-11-retire-planner-path-spec.md`](docs/plans/2026-09-11-retire-planner-path-spec.md)
 (see its "Out of scope").
 
-- 📋 **Deny list has no effect** — fix: the repo-root `settings.json` deny list
+- 💭 **Deny list has no effect** — fix: the repo-root `settings.json` deny list
   is read by nothing (Claude Code reads `.claude/settings.json`, and a plugin
   `settings.json` drops permission rules), yet `CLAUDE.md` and `README.md`
   describe it as active. Found while writing the
@@ -63,6 +62,7 @@ Follow-ups spawned by the planner retirement. Spec:
   rows, starts the ones with an approved spec as parallel auto runs up to
   **Max runs**, and starts a waiting row each time a run finishes. Builds on
   "Parallel auto runs" and `my:status`.
+  [brief](docs/plans/2026-10-13-roadmap-auto-runs-architecture.md)
 - ✅ **`my:architect`** — forces-first architecture brief before brainstorming.
   [spec](docs/plans/2026-09-17-architect-skill-spec.md),
   [plan](docs/plans/2026-09-17-architect-skill.md)
@@ -173,8 +173,7 @@ Their order is in "Order of work" above.
 - 💭 **Skill text loses `$1` and `$2`** — fix: Claude Code replaces `$1` and
   `$2` in a loaded skill with its arguments, so the parallel squash-merge in
   `my:handoff` (`"$1"`, `"$2"`) merges a branch named after the stage. Live in
-  every project with a "Parallel runs" section. The locked commit's `m=$1`
-  goes with the locked-commit.py spec; check `commands/commit.md` too.
+  every project with a "Parallel runs" section.
 - 💭 **Merges read a message file** — `handoff-state.py merge` and the
   parallel squash-merge take `-F <file>`, so the heredoc rule leaves
   `my:handoff`. Changes the `handoff-state.py` interface. Out of scope of the
