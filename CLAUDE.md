@@ -18,3 +18,13 @@ The repo is a plugin marketplace (`.claude-plugin/marketplace.json`, which must 
 - Agent frontmatter fields (`name`, `description`, `tools`, `model`) are parsed by Claude Code; keep them accurate.
 - The plugin manifest (`.claude-plugin/plugin.json`) must accurately list the `commands` and `agents` directory paths.
 - Agents are self-contained — they do not inherit CLAUDE.md. Any standards they must follow need to be embedded directly in the agent file.
+
+## Project facts
+
+- **Method:** my
+- **Commit scopes:** `my-plugin`, `kit-plugin`, `global`, `plans`
+- **Test command:** `cd plugins/kit && python3 -m unittest discover tests` and `cd plugins/my && python3 -m unittest discover tests`
+- **Plans index:** none
+- **Remote:** origin (gitlab.indigital.gr)
+
+@~/.claude/methods/my.md

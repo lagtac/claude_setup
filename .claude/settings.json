@@ -1,0 +1,6 @@
+{
+  "enabledPlugins": {
+    "my@claude-setup": true,
+    "superpowers@synced": true
+  }
+}
