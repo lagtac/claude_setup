@@ -121,6 +121,16 @@ class RoadmapTest(ScanTestCase):
                           ["📋", "-", "C", "docs/plans/c-spec.md"]])
         self.assertEqual(rows[0][4], "- 💭 **A** — x")
 
+    def test_bullet_rows_keep_number(self):
+        self.roadmap("# Roadmap\n\n"
+                     "- 💭 12 **A** — x\n"
+                     "- 🚧 12b **B** — y\n"
+                     "- ✅ 13 **C** — z\n")
+        rows = block(self.scan(), "roadmap")
+        self.assertEqual([r[:4] for r in rows],
+                         [["💭", "12", "A", "-"], ["🚧", "12b", "B", "-"]])
+        self.assertEqual(rows[0][4], "- 💭 12 **A** — x")
+
     def test_table_rows_keep_number(self):
         self.roadmap("# Roadmap\n\n"
                      "| # | Row | Status | Links |\n"

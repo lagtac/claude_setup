@@ -72,6 +72,10 @@ the known limits.
 
 ### Changed
 
+- A bullet roadmap row can carry a number between its icon and its title, as
+  in `- 💭 12 **Title**`. `status-scan.py` passes that number to `my:status`,
+  as it already did for table rows. `my:roadmap-management` gives a new row
+  the next free number in the roadmap's scheme and never reuses a number.
 - In a project with a "Parallel runs" section, a commit in the main checkout
   writes its message to a scratchpad file and runs
   `locked-commit.py -F <file> <paths>`. The script takes lock `main` through

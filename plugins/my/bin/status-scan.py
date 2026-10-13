@@ -47,7 +47,7 @@ DOC_FOLDERS = ("docs/plans", "docs/reports")
 FIXUP = "fixup! "
 FIXUP_DEPTH = 200
 MIN_LINE = 8
-BULLET = re.compile(r"- (\S+) \*\*(.+?)\*\*")
+BULLET = re.compile(r"- (\S+) (?:(\d+[a-z]?) )?\*\*(.+?)\*\*")
 TITLE = re.compile(r"\*\*(.+?)\*\*")
 PLAN_LINK = re.compile(r"\((docs/plans/[^)\s#]+)")
 STATUS = re.compile(r"\*\*Status:\*\*\s*([A-Za-z-]+)(.*)")
@@ -91,7 +91,8 @@ def roadmap_rows(text):
                 if not more.strip() or not more[0].isspace():
                     break
                 parts.append(more.strip())
-            rows.append((bullet.group(1), "-", bullet.group(2), " ".join(parts)))
+            rows.append((bullet.group(1), bullet.group(2) or "-", bullet.group(3),
+                         " ".join(parts)))
         elif line.startswith("|"):
             cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
             icon = next((cell for cell in cells[2:] if cell in ICONS), None)

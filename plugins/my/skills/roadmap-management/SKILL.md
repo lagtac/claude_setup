@@ -79,7 +79,8 @@ Look up the user's request in the decision table above and jump to the rule it p
 A new row goes in only **after** the user has agreed to the idea in conversation. Casual mentions and brainstorm tangents do not earn a row.
 
 - Pick the area section that fits (or propose a new `## Section` if none does — confirm with the user).
-- Choose the next free `#` in that table (continue the section's numbering, including suffix forms like `1b`, `1c` when the row clearly extends a previous one).
+- Choose the next free number, in the scheme the roadmap already uses: per table, the section's next `#`; with one sequence for the whole file, the next number the roadmap names (raise it by one in the same edit), or else the highest number in the file plus one. Use a suffix form like `1b`, `1c` when the row clearly extends a previous one. Never change or reuse a number, also when a row ships or is deleted.
+- In a bullet roadmap, the number goes between the icon and the title: `- 💭 12 **<Short Name>** — …`. `my:status` reads it there.
 - Status: `💭`. Spec/plan column: `—`. No link required at this stage.
 - Title format: `**<Short Name>** — <one-clause framing>`. Match the style of existing rows.
 - Place it in the order. If the roadmap has an `## Order of work` section (rule 12), ask the user where the new row goes, or whether it stays unordered, and write the answer in the same edit. Never guess a position: the order is the user's decision.
@@ -194,7 +195,7 @@ What to write instead, in escalating order of need:
 
 Two failure modes to watch:
 
-- **Split-rot.** When rule 7 splits a row, inherited edge clauses keep pointing at numbers that no longer mean what they meant. Re-read every prose edge in the rows you touch during a split, not just the ones you're renumbering.
+- **Split-rot.** When rule 7 splits a row, inherited edge clauses keep pointing at numbers that no longer mean what they meant. A split keeps the parent's number, so an edge that now means a child still names the parent. Re-read every prose edge that names the parent, and point it at the parent or the child it now means.
 - **Two live orderings.** When a durable doc elsewhere already sequences the work — an action plan's phases, a code review's "suggested order of work", a spec's phasing — do not maintain a second copy. Keep one live, and leave a dated supersession note on the other pointing at it (rule 8's linking discipline applies).
 
 ## Common mistakes
@@ -205,6 +206,6 @@ Two failure modes to watch:
 - Putting a refactor or a test addition in CHANGELOG. It belongs in `docs/dev-reports/` (see `changelog-management` rule 2).
 - Deleting a ✅ row when the feature was later removed. Add a `### Removed` CHANGELOG entry instead; the historical row stays.
 - Adding a 💭 row for a casual brainstorm tangent. Wait for explicit user agreement first.
-- Narrating a dependency the priority tier already implies, adding a `Depends on` column, or leaving an inherited edge pointing at a row number a split has since renumbered (rule 12).
+- Narrating a dependency the priority tier already implies, adding a `Depends on` column, or leaving an edge pointing at a parent row whose work a split moved to a child (rule 12).
 - Pasting metrics, commit SHAs, or per-phase history into a row body that the linked doc already records, or appending one more clause to an already-bloated cell. The row points at detail; it doesn't duplicate it (rule 11).
 - Hardcoding `.html` in a link, or pointing at a cross-repo file with a relative `../other-repo/...` path. The first breaks the Git host's rendered view; the second is dead anywhere but a local checkout. Same-repo → relative `.md`; cross-repo → absolute URL (rule 8).
