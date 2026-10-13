@@ -194,13 +194,13 @@ Check two places. The agent file is one. The dispatch prompt that a skill or com
 
 Use the Edit tool for surgical changes; use Write only for full rewrites of CRITICAL files. After editing each file, re-grade it inline and confirm the severity dropped.
 
-If the user wants a durable record, offer to write the audit table plus applied-fixes summary to `docs/plans/YYYY-MM-DD-claude-instructions-audit.md` (matching the user's plan-output convention). Default off — only write when asked.
+If the user wants a durable record, offer to write the audit table plus applied-fixes summary to a path the user names. There is no default path. Default off — only write when asked.
 
 ## Anti-patterns to avoid
 
 - **Don't pad already-strong files.** If S/R/F all pass, skip. Adding more constraints to a working prompt over-constrains and bloats tokens.
 - **Don't propose a shared preamble.** It's tempting to write one "specificity block" and prepend it everywhere. Don't — agents and commands have different jobs and over-shared boilerplate dilutes their actual instructions. Each file owns its standards.
-- **Don't grade dispatcher files.** A one-line command like `/my:summarize` that just invokes the summarizer agent, or a `CLAUDE.md` that's only `<tag @path>` includes, has no S/R/F surface — grade the targets/included files, not the dispatcher.
+- **Don't grade dispatcher files.** A one-line command that only invokes an agent, or a `CLAUDE.md` that's only `<tag @path>` includes, has no S/R/F surface — grade the targets/included files, not the dispatcher.
 - **Don't dismiss `CLAUDE.md` / docs files by filename.** A context-heavy file with embedded directives ("Always X", "Never Y", "When X, do Y") has a real S/R/F surface in those passages even though the rest of the file is pure reference. Read for directive content before deciding `n/a`.
 - **Don't pile on MUSTs.** Capitalised commands feel forceful but read as noise. Explain *why* the model should do something — literal-following is also literal-understanding. A two-sentence rationale beats a one-word imperative.
 - **Don't audit global files (`~/.claude/...`) without explicit consent.** Either the user asks directly or `--global` is passed. Even with consent, confirm before each write — global edits affect every project on the machine.
@@ -217,4 +217,4 @@ If the user wants a durable record, offer to write the audit table plus applied-
 
 ## Reference
 
-This skill encodes the audit pattern from `docs/plans/2026-04-27-opus-4-7-prompt-tuning.md` (in the `claude-setup` repo), which applied the same S/R/F grading and fix-pattern catalog to seven of this plugin's own templates. Read that file for a worked example showing the audit table, severity ladder, and per-file rationale.
+This skill encodes an audit pattern: it grades each file on the S/R/F rubric in `references/grading-rubric.md`, then applies the fix-pattern catalog to the files that fail.

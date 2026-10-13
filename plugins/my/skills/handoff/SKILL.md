@@ -520,8 +520,8 @@ file would count as a live run.
    on each other or are small. Print one line with the pick and its reason.
    The header also says that the project's review rules replace the skill's
    own reviews, when the project has such rules.
-3. Run the project's plan review on the uncommitted plan. Under the global
-   rules that is `my:soundness-review --plan-only <plan path>`. The
+3. Run the project's plan review on the uncommitted plan. Under the `my`
+   method rules that is `my:soundness-review --plan-only <plan path>`. The
    `--plan-only` token reviews the plan even when other sessions have
    uncommitted files on `<base>`. Take the review's path from the line it
    prints, `Review written to docs/plans/<filename>.`: an older review of the

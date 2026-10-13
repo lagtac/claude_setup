@@ -5,6 +5,8 @@ paths:
 
 # Plan Output Format
 
+Applies only in projects whose `CLAUDE.md` imports `~/.claude/methods/my.md`. Ignore it otherwise.
+
 Every section is required. Superpowers may substitute its own format; when it
 does not, plans use this one. **Dependencies** and **Risk** are non-overridable.
 

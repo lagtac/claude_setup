@@ -18,7 +18,7 @@ student knows. The state lives in `docs/learning/`.
 
 In a learning workspace this skill and `method.md` replace the global
 workflow rules: no brainstorming, architecture brief, spec, plan, worktree,
-code review skill or roadmap step. The global section "Learning workspaces"
+code review skill or roadmap step. `~/.claude/methods/tutor.md`
 lists the rules that stay in force; follow them.
 
 Files beside this one:

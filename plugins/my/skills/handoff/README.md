@@ -250,7 +250,7 @@ before it starts. Names are compared exactly.
 ### Start an auto run
 
 1. **Write the spec** in your own session, with `superpowers:brainstorming`.
-   The spec rules in `global/CLAUDE.md` make it ask whether the spec may run
+   The spec rules in `~/.claude/methods/my.md` make it ask whether the spec may run
    in auto mode. On yes, it adds the Delegation section. You can also add
    the section by hand.
 2. **Review the spec** with `my:spec-review <spec>`, and fix what it finds.

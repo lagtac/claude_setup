@@ -1,4 +1,5 @@
 .DS_Store
-.claude/
+.claude/*
+!.claude/settings.json
 CLAUDE.md_BAK
 __pycache__/

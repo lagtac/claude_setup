@@ -6,6 +6,8 @@ paths:
 
 # Where design documents live
 
+Applies only in projects whose `CLAUDE.md` imports `~/.claude/methods/my.md`. Ignore it otherwise.
+
 These rules apply unless the project documents its own layout. If it does, follow the project
 and do not convert it without asking. Some projects generate their index, or keep status in
 `ROADMAP.md` instead of in each file. The section "One feature, four commits on `main`" is the
@@ -132,7 +134,7 @@ them.
 ## One feature, four commits on `main`
 
 A Large feature leaves four commits on `main` (Small and Medium leave fewer, as the size table in
-`~/.claude/CLAUDE.md` says): the spec with its review, the plan with its review, the squash-merged
+`~/.claude/methods/my.md` says): the spec with its review, the plan with its review, the squash-merged
 code, and the `done` mark. Without this rule, most commits are small edits to one spec or plan: on
 zitamu, 44 of 52 commits by 2026-09-18 were `docs:`. Docs are written in the main checkout,
 because an `@` mention cannot reach `.claude/worktrees/`. Code is written in a worktree, because

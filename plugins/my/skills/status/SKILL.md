@@ -56,7 +56,7 @@ report reads it; it never proposes a new one.
    file name, a string literal. `git grep` each on `main`. When every name is
    found, the branch is merged: leave it out. Otherwise it is unfinished, and
    needs the user. This is the rule in "Assessing branch redundancy" in
-   `global/CLAUDE.md`.
+   `~/.claude/methods/my.md`.
 
 3. **Read the parallel rules.** Read the `## Parallel runs` section of the
    project's `CLAUDE.md` or `CLAUDE.local.md`, if there is one. Take

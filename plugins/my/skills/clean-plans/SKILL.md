@@ -28,7 +28,7 @@ The per-file classification in step 3 fans out to parallel Haiku subagents — i
 
 List the `.md` files directly in `docs/plans/`. Skip `README.md`, which is an index, not a plan.
 
-Superpowers' default folders (`docs/superpowers/plans/`, `docs/superpowers/specs/`) are not scanned. The global instructions send all plans and specs to `docs/plans/`.
+Superpowers' default folders (`docs/superpowers/plans/`, `docs/superpowers/specs/`) are not scanned. The `my` method rules send all plans and specs to `docs/plans/`.
 
 ### 2. Pick the candidates
 

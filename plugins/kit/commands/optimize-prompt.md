@@ -130,7 +130,7 @@ Present your analysis in this structure:
 
 After showing the analysis, save the optimized prompt with the Write tool:
 
-1. **Folder:** `docs/plans/optimized-prompts/` under the project root (`git rev-parse --show-toplevel`, or the current directory outside a repository). Create it if it does not exist.
+1. **Folder:** `docs/optimized-prompts/` under the project root (`git rev-parse --show-toplevel`, or the current directory outside a repository). Create it if it does not exist.
 2. **Filename:** `YYYY-MM-DD-<topic>.md`, today's date and 2–4 kebab-case words for the topic, e.g. `2026-09-19-refactor-hand-limit-popup.md`. If the name exists, append `-2`, then `-3`.
 3. **Contents:** only the optimized prompt (the "✨ OPTIMIZED PROMPT" section), without the scorecard or analysis.
 

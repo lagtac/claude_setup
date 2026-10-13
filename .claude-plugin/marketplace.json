@@ -8,13 +8,13 @@
   "plugins": [
     {
       "name": "my",
-      "description": "Personal Claude Code skills, commands, agents and hooks for development workflows.",
+      "description": "The my method: workflow skills, review agents, handoff scripts and hooks for the spec, plan, code and review cycle. Off at user scope; a project turns it on with /kit:setup my.",
       "source": "./plugins/my",
       "category": "development"
     },
     {
       "name": "kit",
-      "description": "Neutral tools that work under any method: writing, git, Laravel and prompt helpers, and the tutor for learning workspaces with its SessionStart hook.",
+      "description": "Neutral tools that work under any method: writing, git, Laravel and prompt helpers, the tutor for learning workspaces, kit:setup, and the SessionStart hooks for the tutor and the method guard.",
       "source": "./plugins/kit",
       "category": "development"
     },
