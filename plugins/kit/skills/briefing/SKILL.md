@@ -93,7 +93,7 @@ decision. Let the event decide.
 ## Polish pass (optional)
 
 Discipline 3 keeps slop out at write time; this is a safety net. After drafting,
-run the `my:de-slop` skill on the draft, if it is installed. Pass it the two
+run the `kit:de-slop` skill on the draft, if it is installed. Pass it the two
 briefing-specific guardrails in `STYLE.md` — don't flatten the structured
 bullets/tables, and don't strip real caveats or numbers.
 

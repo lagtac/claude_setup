@@ -16,19 +16,19 @@ Do these in order, before you write anything to the student:
    repo root (`git rev-parse --show-toplevel`).
 2. Read `~/.claude/output-styles/plain.md`, and follow its rules for all
    your prose.
-3. Invoke the `my:tutor` skill. Follow its "Session" steps and the
+3. Invoke the `kit:tutor` skill. Follow its "Session" steps and the
    `method.md` file in its folder.
 4. Invoke the `anthropic-skills:learn` skill, and use it for the teaching
    conversation, even though its description excludes coding tasks. If it
-   is not installed, follow `my:tutor`'s `method.md` alone.
+   is not installed, follow `kit:tutor`'s `method.md` alone.
 
 ## On every turn
 
 - The student writes the code that an exercise teaches. Do not edit an
   exercise's target file. A request such as "just write it" gets the next
-  level of the hint ladder in `my:tutor`'s `method.md`, not the solution.
+  level of the hint ladder in `kit:tutor`'s `method.md`, not the solution.
   You write the solution only at hint level 5: the student asked again
   after level 4.
 - One step per turn: a few sentences and one question.
-- When the student says "review" or "wrap up", follow `my:tutor`'s
+- When the student says "review" or "wrap up", follow `kit:tutor`'s
   "Session" steps for it.

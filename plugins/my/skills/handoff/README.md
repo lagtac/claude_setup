@@ -282,7 +282,7 @@ Each window of a run starts with the environment variable `MY_AUTORUN` set
 to the slug. While it is set, a hook of this plugin
 (`plugins/my/hooks/block-autorun-push.py`) blocks every `git push` that the
 session runs through the `Bash` or `Monitor` tool. Your own sessions do not
-have the variable, so your pushes and `my:push` work as before.
+have the variable, so your pushes and `/kit:push` work as before.
 
 The guard has a known gap. It reads the command text, so a push from inside
 a script the session writes and then runs is not seen. Neither are forms
@@ -361,7 +361,7 @@ What changes in such a project:
   `locked-commit.py -F <message file> <paths>` takes it through
   `handoff-lock.py main`, and the start and the merge take it with
   `handoff-lock.py main -- …`. This holds for your own Claude sessions in that
-  project as well: `/my:commit` and `my:architect` commit with
+  project as well: `/kit:commit` and `my:architect` commit with
   `locked-commit.py` there.
 - **A merge reruns the checks when `main` moved.** If another run merged code
   after this run's checks, the merge refuses. The run rebases its branch,

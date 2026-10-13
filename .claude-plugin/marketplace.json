@@ -13,6 +13,12 @@
       "category": "development"
     },
     {
+      "name": "kit",
+      "description": "Neutral tools that work under any method: writing, git, Laravel and prompt helpers, and the tutor for learning workspaces with its SessionStart hook.",
+      "source": "./plugins/kit",
+      "category": "development"
+    },
+    {
       "name": "vue-lsp",
       "description": "TypeScript language server with @vue/typescript-plugin, so LSP also covers .vue files. Replaces typescript-lsp.",
       "source": "./plugins/vue-lsp",

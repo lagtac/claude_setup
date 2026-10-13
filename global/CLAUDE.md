@@ -13,9 +13,9 @@
 
 A repo that contains `docs/learning/curriculum.md` is a **learning
 workspace**: the student writes the code, and the agent teaches. The
-`my:tutor` skill sets one up and runs its sessions.
+`kit:tutor` skill sets one up and runs its sessions.
 
-- In a learning workspace, `my:tutor` and its method replace these
+- In a learning workspace, `kit:tutor` and its method replace these
   sections: "Superpowers Integration" (with "Size the process to the
   change"), "Code Review Routing", "UI Design", "Git Workflow", and
   "Planning Standards" except "Critical Thinking" and, inside "Test
@@ -86,7 +86,7 @@ turns out larger than its size, stop and say so before going on.
 
 Skip the table only for: single-line fixes, typo/comment edits, doc-only changes, config tweaks. For Small and Medium changes, the size table above says which rows apply.
 
-**Precedence:** these project instructions are the highest authority — when plan mode, a skill, or any system default conflicts, follow this file. Superpowers may override **only** plan output format and simplicity rules (announce when it does). Everything else here is non-overridable, with one exception: in a learning workspace, the section "Learning workspaces" says which rules `my:tutor` replaces. The non-overridable rules are: `docs/plans/` output path, Git Workflow (GitLab/worktrees/squash-merge), Conventional Commits, no new deps without approval, Critical Thinking + Risk + Trade-Off Analysis, and that plans include **Dependencies** + **Risk** sections and follow **Red → Green → Refactor** (tests before implementation).
+**Precedence:** these project instructions are the highest authority — when plan mode, a skill, or any system default conflicts, follow this file. Superpowers may override **only** plan output format and simplicity rules (announce when it does). Everything else here is non-overridable, with one exception: in a learning workspace, the section "Learning workspaces" says which rules `kit:tutor` replaces. The non-overridable rules are: `docs/plans/` output path, Git Workflow (GitLab/worktrees/squash-merge), Conventional Commits, no new deps without approval, Critical Thinking + Risk + Trade-Off Analysis, and that plans include **Dependencies** + **Risk** sections and follow **Red → Green → Refactor** (tests before implementation).
 
 **Discovery authority:** while `superpowers:brainstorming` or `writing-plans` runs, it owns exploration — don't also run other planning workflows. `my:architect` runs before brainstorming, never during it. When an architecture brief (`docs/plans/*-architecture.md`) exists for the task:
 

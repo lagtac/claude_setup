@@ -1,10 +1,10 @@
 # Claude Setup Plugin
 
-A Claude Code plugin (`my`) providing reusable slash commands, subagent definitions, and skills for development workflows.
+Two Claude Code plugins (`my` and `kit`) providing reusable slash commands, subagent definitions, and skills for development workflows.
 
 ## Architecture
 
-The repo is a plugin marketplace (`.claude-plugin/marketplace.json`, which must stay at the repo root). Each plugin lives in `plugins/<name>/`. The paths below are inside `plugins/my/`.
+The repo is a plugin marketplace (`.claude-plugin/marketplace.json`, which must stay at the repo root). Each plugin lives in `plugins/<name>/`: `my` holds the method, `kit` the neutral tools. The paths below are relative to a plugin folder.
 
 - **`.claude-plugin/plugin.json`** — Plugin manifest (name, description, author). No `version` field: the marketplace uses the commit hash, so each commit is a new version. Commands and agents are auto-discovered.
 - **`settings.json`** — Plugin-scoped deny-list safety defaults.

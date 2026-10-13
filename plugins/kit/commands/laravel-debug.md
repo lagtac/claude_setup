@@ -8,7 +8,7 @@ If no problem is given, ask the user to describe it (the symptom, where it shows
 
 ## Process
 
-Hand the diagnosis to the `my:laravel-fullstack-expert` agent: use the Agent tool with `subagent_type: "my:laravel-fullstack-expert"`. Its prompt contains, word for word: the problem above, the absolute project root (`git rev-parse --show-toplevel`), the Rules, the Diagnostic stages and the report template below, and this line: "Use the report template in this prompt instead of your default output format."
+Hand the diagnosis to the `kit:laravel-fullstack-expert` agent: use the Agent tool with `subagent_type: "kit:laravel-fullstack-expert"`. Its prompt contains, word for word: the problem above, the absolute project root (`git rev-parse --show-toplevel`), the Rules, the Diagnostic stages and the report template below, and this line: "Use the report template in this prompt instead of your default output format."
 
 When the agent returns, print its report. Then ask the user whether to apply the proposed fix. Apply it only after a yes, and then run the check the report names.
 

@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "top=$(cd \"${CLAUDE_PROJECT_DIR:-.}\" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null); if [ -n \"$top\" ] && [ -f \"$top/docs/learning/curriculum.md\" ]; then printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"This is a learning workspace. Invoke `kit:tutor` before your first reply.\"}}'; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

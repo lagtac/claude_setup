@@ -10,7 +10,7 @@ Analyze the prompt below and rewrite it so a current Claude model (Fable 5.1, Op
 
 $ARGUMENTS
 
-If the input above is empty, print `Usage: /my:optimize-prompt <prompt text, or a path to a file holding it>` and stop. If it is a path to an existing file, analyze that file's contents.
+If the input above is empty, print `Usage: /kit:optimize-prompt <prompt text, or a path to a file holding it>` and stop. If it is a path to an existing file, analyze that file's contents.
 
 ---
 

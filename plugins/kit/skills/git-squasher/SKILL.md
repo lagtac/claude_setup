@@ -1,6 +1,6 @@
 ---
 name: git-squasher
-description: Use when the user wants to squash, clean up, or consolidate consecutive minor commits (fix, chore, style, formatting, cleanup) in git history. Also when invoked as /my:git-squasher.
+description: Use when the user wants to squash, clean up, or consolidate consecutive minor commits (fix, chore, style, formatting, cleanup) in git history. Also when invoked as /kit:git-squasher.
 ---
 
 # Git Squasher
@@ -10,10 +10,10 @@ Squash consecutive minor commits (fix, chore, style, cleanup) into single cohesi
 ## Arguments
 
 ```
-/my:git-squasher                 # commits ahead of the default branch; show plan, then squash on approval
-/my:git-squasher main            # only commits ahead of main
-/my:git-squasher HEAD~20         # last 20 commits
-/my:git-squasher --dry-run       # stop after the plan in step 4; change nothing
+/kit:git-squasher                 # commits ahead of the default branch; show plan, then squash on approval
+/kit:git-squasher main            # only commits ahead of main
+/kit:git-squasher HEAD~20         # last 20 commits
+/kit:git-squasher --dry-run       # stop after the plan in step 4; change nothing
 ```
 
 Defaults: scope = all commits ahead of the default branch (`main`, else `master`). If neither exists, `HEAD~20`.

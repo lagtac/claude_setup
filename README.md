@@ -7,6 +7,8 @@ My Claude Code setup. The repo is also a plugin marketplace, named
   row in `.claude-plugin/marketplace.json` at the repo root.
   - **`plugins/my/`** — the `my` plugin: skills, commands, agents and hooks
     for development workflows.
+  - **`plugins/kit/`** — the `kit` plugin: neutral skills, commands, agents and
+    the tutor hook, which work under any method.
   - **`plugins/vue-lsp/`** — the `vue-lsp` plugin: the TypeScript language
     server with `@vue/typescript-plugin`, so LSP also covers `.vue` files. Its
     README lists the npm packages it needs.
@@ -14,7 +16,7 @@ My Claude Code setup. The repo is also a plugin marketplace, named
   (`rules/`) and output styles (`output-styles/`). `~/.claude/CLAUDE.md`,
   `~/.claude/rules` and `~/.claude/output-styles` are symlinks into this
   folder, so edit the files here. There are two output styles: `plain`, the
-  default, and `tutor`, which a learning workspace sets (see `my:tutor`).
+  default, and `tutor`, which a learning workspace sets (see `kit:tutor`).
 
 `marketplace.json` stays at the repo root. There, the plugin version is the
 commit hash. In a subfolder, Claude Code cannot read the hash, so every version
@@ -27,6 +29,7 @@ Add the repo as a marketplace once, then install the plugins:
 ```text
 /plugin marketplace add ~/projects/claude-setup
 /plugin install my@claude-setup
+/plugin install kit@claude-setup
 /plugin install vue-lsp@claude-setup
 /plugin disable typescript-lsp@claude-plugins-official
 ```
@@ -42,22 +45,28 @@ commit hash. After you commit a change, copy it into the cache and restart:
 
 ```bash
 claude plugin update my@claude-setup
+claude plugin update kit@claude-setup
 ```
 
 Uncommitted edits never reach the cache. So a skill you are halfway through
 editing cannot break other sessions. To try an uncommitted edit, start one
-session with the plugin folder instead:
+session with the plugin folder instead. Use `plugins/kit` for an edit to a
+`kit` tool:
 
 ```bash
 claude --plugin-dir ~/projects/claude-setup/plugins/my
+claude --plugin-dir ~/projects/claude-setup/plugins/kit
 ```
 
-Do not also keep this flag in a shell alias, or every session loads `my` twice.
+Do not also keep this flag in a shell alias, or every session loads that
+plugin twice.
 
 ## Skills
 
 Skills load when a task matches their description, or when you call them
-as `/my:<name>`.
+as `/my:<name>` or `/kit:<name>`.
+
+### `my` skills
 
 - `my:architect` — Writes an architecture brief from the forces on a system,
   before the spec. Output: `docs/plans/YYYY-MM-DD-<slug>-architecture.md`.
@@ -77,30 +86,33 @@ as `/my:<name>`.
   `/my:handoff auto plan|code <spec>` runs the whole cycle to the `done`
   marks without the user, as far as the spec's Delegation section allows,
   and never pushes; `/my:handoff auto resume <spec>` continues a stopped run.
-- `my:tutor` — A learning mode. Sets up a learning workspace (a new repo, a
-  repo made for learning, or a clone of a real project that cannot push), and
-  runs the sessions: the student writes the code, the tutor sets exercises,
-  gives hints and keeps notes in `docs/learning/`. Say "let's make a learning
-  project for …" to start.
-- `my:briefing` — Writes a plain-English, decision-focused briefing for
-  non-technical readers, in `docs/briefings/`.
 - `my:status` — Answers "where are we", "what is next" and "what can be done
   in parallel" in one read-only report.
 - `my:roadmap-management` — Edits `ROADMAP.md`: adds rows and moves them between
   status tiers.
 - `my:changelog-management` — Edits `CHANGELOG.md` for shipped features, fixes
   and deploy changes.
-- `my:dev-reports` — Builds a daily or weekly developer report from git history.
-- `my:git-squasher` — Squashes runs of small consecutive commits.
 - `my:clean-plans` — Gives undated plan files in `docs/plans/` dated names, updates
   the links to them, and offers to delete files from another project, empty files
   and duplicates.
-- `my:tune-claude-instructions` — Audits instruction files (CLAUDE.md, agents,
+
+### `kit` skills
+
+- `kit:tutor` — A learning mode. Sets up a learning workspace (a new repo, a
+  repo made for learning, or a clone of a real project that cannot push), and
+  runs the sessions: the student writes the code, the tutor sets exercises,
+  gives hints and keeps notes in `docs/learning/`. Say "let's make a learning
+  project for …" to start.
+- `kit:briefing` — Writes a plain-English, decision-focused briefing for
+  non-technical readers, in `docs/briefings/`.
+- `kit:dev-reports` — Builds a daily or weekly developer report from git history.
+- `kit:git-squasher` — Squashes runs of small consecutive commits.
+- `kit:tune-claude-instructions` — Audits instruction files (CLAUDE.md, agents,
   commands, skills and their dispatch prompts) for vague directives, tools a
   subagent will not have, stale harness assumptions and contradictions.
-- `my:de-slop` — Rewrites text so it does not read as machine-written.
-- `my:md-tables` — Turns a Markdown table into one section per row, or
-  sections back into a table, with the two filters in `plugins/my/bin/`
+- `kit:de-slop` — Rewrites text so it does not read as machine-written.
+- `kit:md-tables` — Turns a Markdown table into one section per row, or
+  sections back into a table, with the two filters in `plugins/kit/bin/`
   (`md-expand-table.py`, `md-collapse-sections.py`). Claude Code puts that
   folder on PATH in its sessions only; your shell finds them through symlinks
   in `~/bin`. Both files are symlinks to `~/src/scripts/`, which holds the
@@ -125,28 +137,33 @@ unmerged work. It reads and never writes; its tests run with the same command.
 
 ## Commands
 
-- `/my:commit` — Structured commit workflow with Conventional Commits.
-- `/my:push` — Push with pre-push checks.
+### `my` commands
+
 - `/my:summarize` — Compare a plan or review against the actual git diff (runs
   the `summarizer` agent).
-- `/my:optimize-prompt` — Score and rewrite a prompt; saves it to
+
+### `kit` commands
+
+- `/kit:commit` — Structured commit workflow with Conventional Commits.
+- `/kit:push` — Push with pre-push checks.
+- `/kit:optimize-prompt` — Score and rewrite a prompt; saves it to
   `docs/plans/optimized-prompts/`.
-- `/my:clean-gone-branches` — Remove local branches whose remote is gone, with
+- `/kit:clean-gone-branches` — Remove local branches whose remote is gone, with
   their clean worktrees, after asking.
-- `/my:laravel-debug` — Laravel-specific debugging: diagnose read-only, then
+- `/kit:laravel-debug` — Laravel-specific debugging: diagnose read-only, then
   propose a fix.
-- `/my:laravel-migration-check` — Check Laravel migrations for safety and
+- `/kit:laravel-migration-check` — Check Laravel migrations for safety and
   rollback, without running them.
 
 ## Agents
 
 | Agent | Model | Used by |
 | --- | --- | --- |
-| `code-reviewer` | opus | `my:soundness-review` |
-| `spec-reviewer` | opus | `my:spec-review` |
-| `summarizer` | sonnet | `/my:summarize` |
-| `laravel-fullstack-expert` | — | `/my:laravel-*` |
-| `oral-medicine-expert` | — | Called directly (oral medicine questions) |
+| `my:code-reviewer` | opus | `my:soundness-review` |
+| `my:spec-reviewer` | opus | `my:spec-review` |
+| `my:summarizer` | sonnet | `/my:summarize` |
+| `kit:laravel-fullstack-expert` | — | `/kit:laravel-*` |
+| `kit:oral-medicine-expert` | — | Called directly (oral medicine questions) |
 
 ## Hooks
 
@@ -156,12 +173,15 @@ Defined in `plugins/my/hooks/hooks.json`:
   or `docs/reports/` that are untracked or not named `YYYY-MM-DD-<slug>`.
   If `docs/plans/README.md` contains `<!-- plans-index: strict -->`, it also
   warns about plans missing from that index or missing a `**Status:**` line.
-- **SessionStart** (on startup and `/clear`) — in a learning workspace, a repo
-  with `docs/learning/curriculum.md`, tells Claude to invoke `my:tutor`
-  before its first reply.
 - **PostToolUse** — after `git merge --squash`, reminds Claude to update the
   roadmap with `my:roadmap-management`. It stays silent in a learning
   workspace, where each exercise ends with a squash-merge.
+
+Defined in `plugins/kit/hooks/hooks.json`:
+
+- **SessionStart** (on startup and `/clear`) — in a learning workspace, a repo
+  with `docs/learning/curriculum.md`, tells Claude to invoke `kit:tutor`
+  before its first reply.
 
 ## Settings
 

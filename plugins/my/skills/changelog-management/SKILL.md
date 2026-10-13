@@ -62,7 +62,7 @@ Read CHANGELOG.md and find the current `## [Unreleased]` block. Some projects da
 
 ### 2. Scope check — does it earn an entry?
 
-Apply the decision table. If the change is internal-only (refactor, test addition, lint config, formatting, code comments, internal docs), make no CHANGELOG edit and stop. Tell the user in one line that it is internal work, which a dev report (`my:dev-reports`) covers. Do not write a dev report unless the user asks for one. The test: *would an operator deploying this or a user reading release notes care?* If no, it's a dev-report.
+Apply the decision table. If the change is internal-only (refactor, test addition, lint config, formatting, code comments, internal docs), make no CHANGELOG edit and stop. Tell the user in one line that it is internal work, which a dev report (`kit:dev-reports`) covers. Do not write a dev report unless the user asks for one. The test: *would an operator deploying this or a user reading release notes care?* If no, it's a dev-report.
 
 ### 3. Pick a structure
 

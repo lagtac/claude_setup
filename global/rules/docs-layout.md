@@ -21,7 +21,7 @@ there.
 | Review | A report on one spec, one plan or one diff. It sits next to what it reviewed. | `docs/plans/` | `…-review.md`, `…-review-2.md` |
 | Report | Findings about a whole product or area on one day, such as a design critique, an audit or an architecture critique. Other documents fix what it finds. It is never carried out itself. | `docs/reports/` | `YYYY-MM-DD-<slug>-critique.md`, `-audit.md` |
 | Action plan | Optional. Routes a large report's findings into roadmap rows once, then stays as a reference. | `docs/plans/` | `YYYY-MM-DD-<slug>-action-plan.md` |
-| Briefing | A plain-language write-up for readers outside engineering (`my:briefing`). | `docs/briefings/` | `YYYY-MM-DD-<slug>.md` |
+| Briefing | A plain-language write-up for readers outside engineering (`kit:briefing`). | `docs/briefings/` | `YYYY-MM-DD-<slug>.md` |
 
 The test for "report or review": a review has one subject that someone will change in answer to
 it. A report has many findings across many files, and several later documents answer it.

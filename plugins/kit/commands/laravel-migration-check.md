@@ -18,7 +18,7 @@ Review Laravel migrations for data loss, rollback safety, locking and integrity.
 
 ## Process
 
-Hand the review to the `my:laravel-fullstack-expert` agent: use the Agent tool with `subagent_type: "my:laravel-fullstack-expert"`. Its prompt contains the absolute path of each file, the Rules above, the checklist and the report template below, and this line: "Use the report template in this prompt instead of your default output format." Then print the agent's report unchanged.
+Hand the review to the `kit:laravel-fullstack-expert` agent: use the Agent tool with `subagent_type: "kit:laravel-fullstack-expert"`. Its prompt contains the absolute path of each file, the Rules above, the checklist and the report template below, and this line: "Use the report template in this prompt instead of your default output format." Then print the agent's report unchanged.
 
 The agent reads every file in full, and the models each migration touches (`app/Models/`). For each table the migration alters, it estimates the table size from the code (seeders, factories, comments) or marks it `unknown`.
 

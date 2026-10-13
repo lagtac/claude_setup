@@ -7,7 +7,7 @@ description: >
   flags prompts that require tools a subagent may not receive. Trigger on requests
   like "audit my CLAUDE.md for the new model", "my agents got worse on the new model",
   "make my prompts more specific", "tune my prompts", "audit my global setup",
-  or invocation via /my:tune-claude-instructions (optionally with --global or a path).
+  or invocation via /kit:tune-claude-instructions (optionally with --global or a path).
 argument-hint: "[--global] [path]"
 ---
 

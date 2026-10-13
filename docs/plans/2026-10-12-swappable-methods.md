@@ -86,7 +86,7 @@ Expected: no `OK`, exit 1.
 
 - [ ] **Step 2: Write `plugins/kit/.claude-plugin/plugin.json`**
 
-Keys: `name` `kit`; `description` `Neutral tools that work under any method: writing, git, Laravel and prompt helpers.`; `author` as in `plugins/my/.claude-plugin/plugin.json`. No `version`.
+Keys: `name` `kit`; `description` `Neutral tools that work under any method: writing, git, Laravel and prompt helpers, and the tutor for learning workspaces with its SessionStart hook.` (batch 1's review added the tutor clause); `author` as in `plugins/my/.claude-plugin/plugin.json`. No `version`.
 
 - [ ] **Step 3: Add the `kit` entry to `.claude-plugin/marketplace.json`**
 
@@ -529,6 +529,17 @@ The final text of each paragraph the spec's "Reworded text" lists. Bold labels a
 - **Conflicts with open `my:handoff` work.** Batch 1 moves no handoff file. Batch 1 edits `plugins/my/skills/handoff/README.md:285` and `:364`; batch 2 edits `:253`. `ROADMAP.md` has two open `my:handoff` rows that may touch that file; a conflict there is small and shows at merge time. No other `claude-setup` worktree existed on 2026-10-13.
 - **The guard's warnings are a contract** for the tests and the cutover steps 7 and 9. A change to one must change all three.
 - **Plugin cache lag** after each batch: a session started before `claude plugin update` runs the old code. Both runbooks restart; other sessions must restart too.
+- **`/kit:commit` needs `locked-commit.py` from `my`** (batch 1 review). In a project with a "Parallel runs" section, the command commits with `locked-commit.py`, which stays in `plugins/my/bin/` and is on PATH only while `my` is on. Today only `my` projects have that section, so the case does not arise. A project that keeps the section with `my` off gets `locked-commit.py: command not found`. Batch 2 decides whether to note this in `commit.md` or move the script.
+- **`kit:dev-reports` names `changelog-management`, a `my` skill, without a prefix** (batch 1 review). The Task 2 sweep and the Task 5 check look for `my:<name>` only, so they cannot see it. With `my` off, the description points at a skill that is not loaded. Task 7 should reword it when it rewords the other method references in `kit`.
+- **Between batch 1's merge and its runbook** (batch 1 review), `~/.claude/CLAUDE.md` and the tutor style already name `kit:tutor`, but `kit` is not installed, the tutor hook does not fire, and the `~/bin` md-table links point at the removed `plugins/my/bin/` files. Nothing warns if the runbook is skipped. The review stage runs the runbook right after the merge, in the same session, so the gap lasts minutes. The double hook in open sessions is runbook step 6.
+- **Low findings of batch 1's final re-review**, left as they are by the one-fix-round rule:
+  - The `~/bin` md-table links could point straight at `~/src/scripts/`, which would remove the gap before runbook step 4 and survive a plugin folder move.
+  - The README's Hooks section does not list the `block-autorun-push.py` PreToolUse hook in `my`, so it does not show that turning `my` off drops the push guard.
+  - `CLAUDE.md` says the `settings.json` bullet is relative to a plugin folder, but the deny-list `settings.json` is at the repo root. The claim was already false for `my`.
+  - `CLAUDE.md` says the manifest "must accurately list" the `commands` and `agents` paths, and also that they are auto-discovered. Neither manifest lists them.
+  - The `my` description in `plugin.json` and `marketplace.json` does not tell the method apart from `kit`. Batch 2, which turns `my` off at user scope, is the place to reword it.
+  - The README's `--plugin-dir` example does not show both flags in one command, for an edit that spans the two plugins.
+  - The learning-workspace check exists twice, in `kit`'s tutor hook and in `my`'s squash hook, until Task 7 removes the second copy.
 - The spec's Risk section holds the rest, unchanged: hard-to-reverse import lines in 22 repos, worktree paths with their own approval flag, the core boundary, memory size, and the guard not checking the method file's content.
 
 ## Testing Strategy

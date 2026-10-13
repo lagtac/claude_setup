@@ -1,0 +1,7 @@
+{
+  "name": "kit",
+  "description": "Neutral tools that work under any method: writing, git, Laravel and prompt helpers, and the tutor for learning workspaces with its SessionStart hook.",
+  "author": {
+    "name": "Dimitris Chrysomalis"
+  }
+}

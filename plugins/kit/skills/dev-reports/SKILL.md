@@ -2,7 +2,7 @@
 name: dev-reports
 description: >
   Use when the user asks to generate a developer report, weekly report, daily report,
-  dev log, or activity summary from git history. Also when invoked via /my:dev-reports.
+  dev log, or activity summary from git history. Also when invoked via /kit:dev-reports.
   NOT for CHANGELOG.md entries (use changelog-management).
 ---
 
@@ -13,12 +13,12 @@ Generate concise developer reports from git history. No fluff — developer audi
 ## Arguments
 
 ```
-/my:dev-reports weekly                       # weekly, current week (see Monday rule)
-/my:dev-reports weekly 2026-W10              # specific ISO week
-/my:dev-reports weekly 2026-W10 path/to/dir  # custom output path
-/my:dev-reports today                        # today only
-/my:dev-reports daily                        # one report per day since the newest existing daily report
-/my:dev-reports daily 2026-03-20             # that day only
+/kit:dev-reports weekly                       # weekly, current week (see Monday rule)
+/kit:dev-reports weekly 2026-W10              # specific ISO week
+/kit:dev-reports weekly 2026-W10 path/to/dir  # custom output path
+/kit:dev-reports today                        # today only
+/kit:dev-reports daily                        # one report per day since the newest existing daily report
+/kit:dev-reports daily 2026-03-20             # that day only
 ```
 
 Defaults: type=today, path=docs/dev-reports/
