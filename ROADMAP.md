@@ -23,6 +23,10 @@ open rows come first.
   The fix is live in parallel projects now; the merge row reworks the same
   command later.
 
+- **"Swappable methods" batch 2, then "Start auto runs from roadmap rows".**
+  Batch 2 moves the method rules out of `global/CLAUDE.md` and edits
+  `my:status`, so the new row's rules go into the moved text.
+
 Rows not named here are unordered.
 
 ## `my` plugin hygiene
@@ -55,6 +59,10 @@ Follow-ups spawned by the planner retirement. Spec:
   dependencies match what the design adds, the check commands and test names
   exist, and `decide` is flagged on a spec that changes stored data or a
   contract. Not the format: the auto start check owns that. Small.
+- 💭 **Start auto runs from roadmap rows** — one command takes a list of
+  rows, starts the ones with an approved spec as parallel auto runs up to
+  **Max runs**, and starts a waiting row each time a run finishes. Builds on
+  "Parallel auto runs" and `my:status`.
 - ✅ **`my:architect`** — forces-first architecture brief before brainstorming.
   [spec](docs/plans/2026-09-17-architect-skill-spec.md),
   [plan](docs/plans/2026-09-17-architect-skill.md)
