@@ -1,6 +1,6 @@
 # Swappable methods Implementation Plan
 
-**Status:** approved, 2026-10-13. Two batches: batch 1 moves the neutral tools into a new `kit` plugin; batch 2 splits the global rules and runs the cutover.
+**Status:** current, 2026-10-13. Batch 1 merged in `1fe2d57`; batch 2 not started.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use
 > superpowers:executing-plans to implement this plan task-by-task. The tasks
