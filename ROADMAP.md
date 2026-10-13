@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 39
+**Next number:** 41
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -67,11 +67,17 @@ Follow-ups spawned by the planner retirement. Spec:
   dependencies match what the design adds, the check commands and test names
   exist, and `decide` is flagged on a spec that changes stored data or a
   contract. Not the format: the auto start check owns that. Small.
-- 💭 9 **Start auto runs from roadmap rows** — one command takes a list of
+- 📋 9 **Start auto runs from roadmap rows** — one command takes a list of
   rows, starts the ones with an approved spec as parallel auto runs up to
   **Max runs**, and starts a waiting row each time a run finishes. Builds on
   rows 14 "Parallel auto runs" and 15 `my:status`.
-  [brief](docs/plans/2026-10-13-roadmap-auto-runs-architecture.md)
+  [brief](docs/plans/2026-10-13-roadmap-auto-runs-architecture.md),
+  [spec](docs/plans/2026-10-13-roadmap-auto-runs-spec.md)
+- 💭 40 **Every spec has a Files section** — a spec rule in
+  `global/methods/my.md`; a Medium spec's Tasks section counts when it names
+  the files. `my:spec-review` flags a missing one, and `my:status` reads Tasks
+  as a file list. Lets row 9's queue tell which rows may run side by side.
+  Split out of row 9's first spec draft.
 - ✅ 10 **`my:architect`** — forces-first architecture brief before brainstorming.
   [spec](docs/plans/2026-09-17-architect-skill-spec.md),
   [plan](docs/plans/2026-09-17-architect-skill.md)
@@ -118,6 +124,10 @@ Make the harness reusable in new projects without forking copies. Spec:
   `require-*`) into the plugin behind a per-repo `.claude/harness.json`, with a
   `/harness-init` bootstrap. Waits for a second project to adopt the gates;
   today only `diagoradisa-annotator` uses them. Design and reasons in the spec.
+- 💭 39 **`kit:setup` offers a Parallel runs section** — `/kit:setup my` asks
+  whether to allow parallel auto runs, and proposes the section's four lines
+  from the machine's memory and the repo's compose, `.env` and e2e files.
+  Split out of row 9's first spec draft.
 - ✅ 18 **Global orphan-plan hook** — `check-orphan-plans.sh` runs in the `my`
   plugin at session start, in all repos.
 - ✅ 19 **Runtime-command contract — DRAFT** — written down, not adopted:
