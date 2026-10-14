@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 54
+**Next number:** 55
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -95,6 +95,13 @@ Follow-ups spawned by the planner retirement. Spec:
   the design choices the fork made without the user, and stays a draft until
   the user reads it and `my:spec-review` runs. Covers the step before
   `my:handoff`, which starts only at an approved spec. Found on 2026-10-14.
+- 💭 54 **Small rows in forks while the user is away** — rows with no spec,
+  which `my:handoff auto` cannot start, each run in a fork and its own
+  worktree up to the merge, under one e2e lock that every session takes. The
+  main session reads each fork's e2e log and test diff itself, then merges
+  one branch at a time. Tried on zitamu on 2026-10-14 (rows 112 and 102,
+  beside row 103's spec draft, 31% of a 1M context); there the lock bound
+  only that session's forks. Pairs with 53.
 - ✅ 10 **`my:architect`** — forces-first architecture brief before brainstorming.
   [spec](docs/plans/2026-09-17-architect-skill-spec.md),
   [plan](docs/plans/2026-09-17-architect-skill.md)
