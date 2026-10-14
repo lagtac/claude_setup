@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 41
+**Next number:** 53
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -23,7 +23,9 @@ and the same edit raises it by one.
   `SKILL.md` text.
 - **Then 30 "Split `my:handoff` by mode", then 31 "Write review step 8 whole
   per mode".** The split moves less text after the trims. Its gain is not
-  measured yet, so it also waits for 29 "Measure the auto runs".
+  measured yet, so it also waits for 29 "Measure the auto runs". Row 43
+  "`handoff` start checks as a script" also goes before 30, for the same
+  reason.
 
 - **33 "Skill text loses `$1` and `$2`", then 34 "Merges read a message
   file".**
@@ -34,6 +36,15 @@ and the same edit raises it by one.
   rows".**
   Batch 2 moves the method rules out of `global/CLAUDE.md` and edits
   `my:status`, so the new row's rules go into the moved text.
+
+- **9 "Start auto runs from roadmap rows", then 42 "Parallel runs parser",
+  then 43 "`handoff` start checks as a script".**
+  Row 9 changes `handoff-state.py`, which 42 and 43 extend, and 43 uses the
+  parser from 42.
+
+- **41 "`git-squasher` loses `$1`", then 46 "`git-squasher` plan and apply
+  scripts".**
+  The fix is small and can ship now; 46 reworks the same file later.
 
 Rows not named here are unordered.
 
@@ -211,6 +222,47 @@ Their order is in "Order of work" above.
 - ✅ 38 **Rubric fixes in `my:handoff`** — `PushNotification` is loaded before
   use, findings are classified in writing before a fix, and the code stage's
   auto sub-steps have their own letters. Small. Report R1 to R4.
+
+## Scripted skill steps
+
+Findings of
+[`docs/reports/2026-10-14-scriptable-skill-steps.md`](docs/reports/2026-10-14-scriptable-skill-steps.md):
+steps of the `my` and `kit` skills that fixed rules decide, and that a script
+in `bin/` can run instead of the model. Their order is in "Order of work"
+above.
+
+- 💭 41 **`git-squasher` loses `$1`** — fix: the `squash-todo.sh` example in
+  `kit:git-squasher` step 5 uses `"$1"`, which Claude Code replaces with the
+  skill's arguments, as in row 33. Small. Report B1.
+- 💭 42 **Parallel runs parser** — a `handoff-state.py` subcommand prints
+  **Max runs**, `<n>`, the docs paths and the `--docs-paths` arguments, for
+  `my:handoff`, `my:status`, `kit:commit` and `my:architect`. Report S4.
+- 💭 43 **`handoff` start checks as a script** — a subcommand prints `<slug>`,
+  `<name>` and `<base>`, the first failed start check, the Delegation
+  validation and the restart point. Report S2, S3.
+- 💭 44 **`git-fold-fixups.py list <path>`** — lists a document's waiting
+  fixups, which `my:handoff` finds by hand in three places. Small. Report S6.
+- 💭 45 **Review preparation as a script** — the argument sorting, the diff
+  file, the mode table, the review file name and the template filling of
+  `my:soundness-review` and `my:spec-review`. Report S5.
+- 💭 46 **`git-squasher` plan and apply scripts** — the grouping rules run as a
+  script, and the apply step reads the messages from a file. Report S7.
+- 💭 47 **`clean-plans` moves by script** — the candidate list, the date,
+  `git mv` or `mv`, and repointing the links; "Moving a document" in
+  `docs-layout.md` uses the same script. Report S8.
+- 💭 48 **`setup` facts by script** — the fact discovery and the
+  `settings.json` merge of `kit:setup`; the "already set up" check reuses
+  `method-guard.py`. Report S9.
+- 💭 49 **`dev-reports` dates and TODOs by script** — the ISO week, the Monday
+  rule, the days with commits and the TODO extraction. Report S10.
+- 💭 50 **`clean-gone-branches` as a script** — list, check and delete; the
+  command keeps the approval question. Report S11.
+- 💭 51 **Roadmap number and link check** — a script prints the next row
+  number and flags `.html`, `../` and dead links in `ROADMAP.md` and
+  `CHANGELOG.md`. Small. Report S12.
+- 💭 52 **`status` gates and overlap by script** — `my:status` steps 5 and 6
+  and the overlap test. Blocked by row 9, whose spec uses these steps as
+  model judgment. Report S13.
 
 ## Other
 
