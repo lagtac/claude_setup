@@ -1,6 +1,6 @@
 # Spec: start auto runs from roadmap rows
 
-**Status:** draft, 2026-10-13. Waiting for the user's review.
+**Status:** approved, 2026-10-14. Approved by the user; the plan stage writes the plan next, in auto mode.
 
 ## How to read this spec
 
@@ -136,8 +136,11 @@ spec. So a queued spec never holds an uncommitted edit.
   cannot clear it.
 - **Without a "Parallel runs" section, the call folds when all of these
   hold:** `handoff-state.py live` lists no run; `git status --porcelain`
-  prints nothing; and `git-fold-fixups.py check <spec commit>` exits 0 for
-  every edited spec, where `<spec commit>` is the commit that added it.
+  lists only the edited specs, whose `approved` edits are expected, as in
+  the plan stage's own check; and `git-fold-fixups.py check <spec commit>`
+  exits 0 for every edited spec, where `<spec commit>` is the commit that
+  added it. (Decided by the user on 2026-10-14, after the plan review: a
+  check for a fully clean tree could never pass here.)
   First list every `fixup!` commit already on `<base>`. When one targets a
   document outside this call, name it and ask the user, because the fold
   gives that document's commit a new hash. Then make one
@@ -183,6 +186,13 @@ runs under lock `main`. It sits in a subfolder because `live` and
   `after`, and otherwise in the order the user typed them. Entries that wait
   for each other in a loop are not added; `add` prints each one as
   `skipped: <slug>: gate cycle`.
+- **A re-added slug replaces its old `skipped` entry.** When `add` adds an
+  entry whose slug has older `skipped` entries, it removes them, so rule 2
+  of D5 does not skip the rows behind the new entry. It then sorts all
+  `waiting` entries blockers first, as above, because a row already waiting
+  behind the old entry now comes before its blocker. Without a re-added
+  slug this order equals the append order. (Decided by the user on
+  2026-10-14, after the plan review.)
 - **Prune safely.** It drops a `started` entry whose state file has
   `next=finished`, and a `skipped` entry that no `waiting` entry names in its
   `after`. Every other entry stays, because `pull` still reads it. A
