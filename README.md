@@ -140,6 +140,10 @@ as `/my:<name>` or `/kit:<name>`.
   commands, skills and their dispatch prompts) for vague directives, tools a
   subagent will not have, stale harness assumptions and contradictions.
 - `kit:de-slop` — Rewrites text so it does not read as machine-written.
+- `kit:name-pane` — Say "name it" to label the tmux pane with the session's
+  focus (a roadmap row or goal) and rename its window after its panes' labels.
+  The tmux part is `plugins/kit/bin/tmux-name-pane.py`, tested with
+  `cd plugins/kit && python3 -m unittest discover tests`.
 - `kit:md-tables` — Turns a Markdown table into one section per row, or
   sections back into a table, with the two filters in `plugins/kit/bin/`
   (`md-expand-table.py`, `md-collapse-sections.py`). Claude Code puts that

@@ -16,6 +16,20 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-14 — Name a tmux pane after the session's focus
+
+`kit:name-pane` labels the tmux pane a session runs in with the session's
+focus, such as `r54: put out fire`, when the user says "name it", "name pane"
+or "auto name". The label names the roadmap row or goal the session chose, not
+its latest step, which is what `/rename` and Claude Code's pane title follow.
+
+- The window names itself after the labels of all its panes, joined with
+  ` / `, and drops a label when its pane closes.
+- Where the pane border shows the pane title, it shows the label instead.
+- The skill ends with a `/rename <label>` line to paste, because a skill
+  cannot run a built-in command.
+- New script `plugins/kit/bin/tmux-name-pane.py` does the tmux part.
+
 ### 2026-10-14 — Start auto runs from roadmap rows (row 9)
 
 `/my:handoff auto rows <n> ...` queues roadmap rows whose specs are
