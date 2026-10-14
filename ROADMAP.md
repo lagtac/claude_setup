@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 53
+**Next number:** 54
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -89,6 +89,12 @@ Follow-ups spawned by the planner retirement. Spec:
   the files. `my:spec-review` flags a missing one, and `my:status` reads Tasks
   as a file list. Lets row 9's queue tell which rows may run side by side.
   Split out of row 9's first spec draft.
+- 💭 53 **Draft specs in forks** — when the user asks for several specs and
+  leaves, the session asks its questions, then drafts each spec in a fork (a
+  background subagent that copies the session's context). Each draft lists
+  the design choices the fork made without the user, and stays a draft until
+  the user reads it and `my:spec-review` runs. Covers the step before
+  `my:handoff`, which starts only at an approved spec. Found on 2026-10-14.
 - ✅ 10 **`my:architect`** — forces-first architecture brief before brainstorming.
   [spec](docs/plans/2026-09-17-architect-skill-spec.md),
   [plan](docs/plans/2026-09-17-architect-skill.md)

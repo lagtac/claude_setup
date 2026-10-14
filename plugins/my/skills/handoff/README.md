@@ -13,14 +13,19 @@ works.
 A feature goes through four stages: spec, plan, code and review. When one
 session does all four, two things go wrong:
 
-- **Rules get lost.** Subagents do not read `CLAUDE.md` or the project memory.
-  Every rule must be copied into their prompts, and rules get dropped.
+- **Rules get lost.** A fresh subagent does not read `CLAUDE.md` or the
+  project memory. Every rule must be copied into its prompt, and rules get
+  dropped. A fork (a subagent started with `subagent_type: "fork"`) is the
+  exception: it copies the parent's whole context, rules included. But it
+  then has the second problem from its first turn.
 - **The context fills up.** By the code stage, the session still carries the
   whole spec discussion. Every turn rereads it, which costs tokens. Late in a
   long session, rules written early are easier to miss.
 
 A new top-level session (one started with `claude`) reads `CLAUDE.md` and the
-memory itself, and starts with an empty context.
+memory itself, and starts with an empty context. It can also start its own
+subagents, which a fork is told not to do, and it keeps running when the
+session that launched it ends. A fork ends with its parent session.
 
 Starting a session costs about 90k input-token equivalents. In zitamu, one
 stage cost between about 1.5M and 8M. So the start is 1–6% of a stage.
