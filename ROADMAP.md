@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 55
+**Next number:** 56
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -18,35 +18,50 @@ and the same edit raises it by one.
 
 ## Order of work
 
-- **35 "Trim copied facts in `my:handoff`" with 36 "Name repeated
-  cross-references", as one branch.** Both are small edits to the same
-  `SKILL.md` text.
-- **Then 30 "Split `my:handoff` by mode", then 31 "Write review step 8 whole
-  per mode".** The split moves less text after the trims. Its gain is not
-  measured yet, so it also waits for 29 "Measure the auto runs". Row 43
-  "`handoff` start checks as a script" also goes before 30, for the same
-  reason.
+Set on 2026-10-14. The steps run top to bottom. Rows in one step can run
+side by side, because they edit different files.
 
-- **33 "Skill text loses `$1` and `$2`", then 34 "Merges read a message
-  file".**
-  The fix is live in parallel projects now; the merge row reworks the same
-  command later.
-
-- **16 "Swappable methods" batch 2, then 9 "Start auto runs from roadmap
-  rows".**
-  Batch 2 moves the method rules out of `global/CLAUDE.md` and edits
-  `my:status`, so the new row's rules go into the moved text.
-
-- **9 "Start auto runs from roadmap rows", then 42 "Parallel runs parser",
-  then 43 "`handoff` start checks as a script".**
-  Row 9 changes `handoff-state.py`, which 42 and 43 extend, and 43 uses the
-  parser from 42.
-
-- **41 "`git-squasher` loses `$1`", then 46 "`git-squasher` plan and apply
-  scripts".**
-  The fix is small and can ship now; 46 reworks the same file later.
-
-Rows not named here are unordered.
+1. **9 "Start auto runs from roadmap rows".** In flight: the code stage is
+   running on its own branch. Until it merges it holds `my:handoff`
+   `SKILL.md`, `handoff-state.py`, `status-scan.py` and `my:status`
+   `SKILL.md`, so every other row that edits those files waits for it.
+2. **41 "`git-squasher` loses `$1`" and 1 "Deny list has no effect", side by
+   side.** Two fixes with no spec. 41 is a live bug.
+3. **45 "Review preparation as a script" and 46 "`git-squasher` plan and
+   apply scripts", side by side.** The most-used script rows that edit no
+   file of row 9. 45 is in `my`, 46 in `kit`; they share only `README.md`.
+   46 builds on 41's fix.
+4. **55 "Decisions that go back to the user", then 53 "`my:draft-spec`",
+   then 54 "Small rows in forks while the user is away".** 53 and 54 both
+   use the rule of 55. 55 and 53 both edit `global/methods/my.md`. 54 comes
+   after 53, because both run forks while the user is away, and 53 is being
+   designed now.
+5. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
+   `my:spec-review` `SKILL.md`. Side by side with 8: **48 "`setup` facts by
+   script", then 39 "`kit:setup` offers a Parallel runs section"**, which
+   edit the same skill; 47 "`clean-plans` moves by script"; 49
+   "`dev-reports` dates and TODOs by script"; 50 "`clean-gone-branches` as a
+   script"; 51 "Roadmap number and link check".
+6. **After row 9 merges, one at a time, all in `my:handoff`: 33 "Skill text
+   loses `$1` and `$2`", 37 "Launch from a session outside tmux", 34 "Merges
+   read a message file", 44 "`git-fold-fixups.py list <path>`", 42 "Parallel
+   runs parser", 43 "`handoff` start checks as a script", then 35 "Trim copied
+   facts in `my:handoff`" with 36 "Name repeated cross-references", as one
+   branch.** The fixes come first; 33 is a live bug, and row 9's branch
+   already edits the same file. 34 reworks the command 33 fixed. 43 uses the
+   parser from 42. The trims come last, so they trim the text the scripts
+   leave.
+7. **After row 9 merges: 40 "Every spec has a Files section", then 52
+   "`status` gates and overlap by script".** Both edit `my:status`
+   `SKILL.md`, and 40 also edits `my:spec-review`, so it goes after step 5.
+8. **22 "Spec writers decide off-path events", 21 "E2E tests check the
+   result" and 20 "Plan names the layouts to check".** Rule text only. 22
+   edits the spec rules in `global/methods/my.md`, as 40 and 53 do, so it
+   goes after them.
+9. **Waiting rows: 29 "Measure the auto runs", then 30 "Split `my:handoff` by
+   mode", then 31 "Write review step 8 whole per mode"; and 17 "Generalize
+   the gates".** 29 waits for weeks of auto runs, 30 and 31 wait for 29, and
+   17 waits for a second project to adopt the gates.
 
 ## `my` plugin hygiene
 
@@ -89,12 +104,12 @@ Follow-ups spawned by the planner retirement. Spec:
   the files. `my:spec-review` flags a missing one, and `my:status` reads Tasks
   as a file list. Lets row 9's queue tell which rows may run side by side.
   Split out of row 9's first spec draft.
-- 💭 53 **Draft specs in forks** — when the user asks for several specs and
-  leaves, the session asks its questions, then drafts each spec in a fork (a
-  background subagent that copies the session's context). Each draft lists
-  the design choices the fork made without the user, and stays a draft until
-  the user reads it and `my:spec-review` runs. Covers the step before
-  `my:handoff`, which starts only at an approved spec. Found on 2026-10-14.
+- 💭 53 **`my:draft-spec`** — a second route to an approved spec: an agent
+  drafts fast, then hardens the draft through the draft-time checks of the
+  [spec hardening audit](docs/reports/2026-10-14-spec-hardening-audit.md)
+  until a round finds nothing new, and brings the user only the decisions
+  that row 55 names. First framed as "Draft specs in forks"; reframed on
+  2026-10-14 after the fork drafts of rows 45 and 46 and the audit.
 - 💭 54 **Small rows in forks while the user is away** — rows with no spec,
   which `my:handoff auto` cannot start, each run in a fork and its own
   worktree up to the merge, under one e2e lock that every session takes. The
@@ -105,6 +120,14 @@ Follow-ups spawned by the planner retirement. Spec:
   saw (Greek copy, new tokens, scope dropped from a finding, review findings
   declined). Some of these must go back to the developer, the user, but
   which ones is not settled yet. Pairs with 53.
+- 💭 55 **Decisions that go back to the user** — one rule in
+  `global/methods/my.md` for forks, auto runs and review fixes: a choice
+  goes back when it changes what users see, a shared definition or contract,
+  the scope of the row or finding, or the verdict on a review finding. It
+  may narrow which `design` findings go to the user. Rows 53 and 54 use it.
+  Sources: the
+  [spec hardening audit](docs/reports/2026-10-14-spec-hardening-audit.md)
+  and row 54's zitamu run.
 - ✅ 10 **`my:architect`** — forces-first architecture brief before brainstorming.
   [spec](docs/plans/2026-09-17-architect-skill-spec.md),
   [plan](docs/plans/2026-09-17-architect-skill.md)
