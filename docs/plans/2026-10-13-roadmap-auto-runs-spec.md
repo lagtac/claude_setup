@@ -1,6 +1,6 @@
 # Spec: start auto runs from roadmap rows
 
-**Status:** approved, 2026-10-14. Approved by the user; the plan stage writes the plan next, in auto mode.
+**Status:** done, 2026-10-14. Shipped in `9fe3314`: `/my:handoff auto rows` queues roadmap rows and each finishing run refills its slot. End-of-branch checks: 199 passed, 0 failed.
 
 ## How to read this spec
 

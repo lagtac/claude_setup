@@ -16,6 +16,27 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-14 — Start auto runs from roadmap rows (row 9)
+
+`/my:handoff auto rows <n> ...` queues roadmap rows whose specs are
+approved, and starts as many as **Max runs** allows. Each auto run that
+finishes starts the next waiting row in its slot, so a list of rows runs to
+the end without the user. See the
+[spec](docs/plans/2026-10-13-roadmap-auto-runs-spec.md) and the
+[plan](docs/plans/2026-10-13-roadmap-auto-runs.md), whose **Risk** section
+lists the known limits.
+
+- New form `/my:handoff auto rows [<row number> ...]`. It judges each row
+  once, commits the specs' `approved` edits, queues the rows that can start
+  and launches the first ones. Without numbers it starts waiting rows; with
+  `drop <row number> ...` it cancels them.
+- `handoff-state.py` gains `queue add`, `queue drop`, `queue show` and
+  `pull`. `pull` starts waiting rows under lock `main`, in queue order,
+  never past **Max runs**, and skips a row that can no longer start fresh.
+- `my:status` shows the queue: which rows wait, for what, and which were
+  skipped and why.
+- Update the `my` plugin to get the new subcommands.
+
 ### 2026-10-12 — Parallel auto runs (Design workflow)
 
 In a project whose `CLAUDE.md` or `CLAUDE.local.md` has a "Parallel runs"

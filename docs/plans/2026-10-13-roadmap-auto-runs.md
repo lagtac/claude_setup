@@ -1,6 +1,6 @@
 # Start auto runs from roadmap rows Implementation Plan
 
-**Status:** approved, 2026-10-14. Written by the `my:handoff` plan stage from the approved spec.
+**Status:** done, 2026-10-14. Shipped in `9fe3314`. End-of-branch checks: 199 passed, 0 failed; after the fix round, 203 passed, 0 failed.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use
 > superpowers:executing-plans to implement this plan task-by-task. The tasks

@@ -21,10 +21,8 @@ and the same edit raises it by one.
 Set on 2026-10-14. The steps run top to bottom. Rows in one step can run
 side by side, because they edit different files.
 
-1. **9 "Start auto runs from roadmap rows".** In flight: the code stage is
-   running on its own branch. Until it merges it holds `my:handoff`
-   `SKILL.md`, `handoff-state.py`, `status-scan.py` and `my:status`
-   `SKILL.md`, so every other row that edits those files waits for it.
+1. **9 "Start auto runs from roadmap rows".** Shipped on 2026-10-14, so the
+   rows that waited for it in steps 6 and 7 may start.
 2. **41 "`git-squasher` loses `$1`" and 1 "Deny list has no effect", side by
    side.** Two fixes with no spec. 41 is a live bug.
 3. **45 "Review preparation as a script" and 46 "`git-squasher` plan and
@@ -93,12 +91,13 @@ Follow-ups spawned by the planner retirement. Spec:
   dependencies match what the design adds, the check commands and test names
   exist, and `decide` is flagged on a spec that changes stored data or a
   contract. Not the format: the auto start check owns that. Small.
-- 📋 9 **Start auto runs from roadmap rows** — one command takes a list of
+- ✅ 9 **Start auto runs from roadmap rows** — one command takes a list of
   rows, starts the ones with an approved spec as parallel auto runs up to
-  **Max runs**, and starts a waiting row each time a run finishes. Builds on
-  rows 14 "Parallel auto runs" and 15 `my:status`.
+  **Max runs**, and starts a waiting row each time a run finishes. Shipped in
+  `9fe3314`; known limits are in the plan's Risk section.
   [brief](docs/plans/2026-10-13-roadmap-auto-runs-architecture.md),
-  [spec](docs/plans/2026-10-13-roadmap-auto-runs-spec.md)
+  [spec](docs/plans/2026-10-13-roadmap-auto-runs-spec.md),
+  [plan](docs/plans/2026-10-13-roadmap-auto-runs.md)
 - 💭 40 **Every spec has a Files section** — a spec rule in
   `global/methods/my.md`; a Medium spec's Tasks section counts when it names
   the files. `my:spec-review` flags a missing one, and `my:status` reads Tasks
