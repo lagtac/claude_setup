@@ -103,12 +103,16 @@ Follow-ups spawned by the planner retirement. Spec:
   the files. `my:spec-review` flags a missing one, and `my:status` reads Tasks
   as a file list. Lets row 9's queue tell which rows may run side by side.
   Split out of row 9's first spec draft.
-- 💭 53 **`my:draft-spec`** — a second route to an approved spec: an agent
-  drafts fast, then hardens the draft through the draft-time checks of the
+- 💭 53 **`my:draft-spec`** — a second route to an approved spec, only for
+  a row that cites a source with concrete findings (a report, a bug, a
+  review); other rows go through brainstorming. One intake call first (goal,
+  scope, size, limits). Then an agent drafts, with options for each key
+  decision, hardens the draft through the draft-time checks of the
   [spec hardening audit](docs/reports/2026-10-14-spec-hardening-audit.md)
   until a round finds nothing new, and brings the user only the decisions
   that row 55 names. First framed as "Draft specs in forks"; reframed on
-  2026-10-14 after the fork drafts of rows 45 and 46 and the audit.
+  2026-10-14 after the fork drafts of rows 45 and 46 and the audit, and
+  gated on a source the same day.
 - 💭 54 **Small rows in forks while the user is away** — rows with no spec,
   which `my:handoff auto` cannot start, each run in a fork and its own
   worktree up to the merge, under one e2e lock that every session takes. The
