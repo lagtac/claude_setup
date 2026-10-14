@@ -11,6 +11,7 @@ the machine cannot change a result.
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -180,7 +181,9 @@ class SetGetTest(StateTestCase):
 
     def test_usage_error(self):
         for args in ([], ["set", "widget"], ["get"], ["check", "a", "b"],
-                     ["stop", "widget"], ["set", "widget", "next"]):
+                     ["stop", "widget"], ["set", "widget", "next"],
+                     ["queue"], ["queue", "add"], ["queue", "nope"],
+                     ["pull"], ["pull", "--max", "0"], ["queue", "show", "x"]):
             with self.subTest(args=args):
                 self.assertEqual(run(self.repo, *args).returncode, 2)
 
@@ -353,6 +356,13 @@ class LiveTest(StateTestCase):
         (folder / "d.json").write_text("{")
         self.assertEqual(run(self.repo, "live").stdout.splitlines(), ["d\t\tunreadable\t\t"])
 
+    def test_live_ignores_the_queue_folder(self):
+        folder = self.repo / ".git" / "my-handoff" / "queue"
+        folder.mkdir(parents=True)
+        (folder / "rows.json").write_text(json.dumps([{"slug": "a", "state": "waiting"}]))
+        result = run(self.repo, "live")
+        self.assertEqual((result.returncode, result.stdout), (0, ""))
+
 
 class StartTest(StateTestCase):
     def start(self, slug, n=2, *pairs):
@@ -510,6 +520,409 @@ class MergeTest(StateTestCase):
         self.ready()
         self.state("next=review")
         self.assertEqual(self.merge().returncode, 1)
+
+
+def spec(slug):
+    return f"docs/plans/2026-10-13-{slug}-spec.md"
+
+
+class QueueTestCase(StateTestCase):
+    """The specs of rows a, b and c are committed on main."""
+
+    def setUp(self):
+        super().setUp()
+        commit(self.repo, "docs(plans): specs a, b and c",
+               {spec(slug): f"spec {slug}\n" for slug in "abc"})
+
+    def entries_file(self, *entries):
+        path = self.tmp / f"entries-{len(list(self.tmp.glob('entries-*')))}.json"
+        path.write_text(json.dumps(list(entries)))
+        return path
+
+    def entry(self, slug, after=(), stage="code", exclusive=False, row=None):
+        return {"row": row or slug, "spec": spec(slug), "stage": stage,
+                "after": list(after), "exclusive": exclusive}
+
+    def add(self, *entries):
+        return run(self.repo, "queue", "add", "--file", str(self.entries_file(*entries)))
+
+    def queue_file(self):
+        return self.repo / ".git" / "my-handoff" / "queue" / "rows.json"
+
+    def queue(self):
+        path = self.queue_file()
+        return json.loads(path.read_text()) if path.exists() else []
+
+    def get_state(self, slug):
+        result = run(self.repo, "get", slug)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return json.loads(result.stdout)
+
+
+class QueueAddTest(QueueTestCase):
+    def test_add_writes_a_waiting_entry_with_the_spec_hash(self):
+        result = self.add(self.entry("a", row="1b"))
+        self.assertEqual((result.returncode, result.stdout), (0, "added\ta\n"), result.stderr)
+        self.assertEqual(self.queue(), [{
+            "row": "1b", "slug": "a", "spec": "docs/plans/2026-10-13-a-spec.md",
+            "stage": "code", "after": [], "exclusive": False,
+            "spec_hash": git(self.repo, "hash-object", "docs/plans/2026-10-13-a-spec.md"),
+            "state": "waiting", "reason": ""}])
+
+    def test_add_refuses_an_invalid_entry_and_writes_nothing(self):
+        bad = {"unknown key": {"colour": "red"}, "missing key": {"stage": None},
+               "stage": {"stage": "review"}, "after slug": {"after": ["../x"]},
+               "after type": {"after": "a"}, "exclusive type": {"exclusive": "yes"},
+               "row type": {"row": 5}, "spec pattern": {"spec": "docs/plans/a.md"},
+               "spec missing": {"spec": "docs/plans/2026-10-13-zz-spec.md"}}
+        for name, change in bad.items():
+            with self.subTest(name):
+                entry = {k: v for k, v in {**self.entry("b"), **change}.items()
+                         if v is not None}
+                result = self.add(self.entry("a"), entry)
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertTrue(result.stderr.startswith("invalid entry 2: "), result.stderr)
+                self.assertFalse(self.queue_file().exists())
+
+    def test_add_refuses_a_file_that_is_not_a_list_of_objects(self):
+        for text in ("{", "{}", "[1]"):
+            with self.subTest(text):
+                path = self.tmp / "bad.json"
+                path.write_text(text)
+                result = run(self.repo, "queue", "add", "--file", str(path))
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertFalse(self.queue_file().exists())
+
+    def test_add_reports_a_waiting_duplicate(self):
+        self.add(self.entry("a"))
+        result = self.add(self.entry("a"), self.entry("b"))
+        self.assertEqual((result.returncode, result.stdout), (0, "added\tb\n"))
+        self.assertIn("skipped: a: already waiting", result.stderr)
+        self.assertEqual([e["slug"] for e in self.queue()], ["a", "b"])
+
+    def test_add_reports_a_duplicate_in_the_same_file(self):
+        result = self.add(self.entry("a"), self.entry("a", row="2"))
+        self.assertIn("skipped: a: already waiting", result.stderr)
+        self.assertEqual([e["row"] for e in self.queue()], ["a"])
+
+    def test_add_sorts_blockers_first_and_keeps_typed_order(self):
+        self.add(self.entry("c", after=["b"]), self.entry("a"), self.entry("b", after=["a"]))
+        self.assertEqual([e["slug"] for e in self.queue()], ["a", "b", "c"])
+
+    def test_add_keeps_typed_order_without_links(self):
+        self.add(self.entry("b"), self.entry("a"))
+        self.assertEqual([e["slug"] for e in self.queue()], ["b", "a"])
+
+    def test_add_appends_after_existing_entries(self):
+        self.add(self.entry("b"))
+        self.add(self.entry("a"))
+        self.assertEqual([e["slug"] for e in self.queue()], ["b", "a"])
+
+    def test_add_skips_a_gate_cycle_and_a_self_gate(self):
+        result = self.add(self.entry("a", after=["b"]), self.entry("b", after=["a"]),
+                          self.entry("c", after=["c"]))
+        self.assertEqual((result.returncode, result.stdout), (0, ""))
+        for slug in "abc":
+            self.assertIn(f"skipped: {slug}: gate cycle", result.stderr)
+        self.assertEqual(self.queue(), [])
+
+    def test_add_labels_a_row_behind_a_gate_cycle(self):
+        self.add(self.entry("a", after=["b"]))
+        result = self.add(self.entry("b", after=["a"]), self.entry("c", after=["b"]))
+        self.assertEqual((result.returncode, result.stdout), (0, ""))
+        self.assertIn("skipped: b: gate cycle", result.stderr)
+        self.assertIn("skipped: c: behind a gate cycle", result.stderr)
+        self.assertNotIn("skipped: c: gate cycle", result.stderr)
+        self.assertEqual([e["slug"] for e in self.queue()], ["a"])
+
+    def test_add_prunes_only_what_d4_allows(self):
+        def hand(slug, state, after=(), reason=""):
+            return {"row": slug, "slug": slug, "spec": spec(slug), "stage": "code",
+                    "after": list(after), "exclusive": False, "spec_hash": "x",
+                    "state": state, "reason": reason}
+        run(self.repo, "set", "s1", "next=finished")
+        run(self.repo, "set", "s2", "next=code")
+        self.queue_file().parent.mkdir(parents=True, exist_ok=True)
+        self.queue_file().write_text(json.dumps([
+            hand("s1", "started"), hand("s2", "started"), hand("s3", "started"),
+            hand("k1", "skipped", reason="dropped by the user"),
+            hand("k2", "skipped", reason="dropped by the user"),
+            hand("w", "waiting", after=["k1"])]))
+        self.add(self.entry("a"))
+        self.assertEqual([e["slug"] for e in self.queue()], ["s2", "s3", "k1", "w", "a"])
+
+    def test_readded_slug_replaces_its_skipped_entry_and_goes_first(self):
+        self.add(self.entry("a"), self.entry("b", after=["a"]))
+        run(self.repo, "queue", "drop", "a")
+        result = self.add(self.entry("a"))
+        self.assertEqual(result.stdout, "added\ta\n")
+        self.assertEqual([(e["slug"], e["state"]) for e in self.queue()],
+                         [("a", "waiting"), ("b", "waiting")])
+
+    def test_old_skipped_entry_stays_when_the_readd_is_a_cycle(self):
+        self.add(self.entry("a"), self.entry("b", after=["a"]))
+        run(self.repo, "queue", "drop", "a")
+        result = self.add(self.entry("a", after=["c"]), self.entry("c", after=["a"]))
+        self.assertIn("skipped: a: gate cycle", result.stderr)
+        self.assertEqual([(e["slug"], e["state"]) for e in self.queue()],
+                         [("a", "skipped"), ("b", "waiting")])
+
+    def test_add_refuses_an_unreadable_queue(self):
+        self.queue_file().parent.mkdir(parents=True)
+        self.queue_file().write_text("{")
+        result = self.add(self.entry("a"))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("refused: the queue file is not valid JSON", result.stderr)
+        self.assertEqual(self.queue_file().read_text(), "{")
+
+    def test_add_from_a_worktree_writes_the_common_queue(self):
+        result = run(self.worktree, "queue", "add", "--file",
+                     str(self.entries_file(self.entry("a"))))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual([e["slug"] for e in self.queue()], ["a"])
+
+
+class QueueDropTest(QueueTestCase):
+    def test_drop_marks_waiting_entries_skipped(self):
+        self.add(self.entry("a"), self.entry("b"))
+        self.assertEqual(run(self.repo, "queue", "drop", "a", "b").returncode, 0)
+        self.assertEqual([(e["state"], e["reason"]) for e in self.queue()],
+                         [("skipped", "dropped by the user")] * 2)
+
+    def test_drop_refuses_a_slug_that_is_not_waiting(self):
+        self.add(self.entry("a"))
+        before = self.queue_file().read_text()
+        result = run(self.repo, "queue", "drop", "a", "zz")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("refused: zz is not waiting", result.stderr)
+        self.assertEqual(self.queue_file().read_text(), before)
+
+    def test_drop_refuses_an_unreadable_queue(self):
+        self.queue_file().parent.mkdir(parents=True)
+        self.queue_file().write_text("{")
+        result = run(self.repo, "queue", "drop", "a")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("refused: the queue file is not valid JSON", result.stderr)
+        self.assertEqual(self.queue_file().read_text(), "{")
+
+
+class WalkTestCase(QueueTestCase):
+    def pull(self, n, cwd=None):
+        result = run(cwd or self.repo, "pull", "--max", str(n))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return result
+
+    def show(self):
+        result = run(self.repo, "queue", "show")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return result
+
+    def finish(self, slug, stopped=""):
+        run(self.repo, "set", slug, "next=finished", f"stopped={stopped}")
+
+    def live_run(self, slug):
+        slot = len(list((self.repo / ".git" / "my-handoff").glob("*.json"))) + 1
+        run(self.repo, "set", slug, "next=code", f"slot={slot}")
+
+    def reset(self):
+        shutil.rmtree(self.repo / ".git" / "my-handoff", ignore_errors=True)
+
+
+class PullTest(WalkTestCase):
+    def test_no_queue_file_prints_nothing(self):
+        self.assertEqual((self.pull(1).returncode, self.pull(1).stdout), (0, ""))
+        self.assertFalse(self.queue_file().exists())
+
+    def test_start_writes_the_state_and_marks_the_entry(self):
+        self.add(self.entry("a"))
+        result = self.pull(1)
+        self.assertEqual(result.stdout, f"a\tcode\t{spec('a')}\t1\n")
+        self.assertEqual(self.get_state("a"), {
+            "spec": spec("a"), "task_doc": spec("a"), "next": "code", "branch": "",
+            "worktree": "", "squash_subject": "", "head_before_fold": "",
+            "stopped": "", "checked_base": "", "slot": "1", "merge_retries": "0"})
+        self.assertEqual(self.queue()[0]["state"], "started")
+
+    def test_plan_stage_task_doc_is_the_plan_path(self):
+        self.add(self.entry("a", stage="plan"))
+        self.pull(1)
+        self.assertEqual(self.get_state("a")["task_doc"], "docs/plans/2026-10-13-a.md")
+
+    def test_rule1_changed_or_missing_spec_is_skipped(self):
+        self.add(self.entry("a"), self.entry("b"))
+        (self.repo / spec("a")).write_text("changed\n")
+        (self.repo / spec("b")).unlink()
+        result = self.pull(2)
+        self.assertEqual(result.stdout, "")
+        self.assertIn("skipped: a: spec changed since the call", result.stderr)
+        self.assertIn("skipped: b: spec changed since the call", result.stderr)
+        self.assertEqual([(e["state"], e["reason"]) for e in self.queue()],
+                         [("skipped", "spec changed since the call")] * 2)
+
+    def test_rule2_blocker_skipped_ended_or_unknown(self):
+        cases = {"skipped entry": lambda: run(self.repo, "queue", "drop", "a"),
+                 "ended by the user": lambda: (self.pull(1),
+                                               self.finish("a", "ended by the user"))}
+        for name, make in cases.items():
+            with self.subTest(name):
+                self.reset()
+                self.add(self.entry("a"), self.entry("b", after=["a"]))
+                make()
+                result = self.pull(1)
+                self.assertIn("skipped: b: blocker a did not finish", result.stderr)
+                self.assertEqual(result.stdout, "")
+        self.reset()
+        self.add(self.entry("b", after=["zz"]))
+        result = self.pull(1)
+        self.assertIn("skipped: b: blocker zz did not finish", result.stderr)
+
+    def test_rule3_waiting_entry_stops_the_walk(self):
+        self.live_run("a")
+        self.add(self.entry("b", after=["a"]), self.entry("c"))
+        self.assertEqual(self.pull(3).stdout, "")
+        self.assertEqual([e["state"] for e in self.queue()], ["waiting", "waiting"])
+
+    def test_rule3_ready_once_the_blocker_finished(self):
+        self.live_run("a")
+        self.add(self.entry("b", after=["a"]))
+        self.finish("a")
+        self.assertTrue(self.pull(2).stdout.startswith("b\t"))
+
+    def test_rule4_exclusive_entry_waits_for_no_live_run(self):
+        self.live_run("x")
+        self.add(self.entry("a", exclusive=True))
+        self.assertEqual(self.pull(2).stdout, "")
+
+    def test_rule4_nothing_starts_beside_a_live_exclusive_run(self):
+        self.add(self.entry("a", exclusive=True))
+        self.assertTrue(self.pull(2).stdout.startswith("a\t"))
+        self.add(self.entry("b"))
+        self.assertEqual(self.pull(2).stdout, "")
+
+    def test_rule4_walk_stops_after_starting_an_exclusive_entry(self):
+        self.add(self.entry("a", exclusive=True), self.entry("b"))
+        self.assertEqual([l.split("\t")[0] for l in self.pull(2).stdout.splitlines()], ["a"])
+
+    def test_rule5_cap_stops_the_walk(self):
+        self.add(self.entry("a"), self.entry("b"), self.entry("c"))
+        lines = self.pull(2).stdout.splitlines()
+        self.assertEqual([(l.split("\t")[0], l.split("\t")[3]) for l in lines],
+                         [("a", "1"), ("b", "2")])
+        self.assertEqual(self.queue()[2]["state"], "waiting")
+
+    def test_rule6_existing_run_is_skipped_and_the_walk_goes_on(self):
+        self.add(self.entry("a"), self.entry("b"))
+        self.live_run("a")
+        result = self.pull(3)
+        self.assertIn("skipped: a: a run for a exists", result.stderr)
+        self.assertTrue(result.stdout.startswith("b\t"))
+        self.assertEqual(self.get_state("a")["next"], "code")
+
+    def test_rule6_a_row_that_cannot_start_fresh_is_skipped_and_the_walk_goes_on(self):
+        cases = {
+            "plan": lambda: (self.repo / "docs/plans/2026-10-20-a.md").write_text("plan\n"),
+            "branch": lambda: git(self.repo, "branch", "feat/a"),
+            "worktree": lambda: (self.repo / ".claude" / "worktrees" / "a").mkdir(parents=True),
+        }
+        for what, make in cases.items():
+            with self.subTest(what):
+                self.reset()
+                make()
+                self.add(self.entry("a"), self.entry("b"))
+                result = self.pull(3)
+                self.assertIn(f"skipped: a: {what} for a exists", result.stderr)
+                self.assertTrue(result.stdout.startswith("b\t"), result.stdout)
+                self.assertEqual(run(self.repo, "get", "a").returncode, 1)
+                self.assertEqual(self.queue()[0]["state"], "skipped")
+                if what == "plan":
+                    (self.repo / "docs/plans/2026-10-20-a.md").unlink()
+                elif what == "branch":
+                    git(self.repo, "branch", "-D", "feat/a")
+                else:
+                    shutil.rmtree(self.repo / ".claude")
+
+    def test_rule6_a_longer_slug_with_a_plan_does_not_block(self):
+        (self.repo / "docs/plans/2026-10-20-x-a.md").write_text("plan\n")
+        self.add(self.entry("a"))
+        self.assertTrue(self.pull(1).stdout.startswith("a\t"))
+
+    def test_pull_drops_a_finished_started_entry_before_its_walk(self):
+        self.add(self.entry("a", exclusive=True))
+        self.pull(2)
+        self.finish("a")
+        self.pull(2)
+        self.assertEqual(self.queue(), [])
+        self.live_run("a")
+        self.add(self.entry("b"))
+        self.assertTrue(self.pull(2).stdout.startswith("b\t"))
+
+    def test_pull_from_a_worktree_reads_the_main_checkout(self):
+        self.add(self.entry("a"))
+        self.assertFalse((self.worktree / spec("a")).exists())
+        self.assertTrue(self.pull(1, cwd=self.worktree).stdout.startswith("a\t"))
+
+    def test_unreadable_queue_refuses(self):
+        self.queue_file().parent.mkdir(parents=True)
+        self.queue_file().write_text("{")
+        result = run(self.repo, "pull", "--max", "1")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("refused: the queue file is not valid JSON", result.stderr)
+        self.assertEqual(self.queue_file().read_text(), "{")
+        self.assertEqual(list((self.repo / ".git" / "my-handoff").glob("*.json")), [])
+
+
+class ShowTest(WalkTestCase):
+    def test_none_without_a_queue(self):
+        self.assertEqual(self.show().stdout, "none\n")
+
+    def test_none_when_nothing_waits(self):
+        self.add(self.entry("a"))
+        self.pull(1)
+        self.assertEqual(self.show().stdout, "none\n")
+
+    def test_ready_writes_nothing(self):
+        self.add(self.entry("a"))
+        before = self.queue_file().read_bytes()
+        self.assertEqual(self.show().stdout, "ready\ta\n")
+        self.assertEqual(self.queue_file().read_bytes(), before)
+        self.assertEqual(run(self.repo, "get", "a").returncode, 1)
+
+    def test_waits_for_a_blocker(self):
+        self.live_run("a")
+        self.add(self.entry("b", after=["a"]))
+        self.assertEqual(self.show().stdout, "waits\tb\ta\n")
+
+    def test_waits_for_a_live_exclusive_run(self):
+        self.add(self.entry("a", exclusive=True))
+        self.pull(2)
+        self.add(self.entry("b"))
+        self.assertEqual(self.show().stdout, "waits\tb\texclusive a\n")
+
+    def test_exclusive_entry_waits_for_live_runs(self):
+        self.live_run("x")
+        self.add(self.entry("a", exclusive=True))
+        self.assertEqual(self.show().stdout, "waits\ta\tlive runs\n")
+
+    def test_passes_over_an_entry_pull_would_skip(self):
+        self.add(self.entry("a"), self.entry("b"))
+        (self.repo / spec("a")).write_text("changed\n")
+        before = self.queue_file().read_bytes()
+        result = self.show()
+        self.assertEqual((result.stdout, result.stderr), ("ready\tb\n", ""))
+        self.assertEqual(self.queue_file().read_bytes(), before)
+
+    def test_ignores_the_cap(self):
+        for slug in ("x", "y", "z"):
+            self.live_run(slug)
+        self.add(self.entry("a"))
+        self.assertEqual(self.show().stdout, "ready\ta\n")
+
+    def test_unreadable_queue_refuses(self):
+        self.queue_file().parent.mkdir(parents=True)
+        self.queue_file().write_text("{")
+        result = run(self.repo, "queue", "show")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("refused: the queue file is not valid JSON", result.stderr)
 
 
 if __name__ == "__main__":

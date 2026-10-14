@@ -4,10 +4,10 @@ description: >
   Answer "where are we", "what is next" and "what can be done in parallel" in
   one short, read-only report. Use when the user asks one of those questions,
   says "status", or types /my:status. Runs status-scan.py once for the facts
-  (roadmap, open documents, the main checkout, worktrees, auto runs, branches
-  that may hold unmerged work), then judges what needs the user, what to do
-  next and which items can run together. Writes nothing. NOT for editing the
-  roadmap (`my:roadmap-management`).
+  (roadmap, open documents, the main checkout, worktrees, auto runs, the
+  queue of roadmap rows, branches that may hold unmerged work), then judges
+  what needs the user, what to do next and which items can run together.
+  Writes nothing. NOT for editing the roadmap (`my:roadmap-management`).
 ---
 
 # Status
@@ -37,6 +37,7 @@ report reads it; it never proposes a new one.
    | `checkout` | `dirty`, path; or `fixup`, fixup hash, target hash or `?`, target subject |
    | `worktrees` | path, branch, commits ahead of `main`, `clean` or `dirty` |
    | `runs` | slug, slot, `next`, stop line, branch (`-` for empty) |
+   | `queue` | first the `handoff-state.py queue show` line: `ready`, slug; or `waits`, slug, what it waits for; or `none`. Then per `waiting` or `skipped` entry: state, row, slug, `after` (or `-`), reason (or `-`) |
    | `branches` | `maybe-unfinished`, branch, missing line count, last subject; then `skipped`, count |
 
    `none` means the block is empty. A line that starts with `error` means the
@@ -96,11 +97,21 @@ First the items that need the user:
 - a `draft` spec waiting for review;
 - `fixup!` commits on `main`;
 - uncommitted paths in the main checkout;
-- a branch still unfinished after step 2.
+- a branch still unfinished after step 2;
+- `<k> rows wait and the first can start now: run /my:handoff auto rows`,
+  where `<k>` counts the `waiting` rows of the `queue` block. Only when its
+  first line is `ready` and the live runs are fewer than the cap that
+  `/my:handoff auto rows` uses: **Max runs** when the project has a
+  "Parallel runs" section, and 1 when it has none, as section 3 says
+  ("allow one auto run"). Step 3's default of `2` applies only inside a
+  section with no **Max runs** key. Otherwise a rerun would start nothing.
 
 Then one line per item in progress: a run whose `next` is not `finished`, a
 worktree (for example "worktree `feat/x`, 4 commits ahead, clean"), an
-`approved` or `current` document, a 🚧 row.
+`approved` or `current` document, a 🚧 row. When the `queue` block has
+`waiting` rows: `<k> rows wait for <what>` from a `waits` line, or
+`<k> rows wait for a free slot` when the line is `ready` but the live runs fill
+that same cap. Then one line per `skipped` row, with its row number and reason.
 
 Last, when the `docs` block has `no-status` files, one line with their count,
 such as "20 files in `docs/plans/` have no status line". Do not list them, and
@@ -152,6 +163,7 @@ Next: …".
 - Needs you: run `status-skill` stopped at code: fold refused.
 - Needs you: 7 `fixup!` commits on `main`, of two specs.
 - Code: worktree `feat/parallel-auto-runs`, 2 commits ahead, clean.
+- 2 rows wait for `parallel-auto-runs`; row 12 skipped: spec changed since the call.
 - 20 files in `docs/plans/` have no status line.
 
 **What is next**

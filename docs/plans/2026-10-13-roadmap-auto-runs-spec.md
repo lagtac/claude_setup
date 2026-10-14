@@ -185,7 +185,9 @@ runs under lock `main`. It sits in a subfolder because `live` and
   ones, sorted so that each comes after every new entry named in its
   `after`, and otherwise in the order the user typed them. Entries that wait
   for each other in a loop are not added; `add` prints each one as
-  `skipped: <slug>: gate cycle`.
+  `skipped: <slug>: gate cycle`. An entry that only waits behind such a loop
+  is not added either; `add` prints it as
+  `skipped: <slug>: behind a gate cycle`.
 - **A re-added slug replaces its old `skipped` entry.** When `add` adds an
   entry whose slug has older `skipped` entries, it removes them, so rule 2
   of D5 does not skip the rows behind the new entry. It then sorts all
@@ -209,7 +211,11 @@ Inside, `pull` calls the existing `start()` code in the same process. It must
 never run `handoff-lock.py main` itself: a second `flock` on the same lock
 file waits for the first and times out with exit 75.
 
-`pull` walks the `waiting` entries in queue order. For each entry:
+`pull` first drops each `started` entry whose state file has
+`next=finished`, as `queue add` does (D4). Without this, a finished
+`exclusive` row whose slug the user starts again by hand would hold the queue
+as a live exclusive run. Then `pull` walks the `waiting` entries in queue
+order. For each entry:
 
 1. **Spec changed:** when `git hash-object <spec>` differs from `spec_hash`,
    mark it `skipped` with `spec changed since the call`.
@@ -234,7 +240,14 @@ file waits for the first and times out with exit 75.
    Then mark the entry `started` and print one line: slug, stage, spec, slot,
    split by tabs. When `start()` refuses because a run for the slug exists
    (the user started it by hand), mark the entry `skipped` with
-   `a run for <slug> exists`, and go on.
+   `a run for <slug> exists`, and go on. Before the start, when no run for
+   the slug is live but the stage could not start fresh, as D2 checks it (a
+   plan `docs/plans/<date>-<slug>.md`, a branch `*/<slug>` or a directory
+   `.claude/worktrees/<slug>` exists in the main checkout), mark it `skipped`
+   with D2's reason, `<plan, branch or worktree> for <slug> exists`, and go
+   on. This catches a row the user started by hand after the call without a
+   state file, such as a supervised run. (Decided by the user on 2026-10-14,
+   after the end-of-branch review.)
 
 Rules 3 and 4 stop the walk, so a row never passes the first row that is
 still waiting. Without this, an exclusive row could wait forever while the

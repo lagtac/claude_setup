@@ -8,6 +8,7 @@ user's or the system's config, so a hook path or other setting of the machine
 cannot change a result.
 """
 
+import json
 import os
 import subprocess
 import sys
@@ -273,6 +274,55 @@ class RunsTest(ScanTestCase):
         result = run(self.repo)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(block(result.stdout, "runs")[0][0], "error")
+
+
+class QueueTest(ScanTestCase):
+    def setUp(self):
+        super().setUp()
+        self.specs = {slug: f"docs/plans/2026-10-13-{slug}-spec.md" for slug in "abc"}
+        commit(self.repo, "docs(plans): specs",
+               {path: f"spec {slug}\n" for slug, path in self.specs.items()})
+
+    def entry(self, slug, row, state, after=(), reason=""):
+        return {"row": row, "slug": slug, "spec": self.specs[slug], "stage": "code",
+                "after": list(after), "exclusive": False,
+                "spec_hash": git(self.repo, "hash-object", self.specs[slug]),
+                "state": state, "reason": reason}
+
+    def write_queue(self, text):
+        folder = self.repo / ".git" / "my-handoff" / "queue"
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / "rows.json").write_text(text)
+
+    def test_no_queue_is_none(self):
+        self.assertEqual(block(self.scan(), "queue"), [])
+
+    def test_queue_block_comes_after_runs_and_before_branches(self):
+        names = [l[3:] for l in self.scan().splitlines() if l.startswith("== ")]
+        self.assertEqual(names[names.index("runs"):], ["runs", "queue", "branches"])
+
+    def test_show_line_then_waiting_and_skipped_entries(self):
+        folder = self.repo / ".git" / "my-handoff"
+        folder.mkdir()
+        (folder / "a.json").write_text('{"next": "code", "slot": "1"}')
+        self.write_queue(json.dumps([
+            self.entry("a", "9", "started"),
+            self.entry("b", "12b", "waiting", after=["a"]),
+            self.entry("c", "3", "skipped", reason="spec changed since the call")]))
+        self.assertEqual(block(self.scan(), "queue"), [
+            ["waits", "b", "a"],
+            ["waiting", "12b", "b", "a", "-"],
+            ["skipped", "3", "c", "-", "spec changed since the call"]])
+
+    def test_unreadable_queue_is_an_error_line(self):
+        self.write_queue("{")
+        result = run(self.repo)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(block(result.stdout, "queue")[0][0], "error")
+
+    def test_queue_folder_is_not_a_run(self):
+        self.write_queue(json.dumps([self.entry("a", "9", "waiting")]))
+        self.assertEqual(block(self.scan(), "runs"), [])
 
 
 class ExitTest(ScanTestCase):

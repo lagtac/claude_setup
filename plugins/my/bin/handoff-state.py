@@ -15,6 +15,10 @@ Usage:
                                                       start a run, if the cap allows
     handoff-state.py merge <slug> -m <message> [--docs-paths <path> ...]
                                                       squash-merge the run's branch
+    handoff-state.py queue add --file <path>          queue roadmap rows
+    handoff-state.py queue drop <slug> ...            cancel waiting rows
+    handoff-state.py queue show                       print what the queue waits for
+    handoff-state.py pull --max <n>                   start waiting rows, if the cap allows
 
 Fields: spec, task_doc, branch, worktree, next, squash_subject,
 head_before_fold, stopped, slot, checked_base, merge_retries. `next` is one of
@@ -56,17 +60,71 @@ gained code that the checks never saw. Otherwise it writes `squash_subject`
 short hash. --docs-paths comes last; without it, the docs paths are `docs/`,
 `ROADMAP.md` and `CHANGELOG.md`. A path that ends in `/` is a folder.
 
+The queue of `/my:handoff auto rows` is one JSON list,
+`<git common dir>/my-handoff/queue/rows.json`, in a subfolder so that `live`
+never counts it as a run. Each entry has the fields row, slug, spec, stage,
+after, exclusive, spec_hash, state (waiting, started or skipped) and reason.
+Write it only under `handoff-lock.py main`.
+
+`queue add --file <path>` reads a JSON list of objects with exactly the keys
+row (a non-empty string), spec (docs/plans/YYYY-MM-DD-<slug>-spec.md, present
+in the main checkout), stage (plan or code), after (a list of slugs) and
+exclusive (true or false). It derives slug from spec, hashes the spec in the
+main checkout, and adds each entry as waiting. An invalid entry refuses the
+whole file with `invalid entry <i>: <why>`, and a file that cannot be read or
+is not a list with `invalid entries: <why>`. An entry whose slug is already
+waiting is not added (`skipped: <slug>: already waiting`), nor is one that
+waits in a loop (`skipped: <slug>: gate cycle`) or behind one
+(`skipped: <slug>: behind a gate cycle`). An added slug replaces its
+older skipped entries. The waiting entries are then sorted blockers first,
+old ones first, otherwise in the given order. Last, it drops each started
+entry whose run finished and each skipped entry that no waiting entry names in
+after. It prints `added<TAB><slug>` per added entry, in queue order.
+
+`queue drop <slug> ...` marks each named waiting entry skipped, with the
+reason `dropped by the user`. It refuses, and changes nothing, when a slug is
+not waiting.
+
+`pull --max <n>` first drops each started entry whose run finished, as
+`queue add` does. Then it walks the waiting entries in queue order. Rule 1:
+an entry whose spec in the main checkout no longer hashes to spec_hash is skipped
+(`spec changed since the call`). Rule 2: an entry is skipped
+(`blocker <slug> did not finish`) when a slug in its after belongs to a
+skipped entry, has a finished state with a non-empty stopped, or has neither
+an entry nor a state file. Rule 3: an entry waits, and stops the walk, until
+every slug in its after has a finished state with an empty stopped. Rule 4:
+while a started exclusive entry's run is live, nothing starts; an exclusive
+entry starts only when no run is live, and the walk stops after it. Rule 5:
+the walk stops when <n> runs are live. Rule 6: a start writes the state as
+`start` does, marks the entry started and prints
+`<slug><TAB><stage><TAB><spec><TAB><slot>`; when the slug's own run is live,
+the entry is skipped (`a run for <slug> exists`); when the slug cannot start
+fresh, because a plan docs/plans/<date>-<slug>.md, a branch */<slug> or a
+directory .claude/worktrees/<slug> exists in the main checkout, the entry is
+skipped (`<plan, branch or worktree> for <slug> exists`). Each skip prints
+`skipped: <slug>: <reason>` on stderr. `pull` writes the queue once, when
+something changed. Run it under `handoff-lock.py main`; it never takes that
+lock itself. No queue file: no output.
+
+`queue show` runs rules 1 to 4 and writes nothing. It ignores the cap. It
+prints `ready<TAB><slug>` for the first entry that could start,
+`waits<TAB><slug><TAB><what>` when that entry waits for a blocker's slug,
+`exclusive <slug>` or `live runs`, and `none` when nothing waits.
+
 Exit codes:
     0  done; for check, everything matches; for start, started; for merge, merged
     1  get or check found no state file; check found a mismatch; start or merge
-       refused
-    2  usage error, unknown field or unknown next (nothing written)
+       refused; queue drop refused; for queue add, queue drop, queue show and
+       pull, the queue file is not valid JSON or git failed
+    2  usage error, unknown field, unknown next, or an invalid queue entry
+       (nothing written)
     4  merge: the base gained code since checked_base (nothing changed; the
        paths are on stderr)
     5  merge: the squash or its commit failed; `git reset --merge` ran, and
        next stays merge
 """
 
+import functools
 import json
 import os
 import re
@@ -109,6 +167,7 @@ def git(*args, cwd=None, check=True):
     return result.stdout.rstrip("\n")
 
 
+@functools.cache
 def common_dir():
     return git("rev-parse", "--path-format=absolute", "--git-common-dir")
 
@@ -125,20 +184,25 @@ def read_state(slug):
         return json.load(handle)
 
 
-def write_state(slug, state):
-    path = state_path(slug)
+def write_json(path, data):
+    """Write data as JSON through a temporary file in the same folder."""
     folder = os.path.dirname(path)
     os.makedirs(folder, exist_ok=True)
-    handle = tempfile.NamedTemporaryFile("w", dir=folder, prefix=f".{slug}.",
+    name = os.path.basename(path)[:-len(".json")]
+    handle = tempfile.NamedTemporaryFile("w", dir=folder, prefix=f".{name}.",
                                          suffix=".tmp", delete=False)
     try:
         with handle:
-            json.dump(state, handle, indent=2, sort_keys=True)
+            json.dump(data, handle, indent=2, sort_keys=True)
             handle.write("\n")
         os.replace(handle.name, path)
     except BaseException:
         os.unlink(handle.name)
         raise
+
+
+def write_state(slug, state):
+    write_json(state_path(slug), state)
 
 
 def parse_pairs(pairs):
@@ -198,28 +262,52 @@ def print_live():
     return 0
 
 
-def start(slug, rest):
+class Refused(Exception):
+    """start_run refused; `exists` is True when the slug's own run is live."""
+
+    def __init__(self, message, exists):
+        super().__init__(message)
+        self.message = message
+        self.exists = exists
+
+
+def start_run(slug, cap, updates):
+    """Write a fresh state for slug and return its slot, or raise Refused."""
+    live = live_states()
+    if any(other == slug for other, _ in live):
+        raise Refused(f"refused: a run for {slug} exists; use resume", True)
+    if len(live) >= cap:
+        names = ", ".join(other for other, _ in live)
+        raise Refused(f"refused: {len(live)} auto runs are live ({names}); the most is {cap}",
+                      False)
+    used = {state.get("slot") for _, state in live if state}
+    slot = next(n for n in range(1, len(live) + 2) if str(n) not in used)
+    write_state(slug, {**updates, "slot": str(slot), "merge_retries": "0"})
+    return str(slot)
+
+
+def cap_arg(rest):
+    """The cap from `--max <n>`, n at least 1, or None."""
     if len(rest) < 2 or rest[0] != "--max" or not rest[1].isdigit() or int(rest[1]) < 1:
+        return None
+    return int(rest[1])
+
+
+def start(slug, rest):
+    cap = cap_arg(rest)
+    if cap is None:
         return usage()
-    cap, pairs = int(rest[1]), rest[2:]
+    pairs = rest[2:]
     if any("=" not in pair for pair in pairs):
         return usage()
     updates = parse_pairs(pairs)
     if updates is None:
         return 2
-    live = live_states()
-    if any(other == slug for other, _ in live):
-        print(f"refused: a run for {slug} exists; use resume", file=sys.stderr)
+    try:
+        print(start_run(slug, cap, updates))
+    except Refused as refusal:
+        print(refusal.message, file=sys.stderr)
         return 1
-    if len(live) >= cap:
-        names = ", ".join(other for other, _ in live)
-        print(f"refused: {len(live)} auto runs are live ({names}); the most is {cap}",
-              file=sys.stderr)
-        return 1
-    used = {state.get("slot") for _, state in live if state}
-    slot = next(n for n in range(1, len(live) + 2) if str(n) not in used)
-    write_state(slug, {**updates, "slot": str(slot), "merge_retries": "0"})
-    print(slot)
     return 0
 
 
@@ -409,6 +497,348 @@ def merge_args(rest):
     return message, tail[1:]
 
 
+QUEUE_KEYS = ("row", "spec", "stage", "after", "exclusive")
+SPEC_PATH = re.compile(r"docs/plans/\d{4}-\d{2}-\d{2}-(.+)-spec\.md")
+
+
+class QueueError(Exception):
+    def __init__(self, path):
+        super().__init__(f"refused: the queue file is not valid JSON: {path}")
+
+
+def queue_path():
+    return os.path.join(common_dir(), "my-handoff", "queue", "rows.json")
+
+
+def read_queue():
+    """The queue's entries, or [] when there is no queue file."""
+    path = queue_path()
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path) as handle:
+            entries = json.load(handle)
+    except (OSError, ValueError):
+        raise QueueError(path)
+    if not isinstance(entries, list) or not all(isinstance(e, dict) for e in entries):
+        raise QueueError(path)
+    return entries
+
+
+def slug_of(spec):
+    """The slug of a spec path docs/plans/YYYY-MM-DD-<slug>-spec.md, else None."""
+    match = SPEC_PATH.fullmatch(spec)
+    return match[1] if match and SLUG.fullmatch(match[1]) else None
+
+
+def spec_hash(repo, spec):
+    """`git hash-object` of the spec in the main checkout, or None when it is missing."""
+    if not os.path.isfile(os.path.join(repo.root, spec)):
+        return None
+    return repo.run("hash-object", "--", spec)
+
+
+def run_state(slug):
+    """The state of a run, None without a state file, and a state whose next is
+    `unreadable` for a file that is not valid JSON, which counts as live."""
+    try:
+        state = read_state(slug)
+    except (OSError, ValueError):
+        return {"next": "unreadable"}
+    return state if state is None or isinstance(state, dict) else {"next": "unreadable"}
+
+
+def entry_problem(entry, repo):
+    """Why an entry of `queue add` is not valid, or None."""
+    if not isinstance(entry, dict):
+        return "not an object"
+    unknown = sorted(set(entry) - set(QUEUE_KEYS))
+    if unknown:
+        return f"unknown key: {unknown[0]}"
+    absent = [key for key in QUEUE_KEYS if key not in entry]
+    if absent:
+        return f"missing key: {absent[0]}"
+    if not isinstance(entry["row"], str) or not entry["row"]:
+        return "row is not a non-empty string"
+    if not isinstance(entry["spec"], str) or slug_of(entry["spec"]) is None:
+        return f"spec is not docs/plans/YYYY-MM-DD-<slug>-spec.md: {entry['spec']}"
+    if entry["stage"] not in ("plan", "code"):
+        return f"stage is not plan or code: {entry['stage']}"
+    after = entry["after"]
+    if not isinstance(after, list) or not all(isinstance(s, str) and SLUG.fullmatch(s)
+                                              for s in after):
+        return "after is not a list of slugs"
+    if type(entry["exclusive"]) is not bool:
+        return "exclusive is not true or false"
+    if not os.path.isfile(os.path.join(repo.root, entry["spec"])):
+        return f"spec missing in the main checkout: {entry['spec']}"
+    return None
+
+
+def blockers_first(entries):
+    """(order, stuck): indexes of the entries in a stable order that puts each
+    entry after the entries its `after` names, and the indexes it cannot place.
+    Each round takes the earliest entry whose named entries are all placed."""
+    slugs = {entry.get("slug") for entry in entries}
+    order, placed, rest = [], set(), list(range(len(entries)))
+    while True:
+        index = next((i for i in rest
+                      if all(s in placed or s not in slugs
+                             for s in entries[i].get("after", []))), None)
+        if index is None:
+            return order, rest
+        order.append(index)
+        placed.add(entries[index].get("slug"))
+        rest.remove(index)
+
+
+def in_loop(entries, index):
+    """True when entries[index] can reach itself through the `after` slugs of entries."""
+    by_slug = {entry.get("slug"): entry for entry in entries}
+    own = entries[index].get("slug")
+    seen, todo = set(), list(entries[index].get("after", []))
+    while todo:
+        slug = todo.pop()
+        if slug == own:
+            return True
+        if slug in seen or slug not in by_slug:
+            continue
+        seen.add(slug)
+        todo.extend(by_slug[slug].get("after", []))
+    return False
+
+
+def prune(entries):
+    """Drop each started entry whose run finished, and each skipped entry that no
+    waiting entry names in `after`."""
+    named = {slug for entry in entries if entry.get("state") == "waiting"
+             for slug in entry.get("after", [])}
+    kept = []
+    for entry in entries:
+        if entry.get("state") == "started":
+            state = run_state(entry.get("slug", ""))
+            if state and state.get("next") == "finished":
+                continue
+        if entry.get("state") == "skipped" and entry.get("slug") not in named:
+            continue
+        kept.append(entry)
+    return kept
+
+
+def queue_add(path):
+    try:
+        with open(path) as handle:
+            entries = json.load(handle)
+    except (OSError, ValueError) as error:
+        print(f"invalid entries: cannot read {path}: {error}", file=sys.stderr)
+        return 2
+    if not isinstance(entries, list):
+        print(f"invalid entries: {path} is not a JSON list", file=sys.stderr)
+        return 2
+    repo = Repo()
+    for number, entry in enumerate(entries, 1):
+        problem = entry_problem(entry, repo)
+        if problem:
+            print(f"invalid entry {number}: {problem}", file=sys.stderr)
+            return 2
+    queue = read_queue()
+    waiting = [entry for entry in queue if entry.get("state") == "waiting"]
+    seen = {entry.get("slug") for entry in waiting}
+    new = []
+    for entry in entries:
+        slug = slug_of(entry["spec"])
+        if slug in seen:
+            print(f"skipped: {slug}: already waiting", file=sys.stderr)
+            continue
+        seen.add(slug)
+        new.append({**entry, "slug": slug, "spec_hash": spec_hash(repo, entry["spec"]),
+                    "state": "waiting", "reason": ""})
+    _, stuck = blockers_first(waiting + new)
+    stuck_entries = [(waiting + new)[i] for i in stuck]
+    cycle = {i - len(waiting) for i in stuck if i >= len(waiting)}
+    for i in sorted(cycle):
+        loop = in_loop(stuck_entries, stuck_entries.index(new[i]))
+        reason = "gate cycle" if loop else "behind a gate cycle"
+        print(f"skipped: {new[i]['slug']}: {reason}", file=sys.stderr)
+    new = [entry for i, entry in enumerate(new) if i not in cycle]
+    pool = waiting + new
+    order, stuck = blockers_first(pool)
+    added = {entry["slug"] for entry in new}
+    others = [entry for entry in queue if entry.get("state") != "waiting"
+              and not (entry.get("state") == "skipped" and entry.get("slug") in added)]
+    result = prune(others + [pool[i] for i in order + stuck])
+    write_json(queue_path(), result)
+    for entry in result:
+        if any(entry is item for item in new):
+            print(f"added\t{entry['slug']}")
+    return 0
+
+
+def queue_drop(slugs):
+    queue = read_queue()
+    waiting = {entry.get("slug") for entry in queue if entry.get("state") == "waiting"}
+    for slug in slugs:
+        if slug not in waiting:
+            print(f"refused: {slug} is not waiting", file=sys.stderr)
+            return 1
+    for entry in queue:
+        if entry.get("state") == "waiting" and entry.get("slug") in slugs:
+            entry.update(state="skipped", reason="dropped by the user")
+    write_json(queue_path(), queue)
+    return 0
+
+
+def walk(entries, repo, ready):
+    """Apply rules 1 to 4 of `pull` to the waiting entries, in queue order.
+
+    Skipped entries are marked in `entries`. `ready(entry)` is called for each
+    entry that passes the rules, and returns False to stop the walk; it may mark
+    the entry skipped. Returns (skip lines, wait), where wait is
+    `<slug><TAB><what>` when an entry stopped the walk at rule 3 or 4, else None.
+    """
+    skips = []
+
+    def skip(entry, reason):
+        entry.update(state="skipped", reason=reason)
+        skips.append(f"skipped: {entry.get('slug')}: {reason}")
+
+    for entry in entries:
+        if entry.get("state") != "waiting":
+            continue
+        slug = entry.get("slug")
+        if spec_hash(repo, entry.get("spec", "")) != entry.get("spec_hash"):
+            skip(entry, "spec changed since the call")
+            continue
+        states = {blocker: run_state(blocker) for blocker in entry.get("after", [])}
+        failed = None
+        for blocker, state in states.items():
+            own = [e for e in entries if e.get("slug") == blocker]
+            if (any(e.get("state") == "skipped" for e in own)
+                    or (state and state.get("next") == "finished" and state.get("stopped"))
+                    or (not own and state is None)):
+                failed = blocker
+                break
+        if failed:
+            skip(entry, f"blocker {failed} did not finish")
+            continue
+        open_blocker = next((b for b, state in states.items()
+                             if not (state and state.get("next") == "finished"
+                                     and not state.get("stopped"))), None)
+        if open_blocker:
+            return skips, f"{slug}\t{open_blocker}"
+        live = [other for other, _ in live_states()]
+        exclusive = next((e.get("slug") for e in entries
+                          if e.get("state") == "started" and e.get("exclusive")
+                          and e.get("slug") in live), None)
+        if exclusive:
+            return skips, f"{slug}\texclusive {exclusive}"
+        if entry.get("exclusive") and live:
+            return skips, f"{slug}\tlive runs"
+        go_on = ready(entry)
+        if entry.get("state") == "skipped":
+            skips.append(f"skipped: {slug}: {entry.get('reason')}")
+        if not go_on:
+            break
+    return skips, None
+
+
+def plan_path(spec):
+    """docs/plans/<date>-<slug>.md for docs/plans/<date>-<slug>-spec.md."""
+    return spec[:-len("-spec.md")] + ".md"
+
+
+def not_fresh(repo, slug):
+    """What stops a fresh start of slug, as D2 checks it at call time: `plan`,
+    `branch` or `worktree`; None when nothing does."""
+    plans = os.path.join(repo.root, "docs", "plans")
+    pattern = re.compile(r"\d{4}-\d{2}-\d{2}-" + re.escape(slug) + r"\.md")
+    if os.path.isdir(plans) and any(pattern.fullmatch(name) for name in os.listdir(plans)):
+        return "plan"
+    if repo.run("branch", "--list", f"*/{slug}"):
+        return "branch"
+    if os.path.isdir(os.path.join(repo.root, ".claude", "worktrees", slug)):
+        return "worktree"
+    return None
+
+
+def pull(cap):
+    if not os.path.exists(queue_path()):
+        return 0
+    entries = read_queue()
+    before = json.dumps(entries, sort_keys=True)
+    entries = [entry for entry in entries if not (
+        entry.get("state") == "started"
+        and (run_state(entry.get("slug", "")) or {}).get("next") == "finished")]
+    repo = Repo()
+    started = []
+
+    def ready(entry):
+        live = [slug for slug, _ in live_states()]
+        # Rule 5 before rule 6: at the cap the walk stops without skipping the
+        # entry, although start_run would refuse it too.
+        if len(live) >= cap:
+            return False
+        slug, stage, spec = entry["slug"], entry["stage"], entry["spec"]
+        what = None if slug in live else not_fresh(repo, slug)
+        if what:
+            entry.update(state="skipped", reason=f"{what} for {slug} exists")
+            return True
+        updates = {"spec": spec, "task_doc": spec if stage == "code" else plan_path(spec),
+                   "next": stage, "branch": "", "worktree": "", "squash_subject": "",
+                   "head_before_fold": "", "stopped": "", "checked_base": ""}
+        try:
+            slot = start_run(slug, cap, updates)
+        except Refused as refusal:
+            if refusal.exists:
+                entry.update(state="skipped", reason=f"a run for {slug} exists")
+                return True
+            return False
+        entry["state"] = "started"
+        started.append(f"{slug}\t{stage}\t{spec}\t{slot}")
+        return not entry.get("exclusive")
+
+    skips, _ = walk(entries, repo, ready)
+    if json.dumps(entries, sort_keys=True) != before:
+        write_json(queue_path(), entries)
+    for line in started:
+        print(line)
+    for line in skips:
+        print(line, file=sys.stderr)
+    return 0
+
+
+def queue_show():
+    entries = read_queue()
+    first = []
+
+    def ready(entry):
+        first.append(entry["slug"])
+        return False
+
+    _, wait = walk(entries, Repo(), ready)
+    if wait:
+        print(f"waits\t{wait}")
+    elif first:
+        print(f"ready\t{first[0]}")
+    else:
+        print("none")
+    return 0
+
+
+def queue_command(rest):
+    try:
+        if len(rest) == 3 and rest[:2] == ["add", "--file"]:
+            return queue_add(rest[2])
+        if len(rest) >= 2 and rest[0] == "drop" and all(SLUG.fullmatch(s) for s in rest[1:]):
+            return queue_drop(rest[1:])
+        if rest == ["show"]:
+            return queue_show()
+    except (QueueError, GitError) as error:
+        print(error, file=sys.stderr)
+        return 1
+    return usage()
+
+
 def usage():
     block = __doc__[__doc__.index("Usage:"):].split("\n\n")[0]
     print(block, file=sys.stderr)
@@ -423,6 +853,17 @@ def main(argv):
         try:
             return print_live()
         except GitError as error:
+            print(error, file=sys.stderr)
+            return 1
+    if argv[:1] == ["queue"]:
+        return queue_command(argv[1:])
+    if argv[:1] == ["pull"]:
+        cap = cap_arg(argv[1:])
+        if cap is None or len(argv) != 3:
+            return usage()
+        try:
+            return pull(cap)
+        except (QueueError, GitError) as error:
             print(error, file=sys.stderr)
             return 1
     if len(argv) < 2 or not SLUG.fullmatch(argv[1]):

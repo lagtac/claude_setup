@@ -383,6 +383,45 @@ Two runs keep about 6 `claude` processes; see "Memory" below. Spec:
 `docs/plans/2026-10-12-parallel-auto-runs-spec.md`. Plan:
 `docs/plans/2026-10-12-parallel-auto-runs.md`.
 
+### From roadmap rows
+
+One command starts several roadmap rows, in any order:
+
+```text
+/my:handoff auto rows 9 12 30
+```
+
+Each row needs its own approved spec with a Delegation section. The command
+judges every row once, when you type it, and lists each row it skips with
+the reason: no such row, no spec, a spec that is not `approved`, a bad
+Delegation section, a run or a branch that already exists, or a gate that
+nothing will open, such as "Waits for the client's answer". A row gated
+behind another row of the call waits for it, whatever order you typed.
+
+It commits the specs' `approved` edits, then writes the rows to a queue in
+`<git common dir>/my-handoff/queue/rows.json` and starts as many as
+**Max runs** allows. Then it ends: no session stays open to watch. When a run
+finishes with its `done` marks, its review session starts the next waiting
+row in a new window. A row with no file list in its spec runs alone, because
+nobody knows what it overlaps.
+
+Without a "Parallel runs" section, or with `Max runs: 1`, the rows run one
+after another, without you. That is the setting for a 15 GB machine (see
+"Memory" below).
+
+- **After a stall,** for example a crash between a run's finish and the next
+  start, `my:status` says `<k> rows wait and the first can start now: run
+  /my:handoff auto rows`. Type `/my:handoff auto rows` with no numbers: it
+  only starts the waiting rows.
+- **To cancel waiting rows,** type `/my:handoff auto rows drop 12 30`. The
+  rows gated behind a dropped row are skipped at the next start.
+- **A row is skipped later** when its spec changed after the call, or when a
+  row it waits for was ended or dropped. `my:status` lists the skipped rows
+  with their reasons. Type the command again to queue them anew.
+
+Spec: `docs/plans/2026-10-13-roadmap-auto-runs-spec.md`. Plan:
+`docs/plans/2026-10-13-roadmap-auto-runs.md`.
+
 ### Known problems
 
 - **An API error can stall a run without a sign.** If the connection drops

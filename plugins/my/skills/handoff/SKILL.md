@@ -12,8 +12,10 @@ description: >
   round, then the squash-merge after the user's yes). "/my:handoff auto plan
   <spec>" or "auto code <spec>" runs the whole cycle to the done marks
   without the user, as far as the spec's Delegation section allows, and
-  "auto resume <spec>" continues a stopped auto run. NOT for dispatching
-  subagents inside one session.
+  "auto resume <spec>" continues a stopped auto run. "/my:handoff auto rows
+  <row number> ..." queues roadmap rows whose specs are approved and starts
+  them as auto runs, up to Max runs at once; each finishing run starts the
+  next. NOT for dispatching subagents inside one session.
 ---
 
 # Handoff
@@ -38,12 +40,18 @@ The args are one of:
   is gone. Go to "Resume".
 - `run auto <stage> <doc>` — **auto run**: this session is the stage, in auto
   mode. Launch types this form into the new window. Go to "Run".
+- `auto rows [<row number> ...]` — **rows**: queue roadmap rows whose specs
+  are approved, and start them as auto runs. With no numbers, start the
+  first waiting rows. Go to "From roadmap rows".
+- `auto rows drop <row number> ...` — **drop**: cancel waiting rows. Go to
+  "From roadmap rows".
 
 Without the word `auto`, every step reads as written, even when the spec has
 a Delegation section. The rules marked **In auto mode** apply only to the
-three auto forms. In them, a run goes from an approved spec to the `done`
-marks on `<base>` without the user, never pushes, and stops only where the
-table in "Stop points in auto mode" says.
+three auto forms. The `auto rows` forms run no stage themselves; the runs
+they launch are auto runs. In them, a run goes from an approved spec to the
+`done` marks on `<base>` without the user, never pushes, and stops only where
+the table in "Stop points in auto mode" says.
 
 `<stage>` is `plan`, `code` or `review`. `<doc>` is one path under
 `docs/plans/`. Each stage reads `<doc>` by the role it plays, not by its
@@ -66,13 +74,15 @@ type or the execution skill, use the fallback the step names. Where a step
 names no fallback, signal and ask. Never guess silently.
 
 Any other args: stop and print
-`Usage: /my:handoff [run] [auto] <plan|code|review> <docs/plans/…md>, or /my:handoff auto resume <docs/plans/…-spec.md>`.
-The auto launch takes only `plan` or `code`, and only a spec.
+`Usage: /my:handoff [run] [auto] <plan|code|review> <docs/plans/…md>, /my:handoff auto resume <docs/plans/…-spec.md>, or /my:handoff auto rows [drop] [<row number> ...]`.
+The auto launch takes only `plan` or `code` and a spec, or `rows` and row
+numbers.
 
 `<slug>` is the doc's filename without the `YYYY-MM-DD-` prefix and without
 `-spec.md` or `.md`. Example: `docs/plans/2026-09-21-landing-match-grade-spec.md`
 → `landing-match-grade`. `<name>` is `<stage>-<slug>`.
-For `auto resume`, `<name>` is `resume-<slug>`.
+For `auto resume`, `<name>` is `resume-<slug>`. For the `auto rows` forms, it
+is `rows`.
 
 `<base>` is the branch that specs and plans are committed on and that work
 branches squash-merge into. Take it from the project's rules when they name
@@ -195,9 +205,10 @@ window and `$TMUX_PANE` is set, first run
 mark means "waiting for the user" and nothing else. A Launch never renames a
 window. A finished stage uses another mark, `✓`; see "Finish".
 
-Signal at exactly four points: a gate, an error you cannot fix, "ready to
-squash-merge", and the code stage's "done" when the work ends before the
-branch does. Any question you would ask the user is a gate: signal first,
+Signal at exactly five points: a gate, an error you cannot fix, "ready to
+squash-merge", the code stage's "done" when the work ends before the branch
+does, and a failed refill (see "Refill", under "From roadmap rows"). Any
+question you would ask the user is a gate: signal first,
 then ask.
 
 **In auto mode,** the table in "Stop points in auto mode" replaces that list:
@@ -206,7 +217,9 @@ stop is a signal with one step before it: run
 `handoff-state.py set <slug> stopped="<the line>"`, with the `next` value
 the row names, if any. A failed start check and a refused `resume` are the
 exception: they write nothing. After the user's reply, run
-`handoff-state.py set <slug> stopped=`, then go on in auto mode.
+`handoff-state.py set <slug> stopped=`, then go on in auto mode. A failed
+refill is not in that table: it stops no run, so it writes no `stopped` on
+the run that finished. "Refill" says what it writes.
 
 ## Stop points in auto mode
 
@@ -295,6 +308,9 @@ Run these steps in order.
    launches the next stage, that is a stop (row 2 of "Stop points in auto
    mode"): signal `<name>: cannot open a window for <next name>: <reason>`.
    The state file already names the next stage, so `resume` can launch it.
+   A launch inside the refill is the exception: it follows "Refill", not
+   this rule, because the run that launches it has finished, and a stop
+   would write `stopped` on that finished run.
 5. **Open.**
 
    ```bash
@@ -354,7 +370,8 @@ says so in a session. That session runs `git worktree remove <worktree>` when
 the state names a worktree that `git worktree list` shows, with `--force`
 only after the user's yes to it. Then it runs
 `handoff-state.py set <slug> next=finished stopped="ended by the user"`. The
-branch stays.
+branch stays. Then it runs the refill (see "Refill", under "From roadmap
+rows"): the ended run freed its slot.
 
 ### Restarted stages
 
@@ -399,6 +416,158 @@ Then:
      that `next` names. `merge-retry` is past `review`: the reviews and the
      fix round are committed, so the "fix round already ran" stop does not
      apply, and the stage starts at the merge sub-step.
+
+## From roadmap rows
+
+`/my:handoff auto rows <row number> ...` queues roadmap rows whose specs are
+approved, and starts them as auto runs, never more than `<n>` at once. Each
+run that finishes starts the next waiting row (see "Refill" below). Spec:
+`docs/plans/2026-10-13-roadmap-auto-runs-spec.md` in the claude-setup repo.
+
+These forms run in the user's session, which has no `MY_AUTORUN`, and do no
+stage's work themselves: they launch each stage in a new window. `<name>` for
+their signals is `rows`. `<n>` is as "Parallel runs" says: `1` in a project
+without the section. A row number is `\d+[a-z]?`, as in `ROADMAP.md`, and
+stays a string, as typed. The queue is
+`<git common dir>/my-handoff/queue/rows.json`; only `handoff-state.py` writes
+it, always under lock `main`.
+
+1. **No numbers** (`auto rows`): run
+   `handoff-lock.py main -- handoff-state.py pull --max <n>`, then go to
+   step 7. This starts the first waiting rows after a stall, when `my:status`
+   says one can start.
+2. **`drop`** (`auto rows drop <row number> ...`): run `status-scan.py`. Map
+   each number to its slug from the `waiting` rows of the `queue` block,
+   which print state, row and slug side by side. Print
+   `row <n> is not waiting` for a number with no `waiting` row. Run
+   `handoff-lock.py main -- handoff-state.py queue drop <slug> ...` with the
+   other slugs. Print the result and stop. At the next `pull`, the rows gated
+   behind a dropped row are skipped.
+3. **Judge each row.** Run `status-scan.py` once. Use `my:status` steps 4 to
+   6 (`plugins/my/skills/status/SKILL.md`) to find each row's spec, its gates
+   and its file list. Check the cases below in this order. At the first case
+   that holds, the row is skipped: print `row <n>: <reason>`, with the reason
+   word for word, and do not queue it.
+
+   | Case | Reason printed |
+   | --- | --- |
+   | The roadmap has no row with that number. | `no row <n>` |
+   | The row has no spec of its own (`my:status` step 4). | `row <n> has no spec` |
+   | The spec's status is not `approved`. | `spec is <status>, not approved` |
+   | The spec has no valid Delegation section (start check 3 of "Start checks in auto mode"). | `Delegation: <key> <missing, unknown or invalid>` |
+   | `handoff-state.py get <slug>` prints a state whose `next` is not `finished`. | `a run for <slug> exists` |
+   | The slug is already `waiting` in the `queue` block. | `already waiting` |
+   | The stage could not start fresh: the anchored `ls` of the plan start check lists a plan, `git branch --list '*/<slug>'` prints a branch, or `.claude/worktrees/<slug>` exists. A run the user ended leaves its branch behind. | `<plan, branch or worktree> for <slug> exists` |
+   | It is gated behind a row that is not done and is none of: a row in this call, a live auto run (a state whose `next` is not `finished`), a `waiting` queue entry. Nothing would ever start such a blocker. A row is done when it is ✅, or when its slug's state has `next=finished` and an empty `stopped`: a `done` mark does not always set ✅. | `blocked by row <m>, which nothing will start` |
+   | It is gated behind a row in this call that this call skips. | `blocker row <m> was skipped` |
+   | Its own text says it waits for something that is not a row ("Waits for …", `my:status` step 5). Nothing in the queue would start it. | `waits for <what the row says>` |
+
+   For each row that can start, record:
+
+   - **`stage`:** `code` when the spec has a section titled Tasks, `plan`
+     when not, as in start check 4 of "Start checks in auto mode".
+   - **`after`:** the slugs of the rows it is gated behind (`my:status`
+     step 5) that are rows in this call, live auto runs or `waiting`
+     entries. A done blocker is no gate.
+   - **`exclusive`:** `true` when the row has no file list (`my:status`
+     step 6), because its overlap is unknown; `false` otherwise.
+
+   When two rows of the call both have file lists and share a path outside
+   the docs paths, print `rows <a> and <b> share <path>`. This warns and does
+   not block: the parallel merge rebases and reruns the checks. When no row
+   can start, stop after printing the skipped rows.
+4. **Commit the `approved` edits.** A queued spec must never hold an
+   uncommitted edit: while it waits, the running row's fold would stop. The
+   edited specs are the specs of the rows that can start that
+   `git status --porcelain -- <spec>` lists. With none, go to step 5.
+
+   Without a "Parallel runs" section, fold when all of these hold:
+
+   - `handoff-state.py live` prints nothing;
+   - `git status --porcelain` lists only the edited specs, whose `approved`
+     edits are expected, as in the plan stage's own check;
+   - `git-fold-fixups.py check <spec commit>` exits 0 for every edited spec,
+     with `<spec commit>` found as in Plan stage, step 8.
+
+   To fold, first list the waiting fixups: the `fixup` lines of the
+   `checkout` block. When one targets a document outside this call, name it
+   and ask the user whether the fold may give that document's commit a new
+   hash. That is a gate: signal first. On the user's yes, or with no such
+   fixup, make one `git commit --fixup <spec commit> -- <spec>` per edited
+   spec, and check that `git show --stat --format= HEAD` lists only that
+   spec. Then run `git-fold-fixups.py` in the main checkout. On its exit 1
+   or 3, print its message and `fixups left unfolded: <hashes>`, write no
+   queue, launch nothing, and stop: those fixups must be folded or reverted
+   by hand before a row behind them can run. A fixup is made only when it is
+   folded at once, because a waiting one can never be folded once the run
+   ahead cites a newer commit.
+
+   When one of the three does not hold, or on the user's no, make one normal
+   docs commit of every edited spec, with the docs scope of the project's
+   rules: `git add -- <specs>`, read `git diff --cached`, then
+   `git commit -m "<message>" -- <specs>`, and check that
+   `git show --stat --format= HEAD` lists only those specs. With a "Parallel
+   runs" section, that one commit runs through `locked-commit.py`, as in Plan
+   stage, step 7, and nothing folds.
+5. **Write the queue.** Write the entries with the Write tool to a new JSON
+   file in the session's scratchpad, in the order the user typed the rows: a
+   list of objects with exactly the keys `row` (a string), `spec`, `stage`,
+   `after` (a list of slugs) and `exclusive` (`true` or `false`). The script
+   derives the slug and hashes the spec itself. Run
+   `handoff-lock.py main -- handoff-state.py queue add --file <path>`. Print
+   each of its `skipped: <slug>: <reason>` lines as a skipped row,
+   `row <n>: <reason>`. On a non-zero exit, print its message and stop:
+   nothing was queued.
+6. **Start.** Run `handoff-lock.py main -- handoff-state.py pull --max <n>`.
+   Print each of its `skipped:` lines as a skipped row. On a lock timeout
+   (exit 75 with a stderr line that starts with `handoff-lock:`) or another
+   failure, print `rows: rows wait in the queue; run /my:handoff auto rows`
+   and stop.
+7. **Launch.** `pull` prints one line per run it started:
+   `<slug><TAB><stage><TAB><spec><TAB><slot>`. For each line, run "Launch" in
+   auto mode with the name `<stage>-<slug>`, the stage, the spec as its doc,
+   and `MY_AUTORUN=<slug>`. Launch's fallback prints the command for the
+   user, who is at this window.
+8. **Report.** List the rows started, the rows waiting with what the first
+   one waits for (`handoff-state.py queue show`), and the rows skipped with
+   their reasons. Then stop. No session stays open to watch: the runs refill
+   their own slots.
+
+### Refill
+
+A run that finishes frees its slot, and the refill starts the next waiting
+rows in it. Two places run it, right after they write `next=finished`:
+Review stage, step 8, sub-step 4 in auto mode, and "To end an abandoned
+run".
+
+1. Run `handoff-lock.py main -- handoff-state.py pull --max <n>`. With no
+   queue file it prints nothing, and the refill is done.
+2. For each line it prints, `<new slug><TAB><stage><TAB><spec><TAB><slot>`,
+   run "Launch" in auto mode with the name `<stage>-<new slug>`, the stage,
+   the spec as its doc, and `MY_AUTORUN=<new slug>`. Use the new slug, never
+   this session's own `MY_AUTORUN`: that one names the finished run, and the
+   new session's start check 1 would refuse it. Launch reads the plugin-dir
+   flags and the mode as it does for a next stage. Launch every printed
+   line, also after one fails.
+3. When every step worked, go on to "Finish". Otherwise signal once, at the
+   end, naming every failure in one line, joined by semicolons. The signal
+   replaces "Finish", so the window shows ⚠, not ✓.
+   - Launch cannot open a window: first run
+     `handoff-state.py set <new slug> stopped="cannot open a window: <reason>"`.
+     The new run keeps its slot, as any stopped run does. The failure is
+     `cannot open a window for <stage>-<new slug>; run /my:handoff auto resume <spec>`.
+   - `pull` fails, a lock timeout included: the failure is
+     `rows wait in the queue; run /my:handoff auto rows`.
+
+   The signal line is `<name>: <start> <failures>`. In the review stage,
+   `<start>` is `done; squash commit <hash>.`, so the finish is not lost. In
+   "To end an abandoned run", `<name>` is `rows` and `<start>` is
+   `<slug> ended.`
+
+A refill failure never stops the finished run: its state stays
+`next=finished`, and the refill never writes `stopped` on it. To rule 2 of
+`pull`, a finished run with a stop line is a run the user ended, and the
+rows behind it would be skipped.
 
 ## Run
 
@@ -872,9 +1041,11 @@ all land on the branch, and the main checkout stays clean.
      subject equals `squash_subject` in `handoff-state.py get <slug>`. The
      fold has changed its hash. Set the `done` marks, citing that hash, as
      the project's rules say. Then run
-     `handoff-state.py set <slug> next=finished stopped=`.
+     `handoff-state.py set <slug> next=finished stopped=`, then the refill
+     (see "Refill", under "From roadmap rows").
 - Finish: the last line names the squash commit's short hash:
   `<name>: done; squash commit <hash>. Close this window, and start new work in a new session.`
+  When the refill fails, its signal replaces "Finish".
 
 **With a "Parallel runs" section,** the review stage in auto mode changes
 again:

@@ -10,7 +10,7 @@ Usage:
     status-scan.py
 
 The output is plain text in blocks, in this order: roadmap, order, docs,
-checkout, worktrees, runs, branches. Each block starts with a line
+checkout, worktrees, runs, queue, branches. Each block starts with a line
 `== <name>`. Each fact is one line, with fields separated by one tab. An empty
 block prints one line, `none`. When a block's source cannot be read, the block
 prints one line `error`, tab, the reason, and the next block still prints.
@@ -21,6 +21,10 @@ prints one line `error`, tab, the reason, and the next block still prints.
     checkout   dirty, path; or fixup, fixup hash, target hash or ?, target subject
     worktrees  path, branch, commits ahead of the base, clean or dirty
     runs       slug, slot, next, stop line, branch; - for an empty field
+    queue      first the `handoff-state.py queue show` line: ready, slug; or
+               waits, slug, what; or none. Then state, row, slug, after
+               (comma-separated, or -), reason or - per waiting or skipped
+               entry, in queue order. `none` alone prints as an empty block.
     branches   maybe-unfinished, branch, missing line count, last subject;
                then skipped, count, when more than 30 branches qualify
 
@@ -212,6 +216,29 @@ def run_facts(common):
     return [tuple(field or "-" for field in row) for row in rows]
 
 
+def queue_facts(common):
+    """The `queue show` line, then state, row, slug, after, reason per waiting or
+    skipped entry of the queue of `/my:handoff auto rows`."""
+    show = subprocess.run([sys.executable, os.path.join(HERE, "handoff-state.py"),
+                           "queue", "show"], capture_output=True, text=True)
+    if show.returncode != 0:
+        raise ValueError(f"handoff-state.py queue show: {show.stderr.strip()}")
+    first = tuple(show.stdout.strip().split("\t"))
+    path = os.path.join(common, "my-handoff", "queue", "rows.json")
+    entries = []
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as handle:
+            entries = json.load(handle)
+        if not isinstance(entries, list):
+            raise ValueError(f"the queue file is not a JSON list: {path}")
+    rows = [(entry.get("state", ""), entry.get("row", ""), entry.get("slug", ""),
+             ",".join(entry.get("after", [])) or "-", entry.get("reason", "") or "-")
+            for entry in entries if entry.get("state") in ("waiting", "skipped")]
+    if first == ("none",) and not rows:
+        return []
+    return [first, *rows]
+
+
 def changed_lines(diff):
     """Added and deleted lines of a -U0 patch, stripped, of MIN_LINE or more characters."""
     added, deleted, in_hunk = [], [], False
@@ -311,6 +338,7 @@ def main(argv):
         ("checkout", lambda: checkout_facts(root, base)),
         ("worktrees", lambda: worktree_facts(root, base)),
         ("runs", lambda: run_facts(common)),
+        ("queue", lambda: queue_facts(common)),
         ("branches", lambda: branch_facts(root, base)),
     ]
     for name, collect in blocks:

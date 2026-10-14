@@ -1066,7 +1066,74 @@ concrete here:
 - **A row the user starts by hand after the call.** `pull`'s start refuses,
   so the entry is `skipped` as `a run for <slug> exists`. Rule 2 then skips
   the rows behind it, even though the hand run may finish. The user calls
-  them again. Known limit.
+  them again. Known limit. A hand start that writes no state file, such as
+  a supervised run or a plan written by hand, is caught by a new D5 rule:
+  `pull` skips the row as `<plan, branch or worktree> for <slug> exists`
+  (decided by the user on 2026-10-14, after the end-of-branch review).
+- **`queue show` does not apply rule 6.** It runs rules 1 to 4, as D7 says.
+  So it prints `ready` for a row whose slug has a run or a plan, branch or
+  worktree, and `my:status` says to run `/my:handoff auto rows`, which then
+  skips that row. Known limit, by the user's choice on 2026-10-14.
+- **`my:status` is silent about waiting rows that the next `pull` skips.**
+  When every waiting row is stale, `queue show` prints `none`, and the D7
+  report rules have no line for the rows that the `queue` block still lists
+  as `waiting`. Known limit, by the user's choice on 2026-10-14.
+- **A failed queue write in `pull`.** `pull` writes the state files during
+  its walk and the queue file at the end. If that last write fails, for
+  example on a full disk, the new runs have no window and their entries stay
+  `waiting`; the next `pull` skips them as `a run for <slug> exists`. Known
+  limit: a failure of the machine, not input the code produces.
+- **`row` is any non-empty string.** `queue add` does not check the
+  `\d+[a-z]?` form. A row value with a tab would break the `queue` block of
+  `status-scan.py`. Rows come from the roadmap as `status-scan.py` parses
+  them, which never yields a tab. Known limit.
+- **The `queue` block reads the queue twice.** `status-scan.py` runs
+  `queue show` and then reads `rows.json` itself, as D7 has it. A `pull`
+  between the two reads can make the first line describe another queue than
+  the rows under it. The report is read-only, and the next scan is right.
+  Known limit.
+
+Known limits from the final re-reviews, 2026-10-14. None is Critical, so by
+the one-fix-round rule they are recorded here, not fixed:
+
+- **A finished exclusive row rerun by hand before any `pull`.** `pull` and
+  `queue add` drop a finished `started` entry, but only when one of them runs
+  between the finish and the rerun. The refill `pull` normally runs at once,
+  so the gap opens only when that refill fails, for example on a lock
+  timeout. The queue then waits behind the rerun until it ends.
+- **`pull` copies `prune`'s rule for finished `started` entries.** A later
+  change must edit both copies, or `queue add` and `pull` disagree about
+  rule 4.
+- **`queue add` re-adds a slug whose entry is `started`.** It checks for
+  duplicates only among `waiting` entries. The judge step filters this,
+  except when a refill in another session starts the row between the judge
+  step and `queue add`. The next `pull` then skips the new entry and the
+  rows behind it.
+- **Rule 2 counts any `skipped` entry of a blocker's slug as a failure,**
+  even when that slug also has a live run or a clean finish. It arises only
+  from the re-add race above.
+- **`auto rows drop` with no slug left.** When no named row is waiting,
+  the skill still runs `queue drop` with no slug, and the script prints its
+  usage and exits 2 after the skill's own `row <n> is not waiting` line.
+- **Without a "Parallel runs" section, the call commits the `approved`
+  edits on `main` without lock `main`.** A queued run's squash-merge or fold
+  in the main checkout at the same moment can collide with it
+  (`index.lock`, or a commit during a rebase).
+- **`start_run` does not see a live exclusive queued run.** With "Parallel
+  runs" and **Max runs** 2, a hand `/my:handoff auto plan <spec>` can start
+  beside a row that was meant to run alone. The spec's limit covers only the
+  opposite direction.
+- **The handoff README says the call starts as many rows as Max runs
+  allows.** A waiting row holds the rows behind it, so with rows `x`, `y`
+  (after `x`) and `z`, only `x` starts while a slot stays free (rules 3 and
+  4, by design).
+- **`pull` does repeated work under lock `main`.** It lists the state folder
+  up to three times per entry and runs one `git hash-object` per entry, so
+  the lock is held longer.
+- **`queue_facts` runs `queue show` when there is no queue file.** Each
+  `my:status` scan pays one extra Python start to print `none`.
+- **A failed write in `queue add` or `queue drop` prints a traceback.** The
+  write is atomic, so nothing is half-written; only the message is raw.
 - **Decisions 14 and 16 change spec D3 and D4,** by the user's choice on
   2026-10-14. Decision 16 also sorts old `waiting` entries again when a
   slug is re-added, which D4 did not do. The sort is needed for the
@@ -1097,6 +1164,27 @@ concrete here:
 - **Rehearsal (Task 8):** two Medium specs, the second gated behind the
   first, in a fixture repo with a bare `origin`, started by the user with
   `/my:handoff auto rows 2 1`.
+
+### Rehearsal, 2026-10-14
+
+Fixture: no "Parallel runs" section, two Medium specs, row 2 blocked by row
+1, a bare `origin` filled with `git clone --bare` (the push guard blocks
+`git push` in an auto run). The user typed `/my:handoff auto rows 2 1` in a
+tmux server started with the branch's `bin/` first on `PATH`.
+
+- **Fixups folded:** pass. `main` has no `fixup!` subject, and the commit
+  that adds both specs holds their `approved` status.
+- **One window, for row 1:** pass. The call opened only `code-alpha-text`.
+- **Row 2 starts without the user:** pass. The review of row 1 refilled the
+  slot and opened `code-beta-text`.
+- **Both rows done on `main`:** pass. Rows 1 and 2 are ✅, each spec is
+  `done` and cites its squash commit, each state has `next=finished` and an
+  empty `stopped`.
+- **`origin` unchanged:** pass. `show-ref` is the same before and after.
+
+One fault of the fixture, not of the feature: it did not ignore
+`.claude/worktrees/`, so `main` showed that folder untracked while a
+worktree existed.
 
 ## Open Questions
 
