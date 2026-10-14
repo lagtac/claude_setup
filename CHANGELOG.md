@@ -16,6 +16,20 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-14 — The code stage runs the full test suite once per task
+
+`my:handoff`'s code stage now says how often to run tests. While a task is
+in progress, implementers run only the test files it touches. They run the
+project's full test command once per task, before its first commit. A fix
+round reruns only the covering test files, plus the typecheck when code
+changed, and never the full suite. The code stage repeats the rule in every
+brief and fix message it writes.
+
+On zitamu's row 103, the fix messages asked for a full run after each
+one-line fix, and implementers used the full suite as their first check. They
+ran it 14 times, for about 15 minutes. This rule would have saved about 6.5
+of them.
+
 ### 2026-10-14 — Name a tmux pane after the session's focus
 
 `kit:name-pane` labels the tmux pane a session runs in with the session's

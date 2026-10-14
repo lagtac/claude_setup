@@ -806,6 +806,16 @@ file would count as a live run.
    each task, read `git diff` for the test files the task touched. Run no
    code reviews and no end-of-branch checks: the review stage runs them.
 
+   **Test runs.** While a task is in progress, run only the test
+   files it touches. Chain the commands with `&&`, so a failed
+   focused run never starts the full suite. Run the project's full
+   test command once per task, just before the task's first commit.
+   A fix round reruns only the test files that cover the fix, plus
+   the project's typecheck when the fix changed code; it never runs
+   the full suite, because the review stage runs the end-of-branch
+   checks. Every task brief and fix message this stage writes
+   repeats this rule in these words.
+
    **With a "Parallel runs" section,** apply its **Isolation** line, with
    `<slug>` and `<slot>` filled in, to every test and server command. Run
    every **Shared resources** command as
