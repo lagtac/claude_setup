@@ -103,8 +103,8 @@ Follow-ups spawned by the planner retirement. Spec:
   beside row 103's spec draft, 31% of a 1M context); there the lock bound
   only that session's forks. Open: the forks made decisions the user never
   saw (Greek copy, new tokens, scope dropped from a finding, review findings
-  declined). Some decisions will have to be delegated to the fork that does
-  the work, but which ones is not settled yet. Pairs with 53.
+  declined). Some of these must go back to the developer, the user, but
+  which ones is not settled yet. Pairs with 53.
 - ✅ 10 **`my:architect`** — forces-first architecture brief before brainstorming.
   [spec](docs/plans/2026-09-17-architect-skill-spec.md),
   [plan](docs/plans/2026-09-17-architect-skill.md)
