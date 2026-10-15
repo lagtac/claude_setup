@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 58
+**Next number:** 59
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -36,7 +36,9 @@ side by side, because they edit different files.
    designed now.
 5. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
    `my:spec-review` `SKILL.md`. Side by side with 8: **48 "`setup` facts by
-   script"**; 47 "`clean-plans` moves by script"; 49
+   script", then 58 "Method hint in repos without a method"**, which both
+   edit `kit:setup` and `method-guard.py`; 47 "`clean-plans` moves by
+   script"; 49
    "`dev-reports` dates and TODOs by script"; 50 "`clean-gone-branches` as a
    script"; 51 "Roadmap number and link check".
 6. **After row 9 merges, one at a time, all in `my:handoff`: 33 "Skill text
@@ -196,6 +198,10 @@ Make the harness reusable in new projects without forking copies. Spec:
   It asks for the ports already in use, and fixes a `CLAUDE.local.md` line
   that says the project has no such section (zitamu, 2026-10-15). Split out
   of row 9's first spec draft. Blocked by row 29.
+- 💭 58 **Method hint in repos without a method** — in a git repo that
+  imports no method, `method-guard.py` prints one line naming `/kit:setup
+  my`, `tutor` or `none`. `none` silences that repo through a list outside
+  it, `~/.claude/kit/no-method.txt`, so the repo is never touched. Small.
 - ✅ 18 **Global orphan-plan hook** — `check-orphan-plans.sh` runs in the `my`
   plugin at session start, in all repos.
 - ✅ 19 **Runtime-command contract — DRAFT** — written down, not adopted:
