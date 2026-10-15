@@ -28,7 +28,10 @@ turns out larger than its size, stop and say so before going on.
   A bug still starts with `superpowers:systematic-debugging`, and every code
   change still starts with a failing test. It still runs in a worktree. Known
   limits from its review go into the squash commit message, because there is
-  no **Risk** section to hold them.
+  no **Risk** section to hold them. Several Small fixes may share one branch
+  when each one alone is Small. Each fix is its own commit with its own
+  failing test first. The branch gets one review round and one squash commit,
+  whose body names each fix's roadmap row.
 - **Medium** writes the Tasks section by the rules of
   `superpowers:writing-plans` "What a Step Contains": test names and assertions
   as code, signatures and files for code steps, no code bodies. It runs the
