@@ -66,6 +66,7 @@ Judge each criterion against the System Model. Mark a genuinely-inapplicable cri
    - A reader with no other context could write the implementation plan from the spec alone.
    - The spec has Risk, Dependencies and Trade-offs sections.
    - A Visual Language section, mapping UI elements to design-system primitives, is required **only** when the spec adds or changes UI. When the spec adds no UI, its absence is correct — do not flag it.
+   - In that section, each element names the other pages that use it, today or in a row the roadmap already orders. Check the claim against the code: search the pages for the same element. An element with two or more users that the spec builds inside one page is a `Warning` and a `design` finding: the author decides whether it becomes a shared component in this row or in a shared row ordered before it.
 
 **Out of scope:** TDD steps, test code, commit order and code-snippet logic. Those belong to the implementation plan, which a different reviewer checks. Do not raise findings or N/A rows about them.
 

@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 59
+**Next number:** 60
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -174,6 +174,10 @@ Follow-ups spawned by the planner retirement. Spec:
   spec's Risk section. Since 2026-10-12, items that take turns on a
   **Shared resources** lock can pair; see `CHANGELOG.md`.
   [spec](docs/plans/2026-10-12-status-skill-spec.md)
+- ✅ 59 **Shared parts named in the spec** — Visual Language names the other
+  pages that use each drawn element, and one with two or more becomes a
+  shared component; `my:spec-review` checks it. zitamu's row 74b built every
+  drawn part inside its page (2026-10-15). Small.
 
 ## Harness generalization
 

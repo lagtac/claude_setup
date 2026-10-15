@@ -16,6 +16,20 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-15 — A spec names the shared parts of its UI (row 59)
+
+A spec's Visual Language section now names, for each drawn element, the
+other pages that use it, today or in a roadmap row already ordered. An
+element with two or more users becomes a shared component, built in the
+same row or in a shared row ordered before it. `my:spec-review` checks the
+claim against the pages and raises a `design` finding when a shared element
+is built inside one page.
+
+On zitamu, row 74b's spec mapped each drawn part only to the components
+that already existed. Where none existed, it wrote page CSS, so the filter
+toolbar, the listing summary and the empty-result box stayed inside one
+page, though other pages need them.
+
 ### 2026-10-14 — The code stage runs the full test suite once per task
 
 `my:handoff`'s code stage now says how often to run tests. While a task is
