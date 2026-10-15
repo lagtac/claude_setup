@@ -75,6 +75,8 @@ Skip the table only for: single-line fixes, typo/comment edits, doc-only changes
 
 If brainstorming upgrades a task to architectural partway through, and the task matches the `my:architect` trigger row, stop and run `my:architect` first.
 
+**Check each design section before you ask about it.** Brainstorming's "Presenting the design" step asks after each section whether it looks right. Before you ask, review the section as you would if the user had asked "does it look right to you?". Look for a gap in the tests, a decision that conflicts with another section, a case the design must handle but does not, and a claim you have not checked against the code. Fix what you find. Then end the section with one line: what the check changed, or "Checked: no changes." Do not invent a change to show that you looked. If the user still asks "does it look right to you?", give the verdict first. Count only a change to a decision, a contract, the scope or a wrong fact; rewording and extra detail do not count.
+
 #### Spec → Plan two-artifact flow
 
 When `superpowers:brainstorming` produces a deliverable, keep spec and plan as **separate files** (Large changes only; a Medium change keeps its tasks in the spec):
