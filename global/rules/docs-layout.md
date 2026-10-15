@@ -185,5 +185,7 @@ Four commits remain the goal elsewhere.
   the commit that causes it.
 - **Cite only commits on `main`.** Never cite a commit that lives only on a local branch. A review
   names the decisions and sections it read, like "D12 to D16", not a hash, because later fixups fold
-  the answers into the reviewed commit. zitamu (`real-estate-webapp`) has uncommitted `pre-commit`
-  and `pre-push` hooks that enforce this rule and refuse a push with `fixup!` commits.
+  the answers into the reviewed commit. The `pre-commit` and `pre-push` hooks in
+  `~/projects/claude-setup/global/git-hooks/` enforce this rule and refuse a push with `fixup!`
+  commits. zitamu (`real-estate-webapp`) uses them. A fresh clone links them with
+  `ln -sf ~/projects/claude-setup/global/git-hooks/pre-* .git/hooks/`.

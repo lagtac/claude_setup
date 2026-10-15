@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# One check. A project links this file as .git/hooks/pre-commit (see docs-layout.md, "Cite only commits on main").
+# It does not format Markdown: the user dropped that on 2026-10-15 to spend less time on docs.
+# Format a file in nvim (:Format, :LintFix) when you want to. Skip the check once with
+# `git commit --no-verify`.
+
+# Rule in ~/.claude/CLAUDE.md, Git Workflow: a doc cites only commits on main. The pre-push hook checks the
+# whole tree, but only at push time. This hook checks the lines a commit on main adds to docs/, so
+# a branch commit ID in a review is caught by the commit that brings it to main (the squash-merge).
+# Runs on main only: on a branch, the branch's own commits are legitimately cited.
+[ "$(git symbolic-ref --short -q HEAD)" = main ] || exit 0
+git rev-parse -q --verify HEAD >/dev/null || exit 0
+stale=$(git diff --cached -U0 --diff-filter=AM -- docs | grep -E '^\+[^+]' | grep -oE '`[^`]+`' |
+  grep -oE '\b[0-9a-f]{7,40}\b' | sort -u |
+  while read h; do
+    git cat-file -e "$h^{commit}" 2>/dev/null || continue
+    git merge-base --is-ancestor "$h" HEAD || echo "$h"
+  done)
+[ -z "$stale" ] && exit 0
+echo "pre-commit: staged docs cite commits that are not on main (a branch commit, or one a rebase replaced)." >&2
+echo "Cite the squash commit on main, or describe the commit in words:" >&2
+for h in $stale; do
+  git diff --cached -U0 -- docs | grep -E "^(\+\+\+ |\+.*$h)" | grep -B1 "$h" | grep -v '^--$' >&2
+done
+exit 1

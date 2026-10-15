@@ -13,8 +13,9 @@ My Claude Code setup. The repo is also a plugin marketplace, named
     server with `@vue/typescript-plugin`, so LSP also covers `.vue` files. Its
     README lists the npm packages it needs.
 - **`global/`** — global instructions (`CLAUDE.md`, the rules that hold under
-  any method), method files (`methods/`), path-scoped rules (`rules/`) and
-  output styles (`output-styles/`). `~/.claude/CLAUDE.md`, `~/.claude/methods`,
+  any method), method files (`methods/`), path-scoped rules (`rules/`),
+  output styles (`output-styles/`) and the git hooks of the `my` method
+  (`git-hooks/`, linked into a project's `.git/hooks/`). `~/.claude/CLAUDE.md`, `~/.claude/methods`,
   `~/.claude/rules` and `~/.claude/output-styles` are symlinks into this
   folder, so edit the files here. There are two output styles: `plain`, the
   default, and `tutor`, which a learning workspace sets (see `kit:tutor`).
