@@ -36,21 +36,20 @@ side by side, because they edit different files.
    designed now.
 5. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
    `my:spec-review` `SKILL.md`. Side by side with 8: **48 "`setup` facts by
-   script", then 39 "`kit:setup` offers a Parallel runs section"**, which
-   edit the same skill; 47 "`clean-plans` moves by script"; 49
+   script"**; 47 "`clean-plans` moves by script"; 49
    "`dev-reports` dates and TODOs by script"; 50 "`clean-gone-branches` as a
    script"; 51 "Roadmap number and link check".
 6. **After row 9 merges, one at a time, all in `my:handoff`: 33 "Skill text
-   loses `$1` and `$2`", 37 "Launch from a session outside tmux", 56
-   "Supervised runs in parallel share slot 1", 34 "Merges read a message
-   file", 44 "`git-fold-fixups.py list <path>`", 42 "Parallel runs parser",
-   43 "`handoff` start checks as a script", 57 "An auto run that stops
-   before the merge", then 35 "Trim copied facts in `my:handoff`" with 36
-   "Name repeated cross-references", as one branch.** The fixes come first;
-   33 is a live bug, and row 9's branch already edits the same file. 34
-   reworks the command 33 fixed. 43 uses the parser from 42. 57 is a
-   feature, so it follows the fixes and scripts. The trims come last, so
-   they trim the text the scripts leave.
+   loses `$1` and `$2`", 37 "Launch from a session outside tmux", 34
+   "Merges read a message file", 44 "`git-fold-fixups.py list <path>`", 43
+   "`handoff` start checks as a script", 57 "An auto run that stops before
+   the merge", then 35 "Trim copied facts in `my:handoff`" with 36 "Name
+   repeated cross-references", as one branch.** The fixes come first; 33 is
+   a live bug, and row 9's branch already edits the same file. 34 reworks
+   the command 33 fixed. 43 does not wait for 42's parser: without a
+   "Parallel runs" section, `<n>` is `1`. 57 is a feature, so it follows the
+   fixes and scripts. The trims come last, so they trim the text the scripts
+   leave.
 7. **After row 9 merges: 40 "Every spec has a Files section", then 52
    "`status` gates and overlap by script".** Both edit `my:status`
    `SKILL.md`, and 40 also edits `my:spec-review`, so it goes after step 5.
@@ -60,8 +59,11 @@ side by side, because they edit different files.
    goes after them.
 9. **Waiting rows: 29 "Measure the auto runs", then 30 "Split `my:handoff` by
    mode", then 31 "Write review step 8 whole per mode"; and 17 "Generalize
-   the gates".** 29 waits for weeks of auto runs, 30 and 31 wait for 29, and
-   17 waits for a second project to adopt the gates.
+   the gates"; after 29, 39 "`kit:setup` offers a Parallel runs section", 42
+   "Parallel runs parser" and 56 "Supervised runs in parallel share slot
+   1".** 29 waits for weeks of auto runs, and 30 and 31 wait for 29. 39, 42
+   and 56 matter only if 29's count keeps parallel runs. 17 waits for a
+   second project to adopt the gates.
 
 ## `my` plugin hygiene
 
@@ -193,7 +195,7 @@ Make the harness reusable in new projects without forking copies. Spec:
   from the machine's memory and the repo's compose, `.env` and e2e files.
   It asks for the ports already in use, and fixes a `CLAUDE.local.md` line
   that says the project has no such section (zitamu, 2026-10-15). Split out
-  of row 9's first spec draft.
+  of row 9's first spec draft. Blocked by row 29.
 - ✅ 18 **Global orphan-plan hook** — `check-orphan-plans.sh` runs in the `my`
   plugin at session start, in all repos.
 - ✅ 19 **Runtime-command contract — DRAFT** — written down, not adopted:
@@ -279,7 +281,8 @@ Their order is in "Order of work" above.
 - 💭 56 **Supervised runs in parallel share slot 1** — fix: a supervised run
   has no state file and uses slot `1`, so two of them get the same
   Isolation values. On zitamu both previews took port 54321, and the second
-  failed to start. Found on 2026-10-15; not from the audit report.
+  failed to start. Found on 2026-10-15; not from the audit report. Blocked
+  by row 29.
 - 💭 57 **An auto run that stops before the merge** — a Delegation key, or
   an `auto` flag, that stops at stop-table row 14 "Ready to squash-merge".
   A test drive can then run the auto path, `decide` included, without a
@@ -302,6 +305,7 @@ above.
 - 💭 42 **Parallel runs parser** — a `handoff-state.py` subcommand prints
   **Max runs**, `<n>`, the docs paths and the `--docs-paths` arguments, for
   `my:handoff`, `my:status`, `kit:commit` and `my:architect`. Report S4.
+  Blocked by row 29.
 - 💭 43 **`handoff` start checks as a script** — a subcommand prints `<slug>`,
   `<name>` and `<base>`, the first failed start check, the Delegation
   validation and the restart point. Report S2, S3. The validation refuses a
