@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 56
+**Next number:** 58
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -41,14 +41,16 @@ side by side, because they edit different files.
    "`dev-reports` dates and TODOs by script"; 50 "`clean-gone-branches` as a
    script"; 51 "Roadmap number and link check".
 6. **After row 9 merges, one at a time, all in `my:handoff`: 33 "Skill text
-   loses `$1` and `$2`", 37 "Launch from a session outside tmux", 34 "Merges
-   read a message file", 44 "`git-fold-fixups.py list <path>`", 42 "Parallel
-   runs parser", 43 "`handoff` start checks as a script", then 35 "Trim copied
-   facts in `my:handoff`" with 36 "Name repeated cross-references", as one
-   branch.** The fixes come first; 33 is a live bug, and row 9's branch
-   already edits the same file. 34 reworks the command 33 fixed. 43 uses the
-   parser from 42. The trims come last, so they trim the text the scripts
-   leave.
+   loses `$1` and `$2`", 37 "Launch from a session outside tmux", 56
+   "Supervised runs in parallel share slot 1", 34 "Merges read a message
+   file", 44 "`git-fold-fixups.py list <path>`", 42 "Parallel runs parser",
+   43 "`handoff` start checks as a script", 57 "An auto run that stops
+   before the merge", then 35 "Trim copied facts in `my:handoff`" with 36
+   "Name repeated cross-references", as one branch.** The fixes come first;
+   33 is a live bug, and row 9's branch already edits the same file. 34
+   reworks the command 33 fixed. 43 uses the parser from 42. 57 is a
+   feature, so it follows the fixes and scripts. The trims come last, so
+   they trim the text the scripts leave.
 7. **After row 9 merges: 40 "Every spec has a Files section", then 52
    "`status` gates and overlap by script".** Both edit `my:status`
    `SKILL.md`, and 40 also edits `my:spec-review`, so it goes after step 5.
@@ -90,7 +92,9 @@ Follow-ups spawned by the planner retirement. Spec:
   Delegation section, check that its values fit the design: the listed
   dependencies match what the design adds, the check commands and test names
   exist, and `decide` is flagged on a spec that changes stored data or a
-  contract. Not the format: the auto start check owns that. Small.
+  contract. Not the format: the auto start check owns that. Also flags a
+  manual step before the merge, which an auto run can never take (zitamu,
+  2026-10-15). Small.
 - ✅ 9 **Start auto runs from roadmap rows** — one command takes a list of
   rows, starts the ones with an approved spec as parallel auto runs up to
   **Max runs**, and starts a waiting row each time a run finishes. Shipped in
@@ -187,7 +191,9 @@ Make the harness reusable in new projects without forking copies. Spec:
 - 💭 39 **`kit:setup` offers a Parallel runs section** — `/kit:setup my` asks
   whether to allow parallel auto runs, and proposes the section's four lines
   from the machine's memory and the repo's compose, `.env` and e2e files.
-  Split out of row 9's first spec draft.
+  It asks for the ports already in use, and fixes a `CLAUDE.local.md` line
+  that says the project has no such section (zitamu, 2026-10-15). Split out
+  of row 9's first spec draft.
 - ✅ 18 **Global orphan-plan hook** — `check-orphan-plans.sh` runs in the `my`
   plugin at session start, in all repos.
 - ✅ 19 **Runtime-command contract — DRAFT** — written down, not adopted:
@@ -268,6 +274,14 @@ Their order is in "Order of work" above.
   tmux server runs. When `TMUX` is empty, pick the target session from
   `tmux ls` (for example the one named after the repo) and open the window
   with `-t <session>:`. Found on 2026-10-13; not from the audit report.
+- 💭 56 **Supervised runs in parallel share slot 1** — fix: a supervised run
+  has no state file and uses slot `1`, so two of them get the same
+  Isolation values. On zitamu both previews took port 54321, and the second
+  failed to start. Found on 2026-10-15; not from the audit report.
+- 💭 57 **An auto run that stops before the merge** — a Delegation key, or
+  an `auto` flag, that stops at stop-table row 14 "Ready to squash-merge".
+  A test drive can then run the auto path, `decide` included, without a
+  merge. Found on zitamu on 2026-10-15; not from the audit report.
 - ✅ 38 **Rubric fixes in `my:handoff`** — `PushNotification` is loaded before
   use, findings are classified in writing before a fix, and the code stage's
   auto sub-steps have their own letters. Small. Report R1 to R4.
@@ -288,12 +302,16 @@ above.
   `my:handoff`, `my:status`, `kit:commit` and `my:architect`. Report S4.
 - 💭 43 **`handoff` start checks as a script** — a subcommand prints `<slug>`,
   `<name>` and `<base>`, the first failed start check, the Delegation
-  validation and the restart point. Report S2, S3.
+  validation and the restart point. Report S2, S3. The validation refuses a
+  command list with prose in a value, or a value wrapped onto two lines
+  (zitamu, 2026-10-15).
 - 💭 44 **`git-fold-fixups.py list <path>`** — lists a document's waiting
   fixups, which `my:handoff` finds by hand in three places. Small. Report S6.
 - 💭 45 **Review preparation as a script** — the argument sorting, the diff
   file, the mode table, the review file name and the template filling of
-  `my:soundness-review` and `my:spec-review`. Report S5.
+  `my:soundness-review` and `my:spec-review`. Report S5. Two runs that start
+  in the same second share one work folder today (zitamu, 2026-10-15); the
+  script makes it with an atomic `mkdir`.
 - 💭 46 **`git-squasher` plan and apply scripts** — the grouping rules run as a
   script, and the apply step reads the messages from a file. Report S7.
 - 💭 47 **`clean-plans` moves by script** — the candidate list, the date,
