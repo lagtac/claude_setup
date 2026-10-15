@@ -1,0 +1,1244 @@
+[
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-grispy-web-ext-grispy-ext/b21b984b-ca23-4ee7-871c-a77e9f703ea8.jsonl",
+  "spec": "/home/dchris/projects/grispy-web-ext/grispy-ext/docs/plans/2026-09-14-subject-model-spec.md",
+  "date": "2026-09-13",
+  "committed": true,
+  "dialogue": {
+   "total": 81468.52800011635,
+   "agent": 3819.4460005760193,
+   "user": 14897.447999477386,
+   "away": 62751.63400006294,
+   "turns": 12,
+   "asks": 32
+  },
+  "review": {
+   "total": 537.4939999580383,
+   "agent": 272.13100028038025,
+   "user": 265.3629996776581,
+   "away": 0.0,
+   "turns": 2,
+   "asks": 1
+  },
+  "project": "grispy-web-ext-grispy-ext"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/554902d9-6ee8-42f6-81c0-3d911562090a.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-16-landing-motion-spec.md",
+  "date": "2026-09-16",
+  "committed": true,
+  "dialogue": {
+   "total": 2818.822000026703,
+   "agent": 768.3860001564026,
+   "user": 2050.4359998703003,
+   "away": 0.0,
+   "turns": 4,
+   "asks": 11
+  },
+  "review": {
+   "total": 169.70099997520447,
+   "agent": 125.00999999046326,
+   "user": 44.69099998474121,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-claude-setup/5afa7d56-07d9-45a4-bd77-99fd49f5e09b.jsonl",
+  "spec": "/home/dchris/projects/claude-setup/docs/plans/2026-09-16-spec-review-skill-spec.md",
+  "date": "2026-09-16",
+  "committed": true,
+  "dialogue": {
+   "total": 2463.690999984741,
+   "agent": 292.90300035476685,
+   "user": 2170.7879996299744,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 7
+  },
+  "review": {
+   "total": 19.749000072479248,
+   "agent": 19.749000072479248,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "claude-setup"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-grispy2-web-ext/6014880e-c266-4390-9488-25063c000752.jsonl",
+  "spec": "/home/dchris/projects/grispy2-web-ext/docs/plans/2026-09-21-field-classifier-spec.md",
+  "date": "2026-09-17",
+  "committed": true,
+  "dialogue": {
+   "total": 353379.17200016975,
+   "agent": 883.7300000190735,
+   "user": 1357.3469998836517,
+   "away": 351138.095000267,
+   "turns": 12,
+   "asks": 4
+  },
+  "review": {
+   "total": 10.98199987411499,
+   "agent": 10.98199987411499,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "grispy2-web-ext"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-diagoradisa-diagoradisa-palmist/176d763d-5907-4914-b98c-5161bcdabe49.jsonl",
+  "spec": "/home/dchris/projects/diagoradisa/diagoradisa-palmist/docs/plans/2026-09-17-btn-shape-and-summary-spec.md",
+  "date": "2026-09-17",
+  "committed": true,
+  "dialogue": {
+   "total": 4527.046999931335,
+   "agent": 135.5770001411438,
+   "user": 2038.6559998989105,
+   "away": 2352.813999891281,
+   "turns": 1,
+   "asks": 3
+  },
+  "review": {
+   "total": 11.40499997138977,
+   "agent": 11.40499997138977,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "diagoradisa-diagoradisa-palmist"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/1aefd371-18f0-4e83-82e0-f38db01ef206.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-17-landing-screen-blocks-spec.md",
+  "date": "2026-09-17",
+  "committed": false,
+  "dialogue": {
+   "total": 7109.893999814987,
+   "agent": 740.125,
+   "user": 760.1679999828339,
+   "away": 5609.600999832153,
+   "turns": 1,
+   "asks": 5
+  },
+  "review": {
+   "total": 34855.02600002289,
+   "agent": 1781.409999847412,
+   "user": 1511.0000002384186,
+   "away": 31562.615999937057,
+   "turns": 6,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-claude-setup/3db9a1c0-eced-4b19-8a31-a2761856252b.jsonl",
+  "spec": "/home/dchris/projects/claude-setup/docs/plans/2026-09-17-architect-skill-spec.md",
+  "date": "2026-09-17",
+  "committed": true,
+  "dialogue": {
+   "total": 38398.236000061035,
+   "agent": 266.89299988746643,
+   "user": 1621.2620000839233,
+   "away": 36510.081000089645,
+   "turns": 4,
+   "asks": 4
+  },
+  "review": {
+   "total": 10.984999895095825,
+   "agent": 10.984999895095825,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "claude-setup"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/53adc4a5-b04f-4607-b5d8-004581a5eaa7.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-18-design-tokens-spec.md",
+  "date": "2026-09-18",
+  "committed": true,
+  "dialogue": {
+   "total": 2396.5910000801086,
+   "agent": 777.507000207901,
+   "user": 1619.0839998722076,
+   "away": 0.0,
+   "turns": 8,
+   "asks": 3
+  },
+  "review": {
+   "total": 38.34500002861023,
+   "agent": 38.34500002861023,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/b7b16e9e-20ce-4baf-9fcb-51c9820d9d46.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-19-pricing-card-spec.md",
+  "date": "2026-09-19",
+  "committed": true,
+  "dialogue": {
+   "total": 687.0150001049042,
+   "agent": 339.9350004196167,
+   "user": 347.0799996852875,
+   "away": 0.0,
+   "turns": 8,
+   "asks": 0
+  },
+  "review": {
+   "total": 638.298999786377,
+   "agent": 540.7109999656677,
+   "user": 97.58799982070923,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/11c217ab-2519-4d65-9075-161dd0284f1a.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-19-landing-type-rhythm-spec.md",
+  "date": "2026-09-19",
+  "committed": true,
+  "dialogue": {
+   "total": 161.3860001564026,
+   "agent": 161.3860001564026,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "review": {
+   "total": 533.061999797821,
+   "agent": 533.061999797821,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/f7747ee3-92b3-4262-bb1b-58d4859a0a64.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-20-consent-confirm-spec.md",
+  "date": "2026-09-20",
+  "committed": true,
+  "dialogue": {
+   "total": 1244.9110000133514,
+   "agent": 762.5489995479584,
+   "user": 482.36200046539307,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 7
+  },
+  "review": {
+   "total": 1226.6500000953674,
+   "agent": 1216.9680001735687,
+   "user": 9.681999921798706,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/63ee7af9-760d-41fd-8ee1-b592233b8d78.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-20-faq-page-spec.md",
+  "date": "2026-09-20",
+  "committed": true,
+  "dialogue": {
+   "total": 9807.83999991417,
+   "agent": 791.3739998340607,
+   "user": 323.95499992370605,
+   "away": 8692.511000156403,
+   "turns": 2,
+   "asks": 1
+  },
+  "review": {
+   "total": 1242.4119999408722,
+   "agent": 1065.2710001468658,
+   "user": 177.14099979400635,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/5d9b8ef6-1747-4122-bf95-3c8bd7251d28.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-20-seo-meta-spec.md",
+  "date": "2026-09-20",
+  "committed": true,
+  "dialogue": {
+   "total": 1547.611999988556,
+   "agent": 395.23500061035156,
+   "user": 1152.3769993782043,
+   "away": 0.0,
+   "turns": 4,
+   "asks": 4
+  },
+  "review": {
+   "total": 1044.3889999389648,
+   "agent": 824.6229996681213,
+   "user": 219.7660002708435,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp-web/6356526d-7a89-49e7-8f8c-09e457d73ed6.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-21-landing-motion-spec.md",
+  "date": "2026-09-21",
+  "committed": true,
+  "dialogue": {
+   "total": 1814.3040001392365,
+   "agent": 779.4640002250671,
+   "user": 1034.8399999141693,
+   "away": 0.0,
+   "turns": 8,
+   "asks": 3
+  },
+  "review": {
+   "total": 970.8769998550415,
+   "agent": 709.164999961853,
+   "user": 261.7119998931885,
+   "away": 0.0,
+   "turns": 2,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp-web"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/c07bd95a-582f-485b-b9b7-72b5cbcb243b.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-21-account-menu-spec.md",
+  "date": "2026-09-21",
+  "committed": false,
+  "dialogue": {
+   "total": 1244.0910000801086,
+   "agent": 927.8270001411438,
+   "user": 316.26399993896484,
+   "away": 0.0,
+   "turns": 2,
+   "asks": 0
+  },
+  "review": {
+   "total": 19739.25,
+   "agent": 18848.066999673843,
+   "user": 891.1830003261566,
+   "away": 0.0,
+   "turns": 18,
+   "asks": 0
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/9cf6f236-aa75-40fb-86b1-d7926a863737.jsonl",
+  "spec": "/home/dchris/projects/claude-setup/docs/plans/2026-09-21-handoff-spec.md",
+  "date": "2026-09-21",
+  "committed": true,
+  "dialogue": {
+   "total": 8701.572000026703,
+   "agent": 1207.6130003929138,
+   "user": 606.4699997901917,
+   "away": 6887.488999843597,
+   "turns": 8,
+   "asks": 0
+  },
+  "review": {
+   "total": 3915.6979999542236,
+   "agent": 1832.7690000534058,
+   "user": 37.04699993133545,
+   "away": 2045.8819999694824,
+   "turns": 2,
+   "asks": 0
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/e205741d-40f6-4957-b50e-7e0042c0bec2.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-21-phone-type-roles-spec.md",
+  "date": "2026-09-21",
+  "committed": true,
+  "dialogue": {
+   "total": 1012.702999830246,
+   "agent": 463.61299991607666,
+   "user": 549.0899999141693,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 1
+  },
+  "review": {
+   "total": 2080.069000005722,
+   "agent": 482.58700013160706,
+   "user": 1597.481999874115,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-grispy-web-ext-grispy-ext/9d208b68-7a46-440d-90c3-bbf9deb522da.jsonl",
+  "spec": "/home/dchris/projects/grispy-web-ext/grispy-ext/docs/plans/2026-09-23-guide-images-spec.md",
+  "date": "2026-09-22",
+  "committed": true,
+  "dialogue": {
+   "total": 87314.35500001907,
+   "agent": 1009.2860000133514,
+   "user": 2015.7990000247955,
+   "away": 84289.26999998093,
+   "turns": 9,
+   "asks": 5
+  },
+  "review": {
+   "total": 11.412000179290771,
+   "agent": 11.412000179290771,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "grispy-web-ext-grispy-ext"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-grispy2-web-ext/25aa0da2-b225-4c83-99d8-d47618a5f18d.jsonl",
+  "spec": "/home/dchris/projects/grispy2-web-ext/docs/plans/2026-09-23-plane-a-events-spec.md",
+  "date": "2026-09-22",
+  "committed": true,
+  "dialogue": {
+   "total": 70834.34399986267,
+   "agent": 201.71199941635132,
+   "user": 1588.751000404358,
+   "away": 69043.88100004196,
+   "turns": 2,
+   "asks": 4
+  },
+  "review": {
+   "total": 25.14800000190735,
+   "agent": 25.14800000190735,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "grispy2-web-ext"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/11ccfdbe-6810-4637-a89e-fa21a8e8620a.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-22-busy-buttons-spec.md",
+  "date": "2026-09-22",
+  "committed": true,
+  "dialogue": {
+   "total": 4339.733000040054,
+   "agent": 327.4570002555847,
+   "user": 653.4399998188019,
+   "away": 3358.8359999656677,
+   "turns": 1,
+   "asks": 2
+  },
+  "review": {
+   "total": 12287.77999997139,
+   "agent": 1120.2400002479553,
+   "user": 174.71599984169006,
+   "away": 10992.823999881744,
+   "turns": 2,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/5c84f48b-0638-4bf9-b554-450e4054e9b5.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-22-shared-page-classes-spec.md",
+  "date": "2026-09-22",
+  "committed": true,
+  "dialogue": {
+   "total": 16615.78100013733,
+   "agent": 548.8680007457733,
+   "user": 1269.293999671936,
+   "away": 14797.61899971962,
+   "turns": 4,
+   "asks": 3
+  },
+  "review": {
+   "total": 907.4470000267029,
+   "agent": 814.095999956131,
+   "user": 93.3510000705719,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-grispy-web-ext-grispy-ext/28bcc5b3-94db-4ad5-b535-341331ba9d51.jsonl",
+  "spec": "/home/dchris/projects/grispy-web-ext/grispy-ext/docs/plans/2026-09-24-paw-only-marks-spec.md",
+  "date": "2026-09-24",
+  "committed": true,
+  "dialogue": {
+   "total": 1593.7460000514984,
+   "agent": 611.3089997768402,
+   "user": 982.4370002746582,
+   "away": 0.0,
+   "turns": 3,
+   "asks": 3
+  },
+  "review": {
+   "total": 234.13000011444092,
+   "agent": 234.13000011444092,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "grispy-web-ext-grispy-ext"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/a9db37c6-abd3-4fc1-97ad-5c4b812f4201.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-24-two-visual-generations-spec.md",
+  "date": "2026-09-24",
+  "committed": true,
+  "dialogue": {
+   "total": 18558.547000169754,
+   "agent": 794.3030002117157,
+   "user": 2791.1029999256134,
+   "away": 14973.141000032425,
+   "turns": 1,
+   "asks": 8
+  },
+  "review": {
+   "total": 6093.509999990463,
+   "agent": 658.0239999294281,
+   "user": 0.0,
+   "away": 5435.486000061035,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/fa218975-a646-4d35-ac04-4e6215a5e2b7.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-29-typed-numbers-spec.md",
+  "date": "2026-09-29",
+  "committed": true,
+  "dialogue": {
+   "total": 10199.927999973297,
+   "agent": 1069.021999835968,
+   "user": 1756.598000049591,
+   "away": 7374.308000087738,
+   "turns": 5,
+   "asks": 1
+  },
+  "review": {
+   "total": 648.6930000782013,
+   "agent": 260.15700006484985,
+   "user": 388.53600001335144,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/2606dc18-d2dd-4a8e-816b-338a84842997.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-29-role-names-spec.md",
+  "date": "2026-09-29",
+  "committed": true,
+  "dialogue": {
+   "total": 859.4179999828339,
+   "agent": 292.53200006484985,
+   "user": 566.885999917984,
+   "away": 0.0,
+   "turns": 7,
+   "asks": 0
+  },
+  "review": {
+   "total": 7406.601000070572,
+   "agent": 461.0239999294281,
+   "user": 0.0,
+   "away": 6945.577000141144,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/604cef94-0c5f-4591-bcf6-2bb3286c9bae.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-29-option-boxes-spec.md",
+  "date": "2026-09-29",
+  "committed": true,
+  "dialogue": {
+   "total": 1457.5550000667572,
+   "agent": 606.8929998874664,
+   "user": 850.6620001792908,
+   "away": 0.0,
+   "turns": 6,
+   "asks": 0
+  },
+  "review": {
+   "total": 633.154000043869,
+   "agent": 563.566999912262,
+   "user": 69.58700013160706,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 0
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-grispy-web-ext-grispy-ext/b8fc427b-cbe6-43f5-8e97-61957efefa4d.jsonl",
+  "spec": "/home/dchris/projects/grispy-web-ext/grispy-ext/docs/plans/2026-09-30-repeat-row-matching-spec.md",
+  "date": "2026-09-30",
+  "committed": true,
+  "dialogue": {
+   "total": 3165.5389997959137,
+   "agent": 312.32199931144714,
+   "user": 621.2800006866455,
+   "away": 2231.936999797821,
+   "turns": 3,
+   "asks": 7
+  },
+  "review": {
+   "total": 1284.420000076294,
+   "agent": 525.4660000801086,
+   "user": 758.9539999961853,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "grispy-web-ext-grispy-ext"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-maritime/8ad9ed53-10ec-4b7e-bb8d-2e4126646e94.jsonl",
+  "spec": "/home/dchris/projects/maritime/docs/plans/2026-09-30-niche-research-tool-spec.md",
+  "date": "2026-09-30",
+  "committed": true,
+  "dialogue": {
+   "total": 15333.959000110626,
+   "agent": 179.21199989318848,
+   "user": 1974.9870002269745,
+   "away": 13179.759999990463,
+   "turns": 6,
+   "asks": 6
+  },
+  "review": {
+   "total": 611.8510000705719,
+   "agent": 273.29699993133545,
+   "user": 338.55400013923645,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 0
+  },
+  "project": "maritime"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/485f7fc1-7d7a-4522-adc1-209ee48381ad.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-09-30-raised-floors-spec.md",
+  "date": "2026-09-30",
+  "committed": true,
+  "dialogue": {
+   "total": 981.7340002059937,
+   "agent": 391.17400002479553,
+   "user": 590.5600001811981,
+   "away": 0.0,
+   "turns": 4,
+   "asks": 0
+  },
+  "review": {
+   "total": 40.20899987220764,
+   "agent": 40.20899987220764,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-claude-setup/8970499f-368f-44ab-aaac-78191e3ef453.jsonl",
+  "spec": "/home/dchris/projects/claude-setup/docs/plans/2026-09-30-soundness-plan-only-spec.md",
+  "date": "2026-09-30",
+  "committed": true,
+  "dialogue": {
+   "total": 1313.1299998760223,
+   "agent": 145.30700016021729,
+   "user": 1167.822999715805,
+   "away": 0.0,
+   "turns": 4,
+   "asks": 1
+  },
+  "review": {
+   "total": 1112.944000005722,
+   "agent": 310.8069999217987,
+   "user": 802.1370000839233,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 0
+  },
+  "project": "claude-setup"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-grispy-web-ext-grispy-ext/f65dc7e8-9820-4d97-822f-34255d779072.jsonl",
+  "spec": "/home/dchris/projects/grispy-web-ext/grispy-ext/docs/plans/2026-10-01-repeat-row-materialise-spec.md",
+  "date": "2026-10-01",
+  "committed": true,
+  "dialogue": {
+   "total": 1825.2210001945496,
+   "agent": 345.9099998474121,
+   "user": 1479.3110003471375,
+   "away": 0.0,
+   "turns": 3,
+   "asks": 6
+  },
+  "review": {
+   "total": 2836.723999977112,
+   "agent": 560.327999830246,
+   "user": 400.45099997520447,
+   "away": 1875.9450001716614,
+   "turns": 0,
+   "asks": 2
+  },
+  "project": "grispy-web-ext-grispy-ext"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/d415b737-598a-4e72-b570-de696cb1d13b.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-10-01-guest-way-in-spec.md",
+  "date": "2026-10-01",
+  "committed": true,
+  "dialogue": {
+   "total": 4330.957000017166,
+   "agent": 588.1220002174377,
+   "user": 1669.1569998264313,
+   "away": 2073.677999973297,
+   "turns": 11,
+   "asks": 0
+  },
+  "review": {
+   "total": 488.83200001716614,
+   "agent": 488.83200001716614,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-mv3-starter/164251a5-1647-450f-a164-848bc8c5a5e1.jsonl",
+  "spec": "/home/dchris/projects/play-ext/docs/plans/2026-10-02-mv3-scaffold-spec.md",
+  "date": "2026-10-02",
+  "committed": true,
+  "dialogue": {
+   "total": 743.0139999389648,
+   "agent": 167.742999792099,
+   "user": 575.2710001468658,
+   "away": 0.0,
+   "turns": 2,
+   "asks": 7
+  },
+  "review": {
+   "total": 5393.65700006485,
+   "agent": 438.64800000190735,
+   "user": 968.4700000286102,
+   "away": 3986.5390000343323,
+   "turns": 1,
+   "asks": 1
+  },
+  "project": "mv3-starter"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-mv3-starter/6dae4926-d90d-46fa-9f20-94c06ef25ec6.jsonl",
+  "spec": "/home/dchris/projects/play-ext/docs/plans/2026-10-04-template-gaps-spec.md",
+  "date": "2026-10-03",
+  "committed": true,
+  "dialogue": {
+   "total": 59036.69099998474,
+   "agent": 143.9760000705719,
+   "user": 181.54900002479553,
+   "away": 58711.165999889374,
+   "turns": 7,
+   "asks": 0
+  },
+  "review": {
+   "total": 175.68799996376038,
+   "agent": 175.68799996376038,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "mv3-starter"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/e60acb54-dbda-4f94-a344-fa8f9884fef4.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-10-06-guest-burger-menu-spec.md",
+  "date": "2026-10-06",
+  "committed": true,
+  "dialogue": {
+   "total": 4585.125,
+   "agent": 404.6099998950958,
+   "user": 1199.2400000095367,
+   "away": 2981.2750000953674,
+   "turns": 4,
+   "asks": 2
+  },
+  "review": {
+   "total": 702.5920000076294,
+   "agent": 581.5800001621246,
+   "user": 121.01199984550476,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-mv3-tab-notes/1c1ae43b-393c-4ba8-bc65-f5e4017dec20.jsonl",
+  "spec": "/home/dchris/projects/claude-setup/docs/plans/2026-10-06-tutor-spec.md",
+  "date": "2026-10-06",
+  "committed": true,
+  "dialogue": {
+   "total": 804.9179999828339,
+   "agent": 167.74000000953674,
+   "user": 637.1779999732971,
+   "away": 0.0,
+   "turns": 3,
+   "asks": 0
+  },
+  "review": {
+   "total": 810.2060000896454,
+   "agent": 494.23600006103516,
+   "user": 315.97000002861023,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 0
+  },
+  "project": "mv3-tab-notes"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-grispy-web-ext-grispy-ext/a2849f14-60f4-451f-8724-ba153b0984fe.jsonl",
+  "spec": "/home/dchris/projects/grispy-web-ext/grispy-ext/docs/plans/2026-10-08-readable-form-names-spec.md",
+  "date": "2026-10-07",
+  "committed": true,
+  "dialogue": {
+   "total": 86900.08999991417,
+   "agent": 305.54900002479553,
+   "user": 671.8199999332428,
+   "away": 85922.72099995613,
+   "turns": 3,
+   "asks": 2
+  },
+  "review": {
+   "total": 499.03799986839294,
+   "agent": 390.55399990081787,
+   "user": 108.48399996757507,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "grispy-web-ext-grispy-ext"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/e81c4203-5e45-4aad-b511-057c64658c8f.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-10-08-matching-requests-spec.md",
+  "date": "2026-10-08",
+  "committed": true,
+  "dialogue": {
+   "total": 1633.1930000782013,
+   "agent": 495.02800011634827,
+   "user": 1138.164999961853,
+   "away": 0.0,
+   "turns": 3,
+   "asks": 6
+  },
+  "review": {
+   "total": 58.164000034332275,
+   "agent": 58.164000034332275,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/5e5995da-3899-4806-9758-a8a1e5934fa2.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-10-08-composed-titles-spec.md",
+  "date": "2026-10-08",
+  "committed": true,
+  "dialogue": {
+   "total": 1038.9189999103546,
+   "agent": 206.0559995174408,
+   "user": 832.8630003929138,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 4
+  },
+  "review": {
+   "total": 902.3110001087189,
+   "agent": 422.8310000896454,
+   "user": 479.4800000190735,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/dd4dda4c-caf4-4bbe-8ab6-adcef919b930.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-10-09-match-grade-shape-spec.md",
+  "date": "2026-10-09",
+  "committed": true,
+  "dialogue": {
+   "total": 709.8320000171661,
+   "agent": 284.914999961853,
+   "user": 424.9170000553131,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 1
+  },
+  "review": {
+   "total": 1360.9070000648499,
+   "agent": 469.58200001716614,
+   "user": 891.3250000476837,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/49dbbcb4-aa77-47cd-93ea-282ef7410e39.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-10-10-app-frame-spec.md",
+  "date": "2026-10-10",
+  "committed": true,
+  "dialogue": {
+   "total": 2389.3840000629425,
+   "agent": 392.64999985694885,
+   "user": 1996.7340002059937,
+   "away": 0.0,
+   "turns": 2,
+   "asks": 5
+  },
+  "review": {
+   "total": 1262.476000070572,
+   "agent": 610.6050000190735,
+   "user": 651.8710000514984,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 2
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-claude-setup/f3d6d63a-4370-44c6-b77a-d0edd3979528.jsonl",
+  "spec": "/home/dchris/projects/claude-setup/docs/plans/2026-10-10-git-fold-fixups-spec.md",
+  "date": "2026-10-10",
+  "committed": true,
+  "dialogue": {
+   "total": 239.08399987220764,
+   "agent": 163.3549997806549,
+   "user": 75.72900009155273,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 0
+  },
+  "review": {
+   "total": 313.3680000305176,
+   "agent": 313.3680000305176,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "claude-setup"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/106873d0-6c7d-4bc2-b76f-9fc006e6ea49.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-10-11-agent-subscription-state-spec.md",
+  "date": "2026-10-11",
+  "committed": true,
+  "dialogue": {
+   "total": 946.4630000591278,
+   "agent": 295.8540005683899,
+   "user": 650.6089994907379,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 6
+  },
+  "review": {
+   "total": 2389.582000017166,
+   "agent": 467.59299993515015,
+   "user": 1921.989000082016,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 2
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-diagoradisa-diagoradisa-annotator/59df57b4-d089-45e6-8321-be4afb82d4d4.jsonl",
+  "spec": "/home/dchris/projects/diagoradisa/diagoradisa-annotator/docs/plans/2026-10-12-parallel-worktree-runs-spec.md",
+  "date": "2026-10-12",
+  "committed": true,
+  "dialogue": {
+   "total": 6709.241999864578,
+   "agent": 223.132000207901,
+   "user": 1198.5919997692108,
+   "away": 5287.517999887466,
+   "turns": 1,
+   "asks": 2
+  },
+  "review": {
+   "total": 619.7030000686646,
+   "agent": 146.19600009918213,
+   "user": 473.5069999694824,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 1
+  },
+  "project": "diagoradisa-diagoradisa-annotator"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-claude-setup/e0a8f867-bbde-438f-95e1-fe2f488a1b93.jsonl",
+  "spec": "/home/dchris/projects/claude-setup/docs/plans/2026-10-12-autonomous-run-spec.md",
+  "date": "2026-10-12",
+  "committed": true,
+  "dialogue": {
+   "total": 6649.901000022888,
+   "agent": 383.05200004577637,
+   "user": 1028.1659998893738,
+   "away": 5238.683000087738,
+   "turns": 4,
+   "asks": 9
+  },
+  "review": {
+   "total": 1831.12700009346,
+   "agent": 414.18499994277954,
+   "user": 1416.9420001506805,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "claude-setup"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-claude-setup/68f0ce4d-3543-48df-ba77-e573a0917334.jsonl",
+  "spec": "/home/dchris/projects/claude-setup/docs/plans/2026-10-12-swappable-methods-spec.md",
+  "date": "2026-10-12",
+  "committed": true,
+  "dialogue": {
+   "total": 3187.3369998931885,
+   "agent": 461.768000125885,
+   "user": 2725.5689997673035,
+   "away": 0.0,
+   "turns": 17,
+   "asks": 0
+  },
+  "review": {
+   "total": 678.5989999771118,
+   "agent": 521.960000038147,
+   "user": 156.63899993896484,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 0
+  },
+  "project": "claude-setup"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-claude-setup/f86e32ba-23c4-4f63-bf4c-430f2f6535eb.jsonl",
+  "spec": "/home/dchris/projects/claude-setup/docs/plans/2026-10-12-status-skill-spec.md",
+  "date": "2026-10-12",
+  "committed": true,
+  "dialogue": {
+   "total": 499.32599997520447,
+   "agent": 198.4819996356964,
+   "user": 300.84400033950806,
+   "away": 0.0,
+   "turns": 3,
+   "asks": 2
+  },
+  "review": {
+   "total": 701.9049999713898,
+   "agent": 487.1689999103546,
+   "user": 214.73600006103516,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 2
+  },
+  "project": "claude-setup"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-claude-setup/7c1e1c11-6ca9-4d41-8186-56b4d2263dd2.jsonl",
+  "spec": "/home/dchris/projects/claude-setup/docs/plans/2026-10-12-locked-commit-spec.md",
+  "date": "2026-10-12",
+  "committed": true,
+  "dialogue": {
+   "total": 712.904000043869,
+   "agent": 257.99900007247925,
+   "user": 454.90499997138977,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 2
+  },
+  "review": {
+   "total": 354.3470001220703,
+   "agent": 270.21399998664856,
+   "user": 84.13300013542175,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "claude-setup"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-claude-setup/c2b9ec30-9da7-45b1-8acd-e4d96cf5f1b8.jsonl",
+  "spec": "/home/dchris/projects/claude-setup/docs/plans/2026-10-12-parallel-auto-runs-spec.md",
+  "date": "2026-10-12",
+  "committed": true,
+  "dialogue": {
+   "total": 5829.422999858856,
+   "agent": 1233.3729994297028,
+   "user": 4596.050000429153,
+   "away": 0.0,
+   "turns": 11,
+   "asks": 19
+  },
+  "review": {
+   "total": 779.2960000038147,
+   "agent": 673.5789999961853,
+   "user": 105.7170000076294,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 1
+  },
+  "project": "claude-setup"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-diagoradisa-diagoradisa-annotator/722e7767-0095-4d27-8bb6-3b8f256eb301.jsonl",
+  "spec": "/home/dchris/projects/diagoradisa/diagoradisa-annotator/docs/plans/2026-10-13-dm1-phase4-organize-spec.md",
+  "date": "2026-10-13",
+  "committed": false,
+  "dialogue": {
+   "total": 3076.7220001220703,
+   "agent": 1068.5030000209808,
+   "user": 2008.2190001010895,
+   "away": 0.0,
+   "turns": 6,
+   "asks": 11
+  },
+  "review": {
+   "total": 14587.411999940872,
+   "agent": 729.9970002174377,
+   "user": 1587.8659999370575,
+   "away": 12269.548999786377,
+   "turns": 1,
+   "asks": 2
+  },
+  "project": "diagoradisa-diagoradisa-annotator"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-diagoradisa-diagoradisa-palmist/6453fa8c-a611-4f61-8199-98340942fff3.jsonl",
+  "spec": "/home/dchris/projects/promo-toolkit/docs/plans/2026-10-13-phone-mode-spec.md",
+  "date": "2026-10-13",
+  "committed": true,
+  "dialogue": {
+   "total": 4192.160000085831,
+   "agent": 239.98399996757507,
+   "user": 83.6340000629425,
+   "away": 3868.542000055313,
+   "turns": 0,
+   "asks": 5
+  },
+  "review": {
+   "total": 693.3479998111725,
+   "agent": 457.14800000190735,
+   "user": 236.19999980926514,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 1
+  },
+  "project": "diagoradisa-diagoradisa-palmist"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/2fde9733-596d-4fa7-b856-629719f5e2dc.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-10-13-request-match-grade-spec.md",
+  "date": "2026-10-13",
+  "committed": false,
+  "dialogue": {
+   "total": 1740.1789999008179,
+   "agent": 434.3279995918274,
+   "user": 1305.8510003089905,
+   "away": 0.0,
+   "turns": 2,
+   "asks": 7
+  },
+  "review": {
+   "total": 1138.00200009346,
+   "agent": 876.6670002937317,
+   "user": 261.3349997997284,
+   "away": 0.0,
+   "turns": 1,
+   "asks": 3
+  },
+  "project": "zitamu-real-estate-webapp"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-claude-setup/0aa095ee-5335-4457-b76f-b7e92ea234aa.jsonl",
+  "spec": "/home/dchris/projects/claude-setup/docs/plans/2026-10-13-roadmap-auto-runs-spec.md",
+  "date": "2026-10-13",
+  "committed": true,
+  "dialogue": {
+   "total": 2768.930999994278,
+   "agent": 457.46000027656555,
+   "user": 2311.4709997177124,
+   "away": 0.0,
+   "turns": 3,
+   "asks": 8
+  },
+  "review": {
+   "total": 1353.297000169754,
+   "agent": 937.7920002937317,
+   "user": 415.50499987602234,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 3
+  },
+  "project": "claude-setup"
+ },
+ {
+  "file": "/home/dchris/.claude/projects/-home-dchris-projects-zitamu-real-estate-webapp/7d9de5ea-8214-4c12-ba06-dd977c4b962c.jsonl",
+  "spec": "/home/dchris/projects/zitamu/real-estate-webapp/docs/plans/2026-10-14-icon-set-spec.md",
+  "date": "2026-10-14",
+  "committed": true,
+  "dialogue": {
+   "total": 474.9190001487732,
+   "agent": 474.9190001487732,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "review": {
+   "total": 998.5699999332428,
+   "agent": 998.5699999332428,
+   "user": 0.0,
+   "away": 0.0,
+   "turns": 0,
+   "asks": 0
+  },
+  "project": "zitamu-real-estate-webapp"
+ }
+]
