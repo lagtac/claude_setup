@@ -19,6 +19,17 @@ My Claude Code setup. The repo is also a plugin marketplace, named
   `~/.claude/rules` and `~/.claude/output-styles` are symlinks into this
   folder, so edit the files here. There are two output styles: `plain`, the
   default, and `tutor`, which a learning workspace sets (see `kit:tutor`).
+- **`projects/<repo>/`** — one project's private Claude files, which its own
+  repo ignores: `claude-local.md` and `rules/`. A fresh clone of that project
+  links them back from its root:
+
+  ```bash
+  ln -s ~/projects/claude-setup/projects/<repo>/claude-local.md CLAUDE.local.md
+  ln -s ~/projects/claude-setup/projects/<repo>/rules .claude/rules
+  ```
+
+  The file is not named `CLAUDE.local.md` here, so that sessions in this repo
+  do not load it.
 
 `marketplace.json` stays at the repo root. There, the plugin version is the
 commit hash. In a subfolder, Claude Code cannot read the hash, so every version
