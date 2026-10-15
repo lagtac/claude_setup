@@ -115,7 +115,11 @@ Follow-ups spawned by the planner retirement. Spec:
   gated on a source the same day. Open: how the hardening loop stops, since
   `global/methods/my.md` allows one fix round per review; and drafting
   several specs from one request, which the reframe dropped and no row
-  covers.
+  covers. Tried without this design on zitamu on 2026-10-15 (rows 76, 77
+  and 74): forks ran `my:architect` and wrote three specs with no intake
+  call, decisions came as defaults, and 35 questions came in one batch. The
+  user named it a skipped brainstorming. 76 and 77 are test-driven through
+  plan and code in worktrees, unmerged, as evidence for this row.
 - 💭 54 **Small rows in forks while the user is away** — rows with no spec,
   which `my:handoff auto` cannot start, each run in a fork and its own
   worktree up to the merge, under one e2e lock that every session takes. The
