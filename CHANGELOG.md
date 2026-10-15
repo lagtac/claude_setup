@@ -175,6 +175,15 @@ the known limits.
   passes a target that the fold then refuses.
 - The md-tables docs describe the scripts' current command line in
   `~/src/scripts/`.
+- `kit:git-squasher` keeps its rebase script's own first argument. Claude
+  Code replaced `"$1"` in the skill text with the skill's second argument, so
+  `/kit:git-squasher main --dry-run` gave the script `--dry-run` in place of
+  the rebase todo file. The script now writes `"${1}"`, which Claude Code
+  leaves alone. Row 41.
+- `CLAUDE.md` and `README.md` no longer describe a deny list of unsafe
+  commands as active. It sat in a repo-root `settings.json` that Claude Code
+  never read, and that file is deleted. No rule that was in force changed.
+  Row 1.
 
 ### Docs
 

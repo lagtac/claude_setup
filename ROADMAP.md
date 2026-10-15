@@ -23,8 +23,8 @@ side by side, because they edit different files.
 
 1. **9 "Start auto runs from roadmap rows".** Shipped on 2026-10-14, so the
    rows that waited for it in steps 6 and 7 may start.
-2. **41 "`git-squasher` loses `$1`" and 1 "Deny list has no effect", side by
-   side.** Two fixes with no spec. 41 is a live bug.
+2. **41 "`git-squasher` loses `$1`" and 1 "Deny list has no effect".**
+   Shipped on 2026-10-15, as one branch.
 3. **45 "Review preparation as a script" and 46 "`git-squasher` plan and
    apply scripts", side by side.** The most-used script rows that edit no
    file of row 9. 45 is in `my`, 46 in `kit`; they share only `README.md`.
@@ -73,10 +73,9 @@ Follow-ups spawned by the planner retirement. Spec:
 [`docs/plans/2026-09-11-retire-planner-path-spec.md`](docs/plans/2026-09-11-retire-planner-path-spec.md)
 (see its "Out of scope").
 
-- 💭 1 **Deny list has no effect** — fix: the repo-root `settings.json` deny list
-  is read by nothing (Claude Code reads `.claude/settings.json`, and a plugin
-  `settings.json` drops permission rules), yet `CLAUDE.md` and `README.md`
-  describe it as active. Found while writing the
+- ✅ 1 **Deny list has no effect** — fix: the repo-root `settings.json` deny list,
+  which nothing read, is deleted, and `CLAUDE.md` and `README.md` no longer
+  call it active. Small. Found while writing the
   [spec](docs/plans/2026-10-12-autonomous-run-spec.md) for `my:handoff auto`
   (its D4).
 - ✅ 2 **Retire the planner path** — `/my:plan`, `my:planner` and `/my:task`
@@ -268,7 +267,8 @@ Their order is in "Order of work" above.
 - 💭 33 **Skill text loses `$1` and `$2`** — fix: Claude Code replaces `$1` and
   `$2` in a loaded skill with its arguments, so the parallel squash-merge in
   `my:handoff` (`"$1"`, `"$2"`) merges a branch named after the stage. Live in
-  every project with a "Parallel runs" section.
+  every project with a "Parallel runs" section. The fix also widens kit's
+  `test_skill_placeholders.py` to `my`.
 - 💭 34 **Merges read a message file** — `handoff-state.py merge` and the
   parallel squash-merge take `-F <file>`, so the heredoc rule leaves
   `my:handoff`. Changes the `handoff-state.py` interface. Out of scope of the
@@ -305,9 +305,6 @@ steps of the `my` and `kit` skills that fixed rules decide, and that a script
 in `bin/` can run instead of the model. Their order is in "Order of work"
 above.
 
-- 💭 41 **`git-squasher` loses `$1`** — fix: the `squash-todo.sh` example in
-  `kit:git-squasher` step 5 uses `"$1"`, which Claude Code replaces with the
-  skill's arguments, as in row 33. Small. Report B1.
 - 💭 42 **Parallel runs parser** — a `handoff-state.py` subcommand prints
   **Max runs**, `<n>`, the docs paths and the `--docs-paths` arguments, for
   `my:handoff`, `my:status`, `kit:commit` and `my:architect`. Report S4.
@@ -342,6 +339,9 @@ above.
 - 💭 52 **`status` gates and overlap by script** — `my:status` steps 5 and 6
   and the overlap test. Blocked by row 9, whose spec uses these steps as
   model judgment. Report S13.
+- ✅ 41 **`git-squasher` loses `$1`** — fix: the `squash-todo.sh` example in
+  `kit:git-squasher` step 5 uses `"${1}"`, which Claude Code leaves alone, and
+  a test refuses a bare `$` and digit in kit skill text. Small. Report B1.
 
 ## Other
 
