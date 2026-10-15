@@ -112,7 +112,10 @@ Follow-ups spawned by the planner retirement. Spec:
   until a round finds nothing new, and brings the user only the decisions
   that row 55 names. First framed as "Draft specs in forks"; reframed on
   2026-10-14 after the fork drafts of rows 45 and 46 and the audit, and
-  gated on a source the same day.
+  gated on a source the same day. Open: how the hardening loop stops, since
+  `global/methods/my.md` allows one fix round per review; and drafting
+  several specs from one request, which the reframe dropped and no row
+  covers.
 - 💭 54 **Small rows in forks while the user is away** — rows with no spec,
   which `my:handoff auto` cannot start, each run in a fork and its own
   worktree up to the merge, under one e2e lock that every session takes. The
