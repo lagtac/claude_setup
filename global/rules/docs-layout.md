@@ -187,5 +187,5 @@ Four commits remain the goal elsewhere.
   names the decisions and sections it read, like "D12 to D16", not a hash, because later fixups fold
   the answers into the reviewed commit. The `pre-commit` and `pre-push` hooks in
   `~/projects/claude-setup/global/git-hooks/` enforce this rule and refuse a push with `fixup!`
-  commits. zitamu (`real-estate-webapp`) uses them. A fresh clone links them with
-  `ln -sf ~/projects/claude-setup/global/git-hooks/pre-* .git/hooks/`.
+  commits. zitamu (`real-estate-webapp`) uses them: an `includeIf` in `~/.gitconfig` (in
+  `~/.dotfiles`) sets its `core.hooksPath`, so a fresh clone at the same path gets them.
