@@ -234,8 +234,10 @@ no row; the report says why.
   fold's own rules. Small. [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md)
 - 💭 29 **Measure the auto runs** — after a few weeks of `my:handoff auto` on
   zitamu, rerun the spec-to-`done` timing and the docs-only commits per branch
-  from zitamu's commit size audit, and compare them with the 2026-10-12 numbers.
-  Waits for those weeks. Report M2.
+  (zitamu's commit size audit) against the 2026-10-12 numbers. Also count how
+  often two or more approved specs waited at once: that count decides whether
+  the row queue and parallel runs stay. Waits for those weeks. Report M2;
+  [critique](docs/reports/2026-10-15-parallel-runs-section-critique.md).
 
 ## `my:handoff` instructions
 
