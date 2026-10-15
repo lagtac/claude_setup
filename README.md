@@ -238,7 +238,10 @@ Defined in `plugins/kit/hooks/hooks.json`:
 
 ## Settings
 
-`settings.json` at the repo root holds a deny-list of unsafe commands.
+The plugins set no permission rules. A plugin's `settings.json` keeps only
+`agent` and `subagentStatusLine`, so a deny list there would have no effect.
+The one command the plugins block is `git push` in an auto run, through a
+hook (see Hooks above).
 Add allow rules to your project's `.claude/settings.json` as needed:
 
 ```json

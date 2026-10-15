@@ -139,15 +139,17 @@ git commit -m "<proposed message>"
 
    ```sh
    #!/bin/sh
-   # $1 is the rebase todo file. Repeat the three -e lines for each group.
+   # ${1} is the rebase todo file. Repeat the three -e lines for each group.
    sed -i \
      -e 's/^pick 431523a/fixup 431523a/' \
      -e 's/^pick d37d678/fixup d37d678/' \
      -e "/^fixup d37d678/a exec git commit --amend --no-edit -m 'fix: improve YOLO export queries and mysql.sh diagnostics'" \
-     "$1"
+     "${1}"
    ```
 
    Use the hashes exactly as step 2 printed them. The patterns match by prefix, so a longer hash in the todo still matches.
+
+   Keep the braces in `${1}`. Claude Code replaces a dollar sign followed by a digit in skill text with an argument of the skill, so without them the script would get the wrong file.
 2. Run it:
 
    ```bash

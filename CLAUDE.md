@@ -7,7 +7,6 @@ Two Claude Code plugins (`my` and `kit`) providing reusable slash commands, suba
 The repo is a plugin marketplace (`.claude-plugin/marketplace.json`, which must stay at the repo root). Each plugin lives in `plugins/<name>/`: `my` holds the method, `kit` the neutral tools. The paths below are relative to a plugin folder.
 
 - **`.claude-plugin/plugin.json`** — Plugin manifest (name, description, author). No `version` field: the marketplace uses the commit hash, so each commit is a new version. Commands and agents are auto-discovered.
-- **`settings.json`** — Plugin-scoped deny-list safety defaults.
 - **`commands/`** — Slash commands. Each `.md` file is a prompt template; `$ARGUMENTS` is replaced with user input.
 - **`agents/`** — Subagent definitions with frontmatter (`name`, `description`, `tools`, `model`). Commands reference agents by name.
 - **`skills/`** — Multi-file skill directories. Each contains a `SKILL.md` with frontmatter and prompt.
