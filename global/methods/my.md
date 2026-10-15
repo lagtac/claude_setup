@@ -132,6 +132,12 @@ section maps an already-drawn design onto real primitives and semantic classes,
 verified against the stylesheet rather than assumed. Both are needed — the
 drawing decides, the table records.
 
+**Keep a canvas sorted by status.** A canvas has three pages: «Built» (what
+the app looks like now), one page per row under review, and «History»
+(options not chosen, earlier versions). When a row's code merges, in the same
+step as its `done` marks, move its chosen boards to «Built», the rest to
+«History», and retitle any board the change made untrue.
+
 ## Git Workflow
 
 I am the sole developer on these projects. **Worktrees + squash-merge are mandatory** for non-trivial work; **MRs are optional** — used only when they add value a plain squash-merge can't (see below). This overrides Superpowers git workflow (including `finishing-a-development-branch`).
