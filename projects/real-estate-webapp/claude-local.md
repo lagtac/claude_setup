@@ -253,5 +253,11 @@ specifics are here.
   `/security-review` (`docs/ONBOARDING.md` §3.3) to the reviews that
   `my.md` lists. A Small change records the e2e result in its squash
   commit body.
-- **The git hooks** `.git/hooks/pre-commit` and `pre-push` are symlinks to
-  `~/projects/claude-setup/global/git-hooks/`, so edit them there.
+- **The git hooks** live in `~/projects/claude-setup/global/git-hooks/`, so
+  edit them there. An `includeIf` in `~/.gitconfig` sets zitamu's
+  `core.hooksPath` to that folder.
+- **This file and `.claude/rules/` are symlinks** into
+  `~/projects/claude-setup/projects/real-estate-webapp/`. The Edit tool
+  refuses to write through a symlink, so edit
+  `~/projects/claude-setup/projects/real-estate-webapp/claude-local.md`
+  directly. Each edit is an uncommitted change in `claude-setup`.
