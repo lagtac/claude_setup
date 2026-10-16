@@ -799,10 +799,81 @@ Delete the clone: `rm -rf $SCRATCH/ds/zitamu`.
    checkout. If it is still uncommitted when this branch squash-merges,
    `git merge --squash` refuses, because it would overwrite that edit. The
    review stage stops there (row 15). The user commits or stashes it first.
+9. **Sources has no `none yet` form for the components folder.** The spec
+   gives one only for the tokens. The new-app rehearsal wrote
+   `none yet (row 2)` on the Components line too, which reads well. Known
+   limit; a later row can add the form.
+10. **The hex-colour example misses a colour that is not right after a
+    colon,** such as `border:1px solid #ccc`. The example is the spec's,
+    word for word; `audit` writes its own regex per project, as the new-app
+    rehearsal did (`#[0-9a-fA-F]{3,8}\b`). Known limit.
+11. **`sync` and the zitamu regression never ran** (end-of-branch review).
+    The user skipped both (Testing Strategy, "Rehearsal"). So the first real
+    `sync` changes a live claude.ai artifact with untested steps: create or
+    revise, the "Not synced" list, the Sources write. `sync` asks for a yes
+    before any publish, so the user sees it first. Detect: read the artifact
+    and the Sources line after the first `sync`.
+12. **The new spec-review bullet was not tested on its own** (end-of-branch
+    review). Without the inventory, the reviewer raised the same finding
+    through criterion 4, because the fixture's `AppButton` is findable in the
+    code. So the bullet is shown to work, but not shown to add a finding that
+    code search would miss. Detect: a spec review that cites the inventory
+    for a component that the code names differently.
+13. **A glob over `docs/` counts the inventory's own text** (end-of-branch
+    review). A pattern such as `**/*.md` matches its own `regex` in
+    `docs/DESIGN-SYSTEM.md`, so its count never reaches 0. No pattern today
+    covers `docs/`. Known limit, next to item 6.
+14. **`"design-system"` in `MY_NAMES` bans the word from every kit file**
+    (end-of-branch review). `test_neutral_core.py` derives `MY_BARE` from
+    names with a hyphen, so a future kit file that writes "design-system
+    primitives" fails `test_kit_names_no_my_skill`. No kit file does today.
+    The fix then is the `code-reviewer` exception the test already has.
+15. **`ds-count.py` reruns `git ls-files` and rereads files per pattern**
+    (end-of-branch review). The work grows as patterns times files. Today's
+    largest project has about 65 `.vue` files, so this is speed, not
+    correctness.
+16. **Low script limits found by the final re-review.** Each is input that
+    today's inventories never hold:
+    - The empty-match regex check runs only while reading files, so `x*`
+      over globs whose excludes leave no file prints `0/0` and exits 0.
+    - `--write` writes U+2028, U+2029 and U+0085 unescaped, and
+      `splitlines()` then breaks the line, so the next run refuses it.
+    - The fences are found only at column 0; an indented Counts block reads
+      as "no ds-patterns block". The template puts them at column 0.
+    - A tracked file name that is not valid UTF-8 ends in a traceback, not a
+      one-line refusal.
+    - `--write` replaces a symlinked inventory with a plain file.
+17. **The staleness rule is written out twice,** in `refresh` step 5 and in
+    the UI Design paragraph of `global/methods/my.md`. A later edit to one
+    must be made to both.
+18. **Two branch commits have no scope** ("feat: add the my:design-system
+    skill", "docs: README lists …"). The squash commit has one; the kept
+    branch keeps the two subjects.
+19. **A line whose files are gone blocks `refresh`** (end-of-branch review;
+    the user chose to keep spec D7 as written). When a row deletes or
+    renames the last files a line covers, `ds-count.py --write` refuses
+    with "the globs match no tracked file", so `refresh` stops at step 1
+    and step 13 stops with it. The refusal is loud and loses no data: the
+    user fixes the line's globs, or removes the line, and runs it again. A
+    fix round tried "retire the line" and was reverted, because a folder
+    rename gives the same refusal and the pattern would be lost silently.
+    Detect: a step 13 that stops on that message.
+20. **The synced commit in Sources blocks a fold after it** (final
+    re-review). `synced from <short HEAD>` sits in `docs/DESIGN-SYSTEM.md`,
+    and `git-fold-fixups.py` (`citations()`) refuses to fold across any
+    commit that a file under `docs/` cites. So a `sync` made after the spec
+    or plan commit makes that fold exit 1 with "cited in
+    docs/DESIGN-SYSTEM.md". The refusal is safe and names its cause; auto
+    runs never `sync`. Because of it, a fold never gives the synced commit a
+    new hash, so the staleness test needs no case for that (a fix round
+    added one and it was reverted). Changing the Sources format would change
+    a contract; a later row can decide it. Detect: that fold message.
 
 ## Testing Strategy
 
-- **Unit:** `plugins/my/tests/test_ds_count.py`, 26 tests (Task 1), in the
+- **Unit:** `plugins/my/tests/test_ds_count.py`, 27 tests from Task 1 (one more
+  than planned, `test_bool_count_refused`) and three from the end-of-branch
+  fix round, 30 in all, in the
   style of `test_status_scan.py`: a fixture repo per test, the script run as
   a subprocess, git without the user's config.
 - **Guard:** `test_neutral_core.py` with `design-system` in `MY_NAMES`
@@ -811,6 +882,57 @@ Delete the clone: `rm -rf $SCRATCH/ds/zitamu`.
   the `sync` rehearsal of Task 7 (item 5). Their records go below.
 - **Lint:** the counts of Global Constraints, at each task and at the end of
   the branch.
+
+### Rehearsal, 2026-10-16
+
+Each run was `claude -p` with `--plugin-dir` set to the worktree's
+`plugins/my`. Every stream read the skill files from the worktree and had 0
+`permission_denied` events.
+
+- **Step 1, `audit` on fixture A: pass.** The inventory has the four parts
+  under the fixed headings. The branch's `ds-count.py`, run by path, prints
+  equal old and new values on all five lines. The input pattern counts 3 in
+  3 files; no `components/` file held an `<input>`, so no exclude was needed.
+  The report proposes a text field component as a row. Sources says
+  `none yet` for the artifact. One `docs:` commit holds both files.
+- **Step 2, `audit` of a new app (fixture B): pass.** The report proposes one
+  starting row, row 2, with the token families and the six base components
+  of the spec's "A new app" paragraph. Sources says `none yet (row 2)` for
+  the tokens. The run raised two points, recorded as known limits in Risk
+  items 9 and 10.
+- **Step 3, `refresh` on fixture A: pass.** After `AppField` replaced the
+  three inputs, the counts changed, `AppField` got a part 2 row and a
+  `component` line, the three patterns at 0 lost their lines and rows, and no
+  `hand-built` line was added. The text field pattern stayed at 1/1 at first,
+  because `AppField.vue` holds the `<input>`; the model added that file to the
+  pattern's `exclude` on its own. The skill now says so in `refresh` step 2,
+  and a rerun on a fresh copy passed the same way. After `AppCard.vue` was
+  deleted, a second `refresh` removed its row and its line.
+- **Step 4, step 13 without an inventory (fixture C): pass.** The stream has
+  no `ds-count.py` call and no `my:design-system` call. The `done` marks
+  committed.
+- **Step 4, step 13 with an inventory (fixture A): pass.** The stream calls
+  `my:design-system refresh docs/plans/2026-10-16-badge-spec.md`. `AppBadge`
+  got a part 2 row and a `component` line, in the same commit as the `done`
+  marks.
+- **Step 5, criterion 6, spec 1 (in-page button) with the inventory: pass.**
+  A `Warning`, `design` finding on the button, citing the inventory's
+  `AppButton` row.
+- **Step 5, spec 1 without the inventory: partial.** Expected no such
+  finding; seen a `Warning`, `design` finding on the button through criterion
+  4, citing `components/AppButton.vue` and the pages, not the inventory. The
+  fixture's `AppButton` is findable in the code, so it cannot isolate the new
+  bullet. The bullet itself works (the line above); the gap is in the test's
+  premise, not in Tasks 1 to 5.
+- **Step 5, spec 2 (`AppBtn` for `AppButton`): pass.** A `Warning`,
+  `editorial` finding on the name.
+- **Step 5, spec 3 («new: `Field`», built shared): pass.** No finding about
+  it; the review lists it under criterion 6 as matching the rule.
+- **Step 6, zitamu regression: skipped by the user.** The auto-mode safety
+  check refused `git clone` of the zitamu repo into the scratchpad (personal
+  data handling), and the user chose to skip rather than allow it.
+- **Task 7, `sync` on the zitamu artifact: skipped by the user.** It needs the
+  same clone. Nothing was published.
 
 ## Open Questions
 

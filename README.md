@@ -126,6 +126,11 @@ as `/my:<name>` or `/kit:<name>`.
   and never pushes; `/my:handoff auto resume <spec>` continues a stopped run.
 - `my:status` — Answers "where are we", "what is next" and "what can be done
   in parallel" in one read-only report.
+- `my:design-system` — Keeps `docs/DESIGN-SYSTEM.md`, the inventory of shared
+  components and hand-built patterns that UI specs read and spec reviews
+  check. `audit` builds it, `refresh` updates it at step 13, and `sync` makes
+  the Design System artifact that canvases draw from. It writes no component
+  code: each component to build becomes a roadmap row.
 - `my:roadmap-management` — Edits `ROADMAP.md`: adds rows and moves them between
   status tiers.
 - `my:changelog-management` — Edits `CHANGELOG.md` for shipped features, fixes
@@ -185,7 +190,9 @@ checkout under that lock, with the message read from a file.
 `status-scan.py`, in the same folder, prints the facts `my:status` judges:
 roadmap rows, open documents, worktrees, auto runs, the queue of roadmap rows
 and branches that may hold unmerged work. It reads and never writes; its
-tests run with the same command.
+tests run with the same command. `ds-count.py`, in the same folder, counts the
+search patterns in the `ds-patterns` block of `docs/DESIGN-SYSTEM.md`, and with
+`--write` stores the counts there; its tests run with the same command.
 
 ## Commands
 

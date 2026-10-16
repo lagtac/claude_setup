@@ -375,9 +375,10 @@ What changes in such a project:
   normal commit, so a feature leaves about 5 to 7 commits instead of 4, and
   nothing folds. A fold there could give another run's cited squash commit
   a new hash. The fold script now refuses that in every project.
-- **Shared docs.** A run edits `ROADMAP.md`, `CHANGELOG.md` or the plans
-  index only when they hold no uncommitted edits. If you edit one by hand
-  while runs are live, the run that reaches it stops, and you resume it.
+- **Shared docs.** A run edits `ROADMAP.md`, `CHANGELOG.md`, the plans index
+  or `docs/DESIGN-SYSTEM.md` only when they hold no uncommitted edits. If you
+  edit one by hand while runs are live, the run that reaches it stops, and
+  you resume it.
 
 Two runs keep about 6 `claude` processes; see "Memory" below. Spec:
 `docs/plans/2026-10-12-parallel-auto-runs-spec.md`. Plan:

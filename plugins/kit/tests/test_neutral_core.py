@@ -27,7 +27,8 @@ APPLIES = ("Applies only in projects whose `CLAUDE.md` imports "
 # The skills, agents and command of the my plugin (spec, Plugins table).
 MY_NAMES = ["handoff", "soundness-review", "status", "spec-review", "architect",
             "roadmap-management", "clean-plans", "changelog-management",
-            "code-reviewer", "spec-reviewer", "summarizer", "summarize"]
+            "code-reviewer", "spec-reviewer", "summarizer", "summarize",
+            "design-system"]
 # my names distinct enough to find without the prefix.
 MY_BARE = [n for n in MY_NAMES if "-" in n and n not in ("code-reviewer",)]
 

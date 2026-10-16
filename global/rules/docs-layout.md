@@ -165,6 +165,10 @@ its own commit, not a fixup of the spec.
     While the worktree exists, edit this feature's spec and plan only in the worktree.
 12. Squash-merge the branch into `main`, and commit.
 13. Mark the spec and plan `done` on `main`, citing the squash commit.
+    When `docs/DESIGN-SYSTEM.md` exists, and the spec has a Visual Language section or the squash
+    commit touches the tokens file or the components folder named in its Sources, also run
+    `my:design-system refresh <spec path>`, adding `auto` in an auto run, and commit its inventory
+    edits with the `done` marks. A project with no inventory skips this.
 14. The user pushes at their own pace.
 
 In a project whose `CLAUDE.md` or `CLAUDE.local.md` has a "Parallel runs" section (the `my:handoff`
