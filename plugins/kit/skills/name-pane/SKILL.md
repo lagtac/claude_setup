@@ -1,6 +1,6 @@
 ---
 name: name-pane
-description: Name the tmux pane this session runs in, and its window, after the session's focus (the roadmap row, task or goal it committed to), then print a /rename line for the Claude session. Use when the user says "name it", "name pane", "name this pane/window/session", "auto name" or types /kit:name-pane, optionally with a label. NOT for naming a variable, file, branch or anything else in code.
+description: Name the tmux pane this session runs in, and its window, after the session's focus (the roadmap row, task or goal it committed to), then go back to the work it was doing. Use when the user says "name it", "name pane", "name this pane/window/session", "auto name" or types /kit:name-pane, optionally with a label. NOT for naming a variable, file, branch or anything else in code.
 ---
 
 # Name the pane after the session's focus
@@ -51,23 +51,14 @@ config. The script does not turn it on.
 If the script ends with `nothing named` (outside tmux, or tmux refused), tell
 the user its message in one line, and go on to step 3.
 
-## 3. Print the /rename line
+## 3. Continue
 
-A skill cannot run a built-in command, so give the user the line to paste. It
-makes the session's name match the label, for example in `claude --resume`:
-
-```text
-/rename <label>
-```
-
-End with that line and the window name the script printed. Nothing else.
+If the session was working on something when the user asked for this, go back
+to that work right after, in the same reply. Do not wait to be told.
 
 ## What stays and what does not
 
-- The label stays fixed. Nothing updates it as the session moves on. Run the
-  skill again when the session switches to another focus.
-- tmux keeps the window name up to date. When a pane closes, its label leaves
-  the window name.
+- The label stays fixed and doesn't change until the skill is summoned again.
+- tmux keeps the window name up to date.
 - Another tool may rename the window later, for example to mark it as waiting
-  or done. That stops tmux's own naming, so the window shows the other tool's
-  name until a pane is named again. The pane labels stay.
+  or done.

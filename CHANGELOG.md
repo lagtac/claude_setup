@@ -160,6 +160,9 @@ the known limits.
 
 ### Changed
 
+- `kit:name-pane` no longer ends with a `/rename <label>` line to paste.
+  After naming the pane, it goes back to the work the session was doing, in
+  the same reply.
 - A bullet roadmap row can carry a number between its icon and its title, as
   in `- 💭 12 **Title**`. `status-scan.py` passes that number to `my:status`,
   as it already did for table rows. `my:roadmap-management` gives a new row
