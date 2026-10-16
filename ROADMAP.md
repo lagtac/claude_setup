@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 60
+**Next number:** 64
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -26,21 +26,26 @@ side by side, because they edit different files.
 2. **41 "`git-squasher` loses `$1`" and 1 "Deny list has no effect".**
    Shipped on 2026-10-15, as one branch.
 3. **45 "Review preparation as a script" and 46 "`git-squasher` plan and
-   apply scripts", side by side.** The most-used script rows that edit no
-   file of row 9. 45 is in `my`, 46 in `kit`; they share only `README.md`.
-   46 builds on 41's fix.
-4. **55 "Decisions that go back to the user", then 53 "`my:draft-spec`",
-   then 54 "Small rows in forks while the user is away".** 53 and 54 both
+   apply scripts", side by side, with 62 "Question prompts follow
+   `plain`".** The most-used script rows that edit no file of row 9. 45 is
+   in `my`, 46 in `kit`; they share only `README.md`. 46 builds on 41's
+   fix. 62 edits only `global/output-styles/plain.md`.
+4. **61 "Delegation approval starts the auto run" and 63 "A reachable
+   re-review finding becomes a bug row", then 55 "Decisions that go back to
+   the user", then 53 "`my:draft-spec`", then 54 "Small rows in forks while
+   the user is away".** 61 and 63 are small rules in `global/methods/my.md`,
+   the file 55 and 53 edit, so they go first. 53 and 54 both
    use the rule of 55. 55 and 53 both edit `global/methods/my.md`. 54 comes
    after 53, because both run forks while the user is away, and 53 is being
    designed now.
 5. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
-   `my:spec-review` `SKILL.md`. Side by side with 8: **48 "`setup` facts by
-   script", then 58 "Method hint in repos without a method"**, which both
-   edit `kit:setup` and `method-guard.py`; 47 "`clean-plans` moves by
-   script"; 49
-   "`dev-reports` dates and TODOs by script"; 50 "`clean-gone-branches` as a
-   script"; 51 "Roadmap number and link check".
+   `my:spec-review` `SKILL.md`. Side by side with 8: **60 "Project facts in
+   `CLAUDE.local.md`", then 48 "`setup` facts by script", then 58 "Method
+   hint in repos without a method"**, which all edit `kit:setup`, and 48 and
+   58 also `method-guard.py`; 60 is a fix, so 48's script reads both files;
+   47 "`clean-plans` moves by script"; 49 "`dev-reports` dates and TODOs by
+   script"; 50 "`clean-gone-branches` as a script"; 51 "Roadmap number and
+   link check".
 6. **After row 9 merges, one at a time, all in `my:handoff`: 33 "Skill text
    loses `$1` and `$2`", 37 "Launch from a session outside tmux", 34
    "Merges read a message file", 44 "`git-fold-fixups.py list <path>`", 43
@@ -97,7 +102,9 @@ Follow-ups spawned by the planner retirement. Spec:
   exist, and `decide` is flagged on a spec that changes stored data or a
   contract. Not the format: the auto start check owns that. Also flags a
   manual step before the merge, which an auto run can never take (zitamu,
-  2026-10-15). Small.
+  2026-10-15). The flag informs and does not push toward `stop`: row 74a's
+  user chose `decide` on a contract change on purpose
+  ([run audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md) H2). Small.
 - ✅ 9 **Start auto runs from roadmap rows** — one command takes a list of
   rows, starts the ones with an approved spec as parallel auto runs up to
   **Max runs**, and starts a waiting row each time a run finishes. Shipped in
@@ -144,7 +151,7 @@ Follow-ups spawned by the planner retirement. Spec:
   may narrow which `design` findings go to the user. Rows 53 and 54 use it.
   Sources: the
   [spec hardening audit](docs/reports/2026-10-14-spec-hardening-audit.md)
-  and row 54's zitamu run.
+  and row 54's zitamu run, and the [run audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md) H1 and H2.
 - ✅ 10 **`my:architect`** — forces-first architecture brief before brainstorming.
   [spec](docs/plans/2026-09-17-architect-skill-spec.md),
   [plan](docs/plans/2026-09-17-architect-skill.md)
@@ -317,7 +324,8 @@ above.
   `<name>` and `<base>`, the first failed start check, the Delegation
   validation and the restart point. Report S2, S3. The validation refuses a
   command list with prose in a value, or a value wrapped onto two lines
-  (zitamu, 2026-10-15).
+  (zitamu, 2026-10-15). An auto launch also asks once about changes on
+  `main` that would block the fold ([run audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md) H4).
 - 💭 44 **`git-fold-fixups.py list <path>`** — lists a document's waiting
   fixups, which `my:handoff` finds by hand in three places. Small. Report S6.
 - 💭 45 **Review preparation as a script** — the argument sorting, the diff
@@ -346,6 +354,25 @@ above.
 - ✅ 41 **`git-squasher` loses `$1`** — fix: the `squash-todo.sh` example in
   `kit:git-squasher` step 5 uses `"${1}"`, which Claude Code leaves alone, and
   a test refuses a bare `$` and digit in kit skill text. Small. Report B1.
+
+## Handoff run audit
+
+Findings of [`docs/reports/2026-10-15-row-74-handoff-run-audit.md`](docs/reports/2026-10-15-row-74-handoff-run-audit.md), from zitamu rows 74a and 74b.
+
+- 💭 60 **Project facts in `CLAUDE.local.md`** — fix: the facts check in
+  `global/methods/my.md` and `kit:setup` also accept `CLAUDE.local.md`, as
+  the Parallel runs rule does, and `kit:setup` asks which file to use. Small.
+  Report H4.
+- 💭 61 **Delegation approval starts the auto run** — when the approved spec
+  has a Delegation section, approval starts `/my:handoff auto` with one line
+  saying so, in place of the "supervised or auto?" question. Small. Report H3.
+- 💭 62 **Question prompts follow `plain`** — `global/output-styles/plain.md`
+  covers the text of question prompts, which name a screen element as the
+  user sees it. Small. Report H5.
+- 💭 63 **A reachable re-review finding becomes a bug row** — "One fix round
+  per review" in `global/methods/my.md` sends a re-review finding that
+  today's code can reach to a new roadmap row; **Risk** keeps only input that
+  today's code never produces. Small. Report H8.
 
 ## Other
 
