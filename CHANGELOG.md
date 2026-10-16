@@ -79,6 +79,31 @@ lists the known limits.
   skipped and why.
 - Update the `my` plugin to get the new subcommands.
 
+### 2026-10-13 — Swappable methods (row 16)
+
+The global rules are now a neutral core plus one file per method, and each
+project picks its method. The `my` plugin holds the method; a new `kit`
+plugin holds the tools that any method can use. See the
+[spec](docs/plans/2026-10-12-swappable-methods-spec.md) and the
+[plan](docs/plans/2026-10-12-swappable-methods.md), whose **Risk** section
+lists the known limits.
+
+- **BREAKING:** 15 neutral skills, agents and commands moved from `my` to
+  `kit`, so `/my:<name>` became `/kit:<name>` for them, for example
+  `/kit:commit` and `kit:briefing`.
+- `global/CLAUDE.md` keeps only the rules that hold under any method. The
+  `my` and `tutor` rules are in `global/methods/my.md` and
+  `global/methods/tutor.md`, which `~/.claude/methods/` links to.
+- `my` and superpowers are off at user scope. A project turns its method on
+  with one import line in its `CLAUDE.md` and a plugin switch in its
+  `.claude/settings.json`.
+- New skill `kit:setup` writes both, plus a "Project facts" block for `my`,
+  and commits them in that project.
+- New `SessionStart` hook `method-guard.py` warns when a project's method
+  import is not approved, or when its plugin switch does not match.
+- The cutover set up the 11 repos active at the time. In any other repo,
+  run `/kit:setup my` to use the method.
+
 ### 2026-10-12 — Parallel auto runs (Design workflow)
 
 In a project whose `CLAUDE.md` or `CLAUDE.local.md` has a "Parallel runs"

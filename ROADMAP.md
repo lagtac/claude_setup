@@ -202,13 +202,6 @@ Follow-ups spawned by the planner retirement. Spec:
 Make the harness reusable in new projects without forking copies. Spec:
 [`docs/plans/2026-06-16-harness-generalization-audit.md`](docs/plans/2026-06-16-harness-generalization-audit.md).
 
-- 🚧 16 **Swappable methods** — split `global/CLAUDE.md` into a neutral core
-  and per-method files, and split `my` into `my` (the method) and `kit`
-  (neutral tools), so one project can try another method. Two batches; the
-  second is a one-sitting cutover. Batch 1 (`kit`) merged in `1fe2d57`.
-  [brief](docs/plans/2026-10-12-swappable-methods-architecture.md),
-  [spec](docs/plans/2026-10-12-swappable-methods-spec.md),
-  [plan](docs/plans/2026-10-12-swappable-methods.md)
 - 💭 17 **Generalize the gates** — move the gate logic (`e2e-gate`, `review-gate`,
   `require-*`) into the plugin behind a per-repo `.claude/harness.json`, with a
   `/harness-init` bootstrap. Waits for a second project to adopt the gates;
@@ -219,6 +212,13 @@ Make the harness reusable in new projects without forking copies. Spec:
   It asks for the ports already in use, and fixes a `CLAUDE.local.md` line
   that says the project has no such section (zitamu, 2026-10-15). Split out
   of row 9's first spec draft. Blocked by row 29.
+- ✅ 16 **Swappable methods** — split `global/CLAUDE.md` into a neutral core
+  and per-method files, and split `my` into `my` (the method) and `kit`
+  (neutral tools), so one project can try another method. Shipped; 11 of 22
+  repos set up, and the plan's status line says what is left.
+  [brief](docs/plans/2026-10-12-swappable-methods-architecture.md),
+  [spec](docs/plans/2026-10-12-swappable-methods-spec.md),
+  [plan](docs/plans/2026-10-12-swappable-methods.md)
 - ✅ 18 **Global orphan-plan hook** — `check-orphan-plans.sh` runs in the `my`
   plugin at session start, in all repos.
 - ✅ 19 **Runtime-command contract — DRAFT** — written down, not adopted:

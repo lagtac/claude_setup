@@ -1,6 +1,6 @@
 # Spec: swappable methods
 
-**Status:** approved, 2026-10-13. Splits the global rules into a neutral core and per-method files, and splits the `my` plugin into `my` (the method) and `kit` (neutral tools).
+**Status:** done, 2026-10-16. Shipped in `1fe2d57` (batch 1) and `a0144ee` (batch 2); the plan's status line says what is left. Splits the global rules into a neutral core and per-method files, and splits the `my` plugin into `my` (the method) and `kit` (neutral tools).
 
 ## How to read this spec
 

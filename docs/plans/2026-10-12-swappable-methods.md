@@ -1,6 +1,6 @@
 # Swappable methods Implementation Plan
 
-**Status:** current, 2026-10-13. Batch 1 merged in `1fe2d57`; batch 2 not started.
+**Status:** done, 2026-10-16. Batch 1 merged in `1fe2d57` (5 checks, 5 passed); batch 2 merged in `a0144ee` (3 checks, 3 passed, the lint check with 31 accepted MD013 errors). The cutover set up 11 of the 22 repos, by the user's choice; the other 11 stay neutral until opened. Runbook step 8 is left in 7 of the 11: their import is approved the first time each repo is opened, and until then the method guard tells each session to read the method file.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use
 > superpowers:executing-plans to implement this plan task-by-task. The tasks
