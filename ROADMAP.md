@@ -128,6 +128,16 @@ Follow-ups spawned by the planner retirement. Spec:
   call, decisions came as defaults, and 35 questions came in one batch. The
   user named it a skipped brainstorming. 76 and 77 are test-driven through
   plan and code in worktrees, unmerged, as evidence for this row.
+  Tried again on zitamu row 146 on 2026-10-16, by hand, with brainstorming
+  run and a "Decisions made without you" section: 2 questions and 4 marked
+  decisions in place of 35 questions, and the review's design findings
+  became decisions. Three lessons. The agent measured a local build and
+  decided not to check production first, so it missed that the live edge
+  sent scripts uncompressed; a row that depends on live state needs a read
+  of it (the live site in Playwright, the server config) before deciding.
+  A 10-line server change got a 340-line spec, so the route needs a size
+  check of its own. The agent acted on an unclear two-word reply in the Q&A
+  round; an unclear reply gets a question back.
 - 💭 54 **Small rows in forks while the user is away** — rows with no spec,
   which `my:handoff auto` cannot start, each run in a fork and its own
   worktree up to the merge, under one e2e lock that every session takes. The
