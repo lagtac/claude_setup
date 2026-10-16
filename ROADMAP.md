@@ -19,7 +19,9 @@ and the same edit raises it by one.
 ## Order of work
 
 Set on 2026-10-14; the shipped steps were removed on 2026-10-16, and the
-`my:handoff` fixes moved to step 1 the same day. The steps run top to
+`my:handoff` fixes moved to step 1 the same day. Row 64 shipped on
+2026-10-16 ahead of its place; rows 33, 37, 56, 45 and 61 rebase onto its
+text. The steps run top to
 bottom. Rows in one step can run side by side, because they edit different
 files.
 
@@ -34,15 +36,11 @@ files.
    row. 45 is in `my` and 46 in `kit`, but both edit `README.md`, so 46 goes
    after 45. 46 builds on 41's fix. 62 edits only
    `global/output-styles/plain.md`.
-2. **61 "Auto start on approval, and re-review findings as rows", then 64
-   "`my:design-system`", then 55 "Decisions that go back to the user", then
-   53 "`my:draft-spec`", then 54 "Small rows in forks while the user is
-   away".** 61 is two small rules in `global/methods/my.md`, the file 64, 55
-   and 53 edit, so it goes first. 64 goes after 45, which also edits
-   `spec-reviewer-prompt.md` and `README.md`, and before the other
-   `global/methods/my.md` rows and step 4's `my:handoff` rows, so they edit
-   the text 64 leaves. 64 also edits `my:handoff`, after step 1's fixes.
-   53 and 54 both use the rule of 55. 55 and 53 both edit
+2. **61 "Auto start on approval, and re-review findings as rows", then 55
+   "Decisions that go back to the user", then 53 "`my:draft-spec`", then 54
+   "Small rows in forks while the user is away".** 61 is two small rules in
+   `global/methods/my.md`, the file 55 and 53 edit, so it goes first. 53 and
+   54 both use the rule of 55. 55 and 53 both edit
    `global/methods/my.md`. 54 comes after 53, because both run forks while
    the user is away, and 53 is being designed now.
 3. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
@@ -161,13 +159,6 @@ Follow-ups spawned by the planner retirement. Spec:
   Sources: the
   [spec hardening audit](docs/reports/2026-10-14-spec-hardening-audit.md)
   and row 54's zitamu run, and the [run audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md) H1 and H2.
-- 📋 64 **`my:design-system`: an inventory every UI spec reads** — one
-  `docs/DESIGN-SYSTEM.md` per project, a counting script
-  (`plugins/my/bin/ds-count.py`), and a `my:design-system` skill that audits,
-  refreshes the inventory at step 13 and syncs a Design System artifact.
-  Builds on row 59: zitamu's pages kept their own markup, and zitamu now
-  extracts it (its rows 130 to 138). Large.
-  [spec](docs/plans/2026-10-16-design-system-skill-spec.md)
 - ✅ 10 **`my:architect`** — forces-first architecture brief before brainstorming.
   [spec](docs/plans/2026-09-17-architect-skill-spec.md),
   [plan](docs/plans/2026-09-17-architect-skill.md)
@@ -201,6 +192,13 @@ Follow-ups spawned by the planner retirement. Spec:
   pages that use each drawn element, and one with two or more becomes a
   shared component; `my:spec-review` checks it. zitamu's row 74b built every
   drawn part inside its page (2026-10-15). Small.
+- ✅ 64 **`my:design-system`: an inventory every UI spec reads** — one
+  `docs/DESIGN-SYSTEM.md` per project, counted by
+  `plugins/my/bin/ds-count.py`, which a `my:design-system` skill audits,
+  refreshes at step 13 and syncs to a Design System artifact. Shipped
+  2026-10-16; `sync` is not rehearsed yet (plan Risk). Large.
+  [spec](docs/plans/2026-10-16-design-system-skill-spec.md),
+  [plan](docs/plans/2026-10-16-design-system-skill.md)
 
 ## Harness generalization
 

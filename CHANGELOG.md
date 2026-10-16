@@ -16,6 +16,33 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-16 — `my:design-system`: an inventory every UI spec reads (row 64)
+
+Each project with UI can keep `docs/DESIGN-SYSTEM.md`, an inventory of its
+shared components and the patterns pages still build by hand. UI specs read
+it, and spec reviews check them against it. See the
+[spec](docs/plans/2026-10-16-design-system-skill-spec.md) and the
+[plan](docs/plans/2026-10-16-design-system-skill.md), whose **Risk** section
+lists the known limits.
+
+- New skill `my:design-system`. `audit` builds the inventory and proposes
+  roadmap rows for components to build. `refresh` updates it at step 13.
+  `sync` makes or revises the project's Design System artifact, after the
+  user's yes.
+- New script `plugins/my/bin/ds-count.py` counts the search patterns stored
+  in the inventory, in tracked files only; `--write` stores the counts.
+- `global/methods/my.md`: UI work in a Medium or Large change, in a project
+  with no inventory, starts with `my:design-system audit`. A UI spec maps
+  each element to the inventory, or labels it «new». A canvas draws on the
+  Design System artifact and checks first that it is current.
+- `global/rules/docs-layout.md` step 13 runs `refresh` when the project has
+  an inventory and the row touched its UI.
+- `my:spec-review` flags an element built in a page where a listed component
+  does the job, and a component name the inventory does not list.
+- `my:handoff` treats `docs/DESIGN-SYSTEM.md` as a shared doc in a project
+  with a "Parallel runs" section.
+- `sync` has not been rehearsed on a real project yet.
+
 ### 2026-10-15 — A spec names the shared parts of its UI (row 59)
 
 A spec's Visual Language section now names, for each drawn element, the

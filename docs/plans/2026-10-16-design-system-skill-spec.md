@@ -1,6 +1,6 @@
 # Spec: `my:design-system`, a design-system inventory that every UI spec reads
 
-**Status:** approved, 2026-10-16. Row 64; plan: `docs/plans/2026-10-16-design-system-skill.md`.
+**Status:** done, 2026-10-16. Shipped in `eae9264`; row 64; plan: `docs/plans/2026-10-16-design-system-skill.md`, whose status line gives the checks.
 
 **Size:** Large. It changes rules that every project on the `my` method follows, and it adds a
 skill. `my:architect` was skipped by the user's choice: the change has no load, storage or data

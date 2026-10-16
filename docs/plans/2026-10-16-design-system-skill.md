@@ -1,6 +1,6 @@
 # `my:design-system` Implementation Plan
 
-**Status:** approved, 2026-10-16. Written by the `my:handoff` plan stage from the approved spec.
+**Status:** done, 2026-10-16. Merged in `eae9264`. End-of-branch checks: 2 run, 2 passed (kit 40 tests, my 230 tests; my has 233 after the fix round). Not rehearsed, by the user's choice: the zitamu regression and `sync` (Risk 11).
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans
 > to implement this plan task-by-task. The tasks build on each other: the
