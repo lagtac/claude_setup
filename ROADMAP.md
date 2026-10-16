@@ -18,59 +18,50 @@ and the same edit raises it by one.
 
 ## Order of work
 
-Set on 2026-10-14. The steps run top to bottom. Rows in one step can run
-side by side, because they edit different files.
+Set on 2026-10-14; the shipped steps were removed on 2026-10-16. The steps
+run top to bottom. Rows in one step can run side by side, because they edit
+different files.
 
-1. **9 "Start auto runs from roadmap rows".** Shipped on 2026-10-14, so the
-   rows that waited for it in steps 6 and 7 may start.
-2. **41 "`git-squasher` loses `$1`" and 1 "Deny list has no effect".**
-   Shipped on 2026-10-15, as one branch.
-3. **45 "Review preparation as a script" and 46 "`git-squasher` plan and
+1. **45 "Review preparation as a script" and 46 "`git-squasher` plan and
    apply scripts", side by side, with 62 "Question prompts follow
-   `plain`".** The most-used script rows that edit no file of row 9. 45 is
-   in `my`, 46 in `kit`; they share only `README.md`. 46 builds on 41's
-   fix. 62 edits only `global/output-styles/plain.md`.
-4. **61 "Delegation approval starts the auto run" and 63 "A reachable
-   re-review finding becomes a bug row", then 55 "Decisions that go back to
-   the user", then 53 "`my:draft-spec`", then 54 "Small rows in forks while
-   the user is away".** 61 and 63 are small rules in `global/methods/my.md`,
-   the file 55 and 53 edit, so they go first. 53 and 54 both
-   use the rule of 55. 55 and 53 both edit `global/methods/my.md`. 54 comes
-   after 53, because both run forks while the user is away, and 53 is being
-   designed now.
-5. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
+   `plain`".** The most-used script rows. 45 is in `my`, 46 in `kit`; they
+   share only `README.md`. 46 builds on 41's fix. 62 edits only
+   `global/output-styles/plain.md`.
+2. **61 "Auto start on approval, and re-review findings as rows", then 55
+   "Decisions that go back to the user", then 53 "`my:draft-spec`", then 54
+   "Small rows in forks while the user is away".** 61 is two small rules in
+   `global/methods/my.md`, the file 55 and 53 edit, so it goes first. 53
+   and 54 both use the rule of 55. 55 and 53 both edit
+   `global/methods/my.md`. 54 comes after 53, because both run forks while
+   the user is away, and 53 is being designed now.
+3. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
    `my:spec-review` `SKILL.md`. Side by side with 8: **60 "Project facts in
-   `CLAUDE.local.md`", then 48 "`setup` facts by script", then 58 "Method
-   hint in repos without a method"**, which all edit `kit:setup`, and 48 and
-   58 also `method-guard.py`; 60 is a fix, so 48's script reads both files;
-   47 "`clean-plans` moves by script"; 49 "`dev-reports` dates and TODOs by
-   script"; 50 "`clean-gone-branches` as a script"; 51 "Roadmap number and
-   link check".
-6. **After row 9 merges, one at a time, all in `my:handoff`: 33 "Skill text
-   loses `$1` and `$2`", 37 "Launch from a session outside tmux", 34
-   "Merges read a message file", 44 "`git-fold-fixups.py list <path>`", 43
-   "`handoff` start checks as a script", 57 "An auto run that stops before
-   the merge", then 35 "Trim copied facts in `my:handoff`" with 36 "Name
-   repeated cross-references", as one branch.** The fixes come first; 33 is
-   a live bug, and row 9's branch already edits the same file. 34 reworks
-   the command 33 fixed. 43 does not wait for 42's parser: without a
-   "Parallel runs" section, `<n>` is `1`. 57 is a feature, so it follows the
-   fixes and scripts. The trims come last, so they trim the text the scripts
-   leave.
-7. **After row 9 merges: 40 "Every spec has a Files section", then 52
-   "`status` gates and overlap by script".** Both edit `my:status`
-   `SKILL.md`, and 40 also edits `my:spec-review`, so it goes after step 5.
-8. **22 "Spec writers decide off-path events", 21 "E2E tests check the
-   result" and 20 "Plan names the layouts to check".** Rule text only. 22
+   `CLAUDE.local.md`", then 48 "`kit:setup` by script, and a method
+   hint"**, which both edit `kit:setup`, and 48 also `method-guard.py`; 60
+   is a fix, so 48's script reads both files; 47 "`clean-plans` moves by
+   script"; 49 "`dev-reports` dates and TODOs by script"; 50
+   "`clean-gone-branches` as a script"; 51 "Roadmap number and link check".
+4. **One at a time, all in `my:handoff`: 33 "Skill text loses `$1` and
+   `$2`", 37 "Launch from a session outside tmux", 34 "Merges read a message
+   file", 44 "`git-fold-fixups.py list <path>`", 43 "`handoff` start checks
+   as a script", 57 "An auto run that stops before the merge", then 35 "Trim
+   `my:handoff` text".** The fixes come first; 33 is a live bug. 33 and 37
+   are Small fixes and may share one branch. 34 reworks the command 33
+   fixed. 43 does not wait for 42's parser: without a "Parallel runs"
+   section, `<n>` is `1`. 57 is a feature, so it follows the fixes and
+   scripts. The trims come last, so they trim the text the scripts leave.
+5. **40 "Every spec has a Files section", then 52 "`status` gates and
+   overlap by script".** Both edit `my:status` `SKILL.md`, and 40 also edits
+   `my:spec-review`, so it goes after step 3.
+6. **20 "Specs and plans name what UI tests check".** Rule text only. It
    edits the spec rules in `global/methods/my.md`, as 40 and 53 do, so it
    goes after them.
-9. **Waiting rows: 29 "Measure the auto runs", then 30 "Split `my:handoff` by
-   mode", then 31 "Write review step 8 whole per mode"; and 17 "Generalize
-   the gates"; after 29, 39 "`kit:setup` offers a Parallel runs section", 42
-   "Parallel runs parser" and 56 "Supervised runs in parallel share slot
-   1".** 29 waits for weeks of auto runs, and 30 and 31 wait for 29. 39, 42
-   and 56 matter only if 29's count keeps parallel runs. 17 waits for a
-   second project to adopt the gates.
+7. **Waiting rows: 29 "Measure the auto runs", then 30 "Split `my:handoff`
+   by mode"; and 17 "Generalize the gates"; after 29, 39 "`kit:setup` offers
+   a Parallel runs section", 42 "Parallel runs parser" and 56 "Supervised
+   runs in parallel share slot 1".** 29 waits for weeks of auto runs, and 30
+   waits for 29. 39, 42 and 56 matter only if 29's count keeps parallel
+   runs. 17 waits for a second project to adopt the gates.
 
 ## `my` plugin hygiene
 
@@ -208,10 +199,6 @@ Make the harness reusable in new projects without forking copies. Spec:
   It asks for the ports already in use, and fixes a `CLAUDE.local.md` line
   that says the project has no such section (zitamu, 2026-10-15). Split out
   of row 9's first spec draft. Blocked by row 29.
-- 💭 58 **Method hint in repos without a method** — in a git repo that
-  imports no method, `method-guard.py` prints one line naming `/kit:setup
-  my`, `tutor` or `none`. `none` silences that repo through a list outside
-  it, `~/.claude/kit/no-method.txt`, so the repo is never touched. Small.
 - ✅ 18 **Global orphan-plan hook** — `check-orphan-plans.sh` runs in the `my`
   plugin at session start, in all repos.
 - ✅ 19 **Runtime-command contract — DRAFT** — written down, not adopted:
@@ -224,17 +211,14 @@ Findings of
 Rows are unordered unless a row says what it waits for. S2, S3, M1 and M3 got
 no row; the report says why.
 
-- 💭 20 **Plan names the layouts to check** — `plan-format.md` asks a plan that
-  changes UI to list the widths at its breakpoint edges, every language the
-  project ships, and its longest real text, and to measure them in e2e tests.
-  Report M4.
-- 💭 21 **E2E tests check the result** — extend "End-to-end coverage" in
-  `global/CLAUDE.md`: the test checks what the user gets (the video plays),
-  not only the markup. Report M4.
-- 💭 22 **Spec writers decide off-path events** — the spec rules in
-  `global/CLAUDE.md` ask a spec that adds UI to decide the events
-  `my:spec-review` now checks, next to Visual Language, so the review finds
-  fewer gaps. Report M4.
+- 💭 20 **Specs and plans name what UI tests check** — `plan-format.md` asks
+  a plan that changes UI to list the widths at its breakpoint edges, every
+  language the project ships, and its longest real text, and to measure them
+  in e2e tests. In `global/methods/my.md`, "End-to-end coverage" asks the
+  test to check what the user gets (the video plays), not only the markup,
+  and the spec rules ask a spec that adds UI to decide the off-path events
+  of row 23, next to Visual Language. Small. Report M4. Rows 21 and 22 were
+  folded in on 2026-10-16.
 - ✅ 23 **Spec review checks off-path events** — `my:spec-review` asks a spec
   that adds UI to decide Back and Forward, a deleted or restored record, an
   element that hides, a language change, and empty and error text. Small.
@@ -265,11 +249,11 @@ Their order is in "Order of work" above.
 
 - 💭 30 **Split `my:handoff` by mode** — move auto-only and parallel-only text
   out of `SKILL.md` into files read through a pointer step, so a stage loads
-  only its own branch. Rehearse a supervised and an auto run headless before
-  and after. Waits for row 29 "Measure the auto runs". Report P1.
-- 💭 31 **Write review step 8 whole per mode** — the four versions of the merge
-  step become one list per mode; smaller patches sit under the step they
-  change. Waits for row 30 "Split `my:handoff` by mode". Report P2.
+  only its own branch. The four versions of review step 8, the merge step,
+  become one list per mode; smaller patches sit under the step they change.
+  Rehearse a supervised and an auto run headless before and after. Waits for
+  row 29 "Measure the auto runs". Report P1, P2. Row 31 was folded in on
+  2026-10-16.
 - ✅ 32 **One script for the locked commit** — a `locked-commit.py` that reads
   the message from a file replaces the five copies of the locked command and
   the commit's heredoc rule. Report P3. Shipped in `39000ec`; known limits are
@@ -284,12 +268,11 @@ Their order is in "Order of work" above.
   parallel squash-merge take `-F <file>`, so the heredoc rule leaves
   `my:handoff`. Changes the `handoff-state.py` interface. Out of scope of the
   [locked commit spec](docs/plans/2026-10-12-locked-commit-spec.md).
-- 💭 35 **Trim copied facts in `my:handoff`** — the lock exit-code table points
-  to `handoff-lock.py --help`, and design explanations stay in the specs.
-  Small. Report P4.
-- 💭 36 **Name repeated cross-references** — *locked commit*, *shared-doc
-  check* and *waiting fixups* replace "as in Plan stage, step N". Small.
-  Report P5.
+- 💭 35 **Trim `my:handoff` text** — the lock exit-code table points to
+  `handoff-lock.py --help`, and design explanations stay in the specs.
+  *Locked commit*, *shared-doc check* and *waiting fixups* replace "as in
+  Plan stage, step N". Small. Report P4, P5. Row 36 was folded in on
+  2026-10-16.
 - 💭 37 **Launch from a session outside tmux** — fix: Launch reads only `TMUX`,
   so a background session falls back to printing the command even when a
   tmux server runs. When `TMUX` is empty, pick the target session from
@@ -338,9 +321,12 @@ above.
 - 💭 47 **`clean-plans` moves by script** — the candidate list, the date,
   `git mv` or `mv`, and repointing the links; "Moving a document" in
   `docs-layout.md` uses the same script. Report S8.
-- 💭 48 **`setup` facts by script** — the fact discovery and the
-  `settings.json` merge of `kit:setup`; the "already set up" check reuses
-  `method-guard.py`. Report S9.
+- 💭 48 **`kit:setup` by script, and a method hint** — a script runs the fact
+  discovery and the `settings.json` merge of `kit:setup`; the "already set
+  up" check reuses `method-guard.py`. Report S9. In a git repo that imports
+  no method, `method-guard.py` also prints one line naming `/kit:setup my`,
+  `tutor` or `none`; `none` silences that repo through a list outside it,
+  `~/.claude/kit/no-method.txt`. Row 58 was folded in on 2026-10-16.
 - 💭 49 **`dev-reports` dates and TODOs by script** — the ISO week, the Monday
   rule, the days with commits and the TODO extraction. Report S10.
 - 💭 50 **`clean-gone-branches` as a script** — list, check and delete; the
@@ -349,8 +335,7 @@ above.
   number and flags `.html`, `../` and dead links in `ROADMAP.md` and
   `CHANGELOG.md`. Small. Report S12.
 - 💭 52 **`status` gates and overlap by script** — `my:status` steps 5 and 6
-  and the overlap test. Blocked by row 9, whose spec uses these steps as
-  model judgment. Report S13.
+  and the overlap test. Report S13.
 - ✅ 41 **`git-squasher` loses `$1`** — fix: the `squash-todo.sh` example in
   `kit:git-squasher` step 5 uses `"${1}"`, which Claude Code leaves alone, and
   a test refuses a bare `$` and digit in kit skill text. Small. Report B1.
@@ -363,16 +348,16 @@ Findings of [`docs/reports/2026-10-15-row-74-handoff-run-audit.md`](docs/reports
   `global/methods/my.md` and `kit:setup` also accept `CLAUDE.local.md`, as
   the Parallel runs rule does, and `kit:setup` asks which file to use. Small.
   Report H4.
-- 💭 61 **Delegation approval starts the auto run** — when the approved spec
-  has a Delegation section, approval starts `/my:handoff auto` with one line
-  saying so, in place of the "supervised or auto?" question. Small. Report H3.
+- 💭 61 **Auto start on approval, and re-review findings as rows** — two
+  rules in `global/methods/my.md`. When the approved spec has a Delegation
+  section, approval starts `/my:handoff auto` with one line saying so, in
+  place of the "supervised or auto?" question (report H3). "One fix round
+  per review" sends a re-review finding that today's code can reach to a new
+  roadmap row; **Risk** keeps only input that today's code never produces
+  (report H8). Small. Row 63 was folded in on 2026-10-16.
 - 💭 62 **Question prompts follow `plain`** — `global/output-styles/plain.md`
   covers the text of question prompts, which name a screen element as the
   user sees it. Small. Report H5.
-- 💭 63 **A reachable re-review finding becomes a bug row** — "One fix round
-  per review" in `global/methods/my.md` sends a re-review finding that
-  today's code can reach to a new roadmap row; **Risk** keeps only input that
-  today's code never produces. Small. Report H8.
 
 ## Other
 
