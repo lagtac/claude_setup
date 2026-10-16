@@ -40,15 +40,16 @@ and how the landing is measured against the designer's mocks.
 
 ## Commands
 
-Everything runs in Docker. The host is a shared server, so do not use `sudo`,
-host package installs or `docker system prune`.
+Everything runs in Docker. Do not use `sudo`, host package installs or
+`docker system prune` here: the production server is shared, and the dev
+setup must match it.
 
 ```bash
 make setup        # first run on a clone
 make up           # dev stack; web on :54300 (LAN-reachable), Mailpit :54025
 make db           # migrate + taxonomy and areas + demo accounts + dev listings + cache clear; safe to rerun
 make seed-demo    # buyer@demo.test / seller@demo.test / agent@demo.test, password "password"
-make seed-listings # 40 sale listings, agent1-4 / seller1-6 @listings.test; photos if assets/properties/ exists
+make seed-listings # 116 sale listings, agent1-5 / seller1-10 / buyer1-24 @listings.test, with searches, requests and chats; photos if assets/properties/ exists
 make test-web     # npm test = typecheck + vitest (node) + vitest (Nuxt environment)
 make test-api     # the API suite, on isolated sqlite; never touches dev data
 make lint-api     # Laravel Pint; lint-api-check only checks
@@ -160,8 +161,9 @@ These shape screens and flows, so the UI must respect them.
 - **Auth** keeps the Sanctum bearer token in localStorage
   (`composables/useAuth.ts`). `apiFetch` owns the 401 handling.
 - **The production CSP** in `nuxt.config.ts` (`connect-src 'self'`,
-  `script-src 'self'`) is the control that makes the localStorage token
-  acceptable. Do not loosen it. It also blocks any third-party script.
+  `script-src 'self' 'unsafe-inline'`) is the control that makes the
+  localStorage token acceptable. Do not loosen it. It also blocks any
+  third-party script. A nonce in place of `'unsafe-inline'` is still open.
 - **i18n uses no library.** Each page holds an inline
   `copy = { el: {...}, en: {...} }` object and reads it through
   `const t = computed(() => copy[locale.value])`. `useLocale()` stores the
