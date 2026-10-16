@@ -145,8 +145,14 @@ as `/my:<name>` or `/kit:<name>`.
   import line, the facts block and the plugin switch, and commits them in that
   project. See Methods.
 - `kit:briefing` — Writes a plain-English, decision-focused briefing for
-  non-technical readers, in `docs/briefings/`.
-- `kit:dev-reports` — Builds a daily or weekly developer report from git history.
+  non-technical readers, in `docs/briefings/`. Five events: a result landed,
+  a decision needs sign-off, a long job started, changes since a fixed point
+  (the last briefing, deploy or request list), and where the product stands
+  (a first briefing). The deck or shared copy is built from the briefing, not
+  by it. Its "Scope" section lists what goes elsewhere.
+- `kit:dev-reports` — Builds a daily or weekly developer report from git
+  history. For developers only; `kit:briefing` can use one as its source when
+  a project keeps no changelog.
 - `kit:git-squasher` — Squashes runs of small consecutive commits.
 - `kit:tune-claude-instructions` — Audits instruction files (CLAUDE.md, agents,
   commands, skills and their dispatch prompts) for vague directives, tools a

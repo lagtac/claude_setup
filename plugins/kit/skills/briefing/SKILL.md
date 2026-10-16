@@ -5,11 +5,12 @@ description: >
   technical work for a NON-technical audience (stakeholders, reviewers, end
   users, funders, execs). Trigger on "write a briefing", "brief the
   stakeholders", "explain X for non-technical readers", "stakeholder one-pager",
-  or whenever someone needs a derived plain-English view of engineer-facing docs
-  (run/results logs, plans, specs, commits). Owns briefing structure,
-  source-grounding discipline, and the docs/briefings/ convention. NOT for
-  dev-facing "explain this spec so I can build it" (different register) and NOT
-  for CHANGELOG/ROADMAP edits.
+  "client update", "what shipped since", or whenever someone needs a derived
+  plain-English view of engineer-facing docs (run/results logs, plans, specs,
+  changelog, commits). Owns briefing structure, source-grounding discipline,
+  and the docs/briefings/ convention. NOT for developer reports from git
+  history (kit:dev-reports), NOT for dev-facing "explain this spec so I can
+  build it" (different register), and NOT for CHANGELOG/ROADMAP edits.
 ---
 
 # Briefing Authoring
@@ -22,6 +23,25 @@ not a status dump.
 The craft is three disciplines, not a template. Get them right and the sections
 write themselves. Prose mechanics and the polish pass live in **`STYLE.md`**
 (bundled alongside this skill) — read it before drafting.
+
+## Scope
+
+**In:** one Markdown write-up for a reader who decides about the work but does
+not read code, for one of the five events below.
+
+**Out — use something else:**
+
+- **A developer summary of git history** → `kit:dev-reports`. Its report can
+  be the source for event 4; it is never the briefing.
+- **Explaining a spec to the developer who builds it** → a different register;
+  this skill does not cover it.
+- **CHANGELOG and ROADMAP edits** → the project's own rules for those files.
+  The briefing cites them; it does not edit them.
+- **Making text sound less machine-written** → `kit:de-slop`. This skill calls
+  it only as the optional polish pass.
+- **The deck, the shared editable copy, the demo video** → build them from the
+  finished briefing with whatever tool the host offers. The briefing stays the
+  source, and its metadata links to each of them.
 
 ## The three disciplines
 
@@ -58,8 +78,21 @@ shape and the source doc:
    "We've started, here's the approach and why" is the event. Source = the
    plan/recipe. Then **append dated updates to the same file**; don't start a new
    briefing.
+4. **Changes since a fixed point** — what shipped or changed between an anchor
+   the reader already knows and now. Anchor, in order of preference: the last
+   briefing to this reader, the last deploy or release, the date of the
+   reader's own request list, a contract or milestone date. Name the anchor in
+   the first lines, so the reader knows where "since" starts. Source = the
+   project's changelog and roadmap rows for that range. If the project keeps
+   neither, run `kit:dev-reports` for the range first and use its report.
+5. **Where the product stands** — a first briefing to a reader, with no anchor
+   for event 4. Describe the current state, not a history: what works today,
+   what is still open, what comes next. Source = the roadmap (built and open
+   rows) and the live product. Never start from the first commit; a full
+   history is a status dump.
 
-If none fits, recheck the Discipline 1 precondition before writing.
+Events 4 and 5 still end on an ask: what the reader should check, decide or
+send back. If none fits, recheck the Discipline 1 precondition before writing.
 
 ## Before you write
 
@@ -115,7 +148,7 @@ runs after the polish pass, because a polish pass can change a number.
 
 - **Distorting a number to make prose flow.** The cardinal sin.
 - **A status dump instead of an answer.** If it doesn't end on a decision or ask,
-  ask what it's for.
+  ask what it's for. Events 4 and 5 report status, but they still end on an ask.
 - **Burying the bad news.** "What this does NOT fix" is where trust is earned.
 - **Celebrating noise.** Movement inside the noise band isn't a result.
 - **Untagged asks** when multiple audiences must act.

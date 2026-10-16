@@ -3,7 +3,8 @@ name: dev-reports
 description: >
   Use when the user asks to generate a developer report, weekly report, daily report,
   dev log, or activity summary from git history. Also when invoked via /kit:dev-reports.
-  NOT for CHANGELOG.md entries.
+  NOT for CHANGELOG.md entries, and NOT for non-technical readers (kit:briefing,
+  which can use a dev report as its source).
 ---
 
 # Developer Report Generator
