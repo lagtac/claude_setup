@@ -48,8 +48,8 @@ setup must match it.
 make setup        # first run on a clone
 make up           # dev stack; web on :54300 (LAN-reachable), Mailpit :54025
 make db           # migrate + taxonomy and areas + demo accounts + dev listings + cache clear; safe to rerun
-make seed-demo    # buyer@demo.test / seller@demo.test / agent@demo.test, password "password"
-make seed-listings # 116 sale listings, agent1-5 / seller1-10 / buyer1-24 @listings.test, with searches, requests and chats; photos if assets/properties/ exists
+make seed-demo    # full dev data: demo accounts (buyer/seller/agent @demo.test, password "password") + seed-listings
+make seed-listings # 116 sale listings, agent1-5 / seller1-10 / buyer1-24 @listings.test, with searches, requests and chats; photos if assets/properties/ exists; clears the cache
 make test-web     # npm test = typecheck + vitest (node) + vitest (Nuxt environment)
 make test-api     # the API suite, on isolated sqlite; never touches dev data
 make lint-api     # Laravel Pint; lint-api-check only checks
@@ -110,12 +110,12 @@ docker compose -f infra/docker-compose.yml --env-file infra/.env run --rm web np
 Each rule exists because it was broken once. The reasons are in
 `docs/DEPENDENCIES.md` and the maintainer notes in `README.md`.
 
-- **Run every npm command in the web container.** CI uses npm 10.8.2, and a
+- **Run every npm command in the web container.** CI uses npm 10.9.9, and a
   newer host npm writes lockfiles CI rejects.
 - **Never run `npm audit fix`.** Adding a dependency needs approval. Do not
   remove the pins that `docs/DEPENDENCIES.md` explains: `vue` and `vue-router`
-  in dependencies, `vue-tsc` at `3.3.6`, TypeScript below 7, and the `overrides`
-  floors.
+  in dependencies, `vue-tsc` at `3.3.6`, `@nuxtjs/i18n` at `10.2.3`, TypeScript
+  below 7, and the `overrides` floors.
 - **The typechecker has gone silent before.** After a toolchain bump, plant a
   type error and confirm the typecheck fails. CI runs
   `web/scripts/typecheck-canary.sh` for the same reason.
@@ -164,11 +164,14 @@ These shape screens and flows, so the UI must respect them.
   `script-src 'self' 'unsafe-inline'`) is the control that makes the
   localStorage token acceptable. Do not loosen it. It also blocks any
   third-party script. A nonce in place of `'unsafe-inline'` is still open.
-- **i18n uses no library.** Each page holds an inline
-  `copy = { el: {...}, en: {...} }` object and reads it through
-  `const t = computed(() => copy[locale.value])`. `useLocale()` stores the
-  choice in a `locale` cookie, which is written only after the visitor picks a
-  language. Every user-facing string ships in both languages.
+- **i18n: the path picks the language, the copy stays inline.**
+  `@nuxtjs/i18n` routes Greek at the root and English under `/en`. Each page
+  holds an inline `copy = { el: {...}, en: {...} }` object and reads it through
+  `const t = computed(() => copy[locale.value])`. Every internal link goes
+  through `NuxtLinkLocale` or `localePath`. `tests/localeLinks.spec.ts`
+  catches the common raw forms, not all of them. `useLocale()` stores the choice in a `locale` cookie,
+  which only the language toggle writes (the user, 2026-10-16). Every
+  user-facing string ships in both languages.
 - **Pure logic** lives in `utils/*.ts` and is unit-tested from `tests/`. Shared
   state lives in `composables/`. `utils/legal.ts` is the only source of company
   details. A source-literal test fails if the landing footer retypes them.
@@ -188,16 +191,24 @@ These shape screens and flows, so the UI must respect them.
 
 ## SEO
 
-- **Both languages share one URL.** The language comes from the `locale` cookie,
-  so a crawler always receives the Greek render. There are no `/el` or `/en`
-  routes, no `hreflang` and no canonical links. Changing this is a product
-  decision, so ask before starting it.
-- **Head tags.** `app.vue` sets the `titleTemplate` and `<html lang>`. Public
-  pages set their title with `useHead`. Only `pages/index.vue` sets a
-  description and Open Graph tags (`useSeoMeta`).
-- **Crawl files** are the hand-maintained `public/robots.txt` and
-  `public/sitemap.xml`. Keep both in step with `pages/` when a public page is
-  added. The sitemap has no `<lastmod>` on purpose.
+- **Each language has its own URL.** Greek is at the root and English under
+  `/en` (the user kept Kostas's release on 2026-10-16, row 157). A saved
+  English choice redirects a Greek URL to its `/en` twin, except on Back or
+  Forward within the open page (the user, 2026-10-18). Every Greek page sends `Vary: Cookie`.
+  Crawlers send no
+  cookie, so they are never redirected, and the browser's language is never
+  read.
+- **Head tags.** `app.vue` sets the `titleTemplate`, and through
+  `useLocaleHead` it sets `<html lang>`, the canonical link, the `hreflang`
+  alternates (`el`, `en`, `x-default`) and `og:url` and `og:locale`. Their
+  host is `NUXT_PUBLIC_SITE_URL`, read only at build time; a production build
+  refuses to run without it. Public pages set their title, description and
+  Open Graph tags.
+- **Crawl files** `/robots.txt` and `/sitemap.xml` are built from
+  `NUXT_PUBLIC_SITE_URL` by `utils/crawl.ts` (Kostas, 2026-10-16). Keep its
+  `SITEMAP_PAGES` and `CRAWL_BLOCKED` lists in step with `pages/` when a page is
+  added; each entry gets its `/en` twin there. The sitemap has no `<lastmod>`
+  on purpose.
 - **Do not add a blanket `X-Robots-Tag` or a `noindex`.** The site-wide noindex
   was removed on 2026-07-28 on purpose.
 - **Crawlers see only server-rendered content.** Anything inside `<ClientOnly>`
