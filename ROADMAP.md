@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 68
+**Next number:** 70
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -21,7 +21,8 @@ and the same edit raises it by one.
 Set on 2026-10-14; the shipped steps were removed on 2026-10-16, and the
 `my:handoff` fixes moved to step 1 the same day. Row 64 shipped on
 2026-10-16 ahead of its place; rows 33, 37, 56, 45 and 61 rebase onto its
-text. Row 67 was put first on 2026-10-18. The steps run top to
+text. Row 67 was put first on 2026-10-18. Rows 68 and 69 became step 3
+the same day, and row 48 was folded into 68. The steps run top to
 bottom. Rows in one step can run side by side, because they edit different
 files.
 
@@ -39,21 +40,26 @@ files.
    row. 45 is in `my` and 46 in `kit`, but both edit `README.md`, so 46 goes
    after 45. 46 builds on 41's fix. 62 edits only
    `global/output-styles/plain.md`.
-3. **61 "Auto start on approval, and re-review findings as rows", then 55
+3. **68 "Launch method switch", then 69 "Shared skills move to `kit`".**
+   68 comes after 67, so its spec uses the new sizing, and after 33, 37 and
+   56, because it changes the launch lines in `my:handoff` that they fix. It
+   replaces `kit:setup`'s two switches and `method-guard.py`, so 60 in step
+   5 edits the new `kit:setup`. 69 renames skills in files 68 also edits, so
+   it comes right after, and each name changes once.
+4. **61 "Auto start on approval, and re-review findings as rows", then 55
    "Decisions that go back to the user", then 53 "`my:draft-spec`", then 54
    "Small rows in forks while the user is away".** 61 is two small rules in
    `global/methods/my.md`, the file 55 and 53 edit, so it goes first. 53 and
    54 both use the rule of 55. 55 and 53 both edit
    `global/methods/my.md`. 54 comes after 53, because both run forks while
    the user is away, and 53 is being designed now.
-4. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
+5. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
    `my:spec-review` `SKILL.md`. Side by side with 8: **60 "Project facts in
-   `CLAUDE.local.md`", then 48 "`kit:setup` by script, and a method
-   hint"**, which both edit `kit:setup`, and 48 also `method-guard.py`; 60
-   is a fix, so 48's script reads both files; 47 "`clean-plans` moves by
-   script"; 49 "`dev-reports` dates and TODOs by script"; 50
-   "`clean-gone-branches` as a script"; 51 "Roadmap number and link check".
-5. **One at a time, all in `my:handoff`: 34 "Merges read a message file",
+   `CLAUDE.local.md`"**, which edits `kit:setup` after 68 reshapes it; 47
+   "`clean-plans` moves by script"; 49 "`dev-reports` dates and TODOs by
+   script"; 50 "`clean-gone-branches` as a script"; 51 "Roadmap number and
+   link check".
+6. **One at a time, all in `my:handoff`: 34 "Merges read a message file",
    44 "`git-fold-fixups.py list <path>`", 43 "`handoff` start checks as a
    script", 66 "Window row lookup by script", 57 "An auto run that stops
    before the merge", then 35 "Trim `my:handoff` text".** 34 reworks the
@@ -61,13 +67,13 @@ files.
    without a "Parallel runs" section, `<n>` is `1`. 57 is a feature, so it
    follows the scripts. The trims come last, so they trim the text the
    scripts leave.
-6. **40 "Every spec has a Files section", then 52 "`status` gates and
+7. **40 "Every spec has a Files section", then 52 "`status` gates and
    overlap by script".** Both edit `my:status` `SKILL.md`, and 40 also edits
-   `my:spec-review`, so it goes after step 4.
-7. **20 "Specs and plans name what UI tests check".** Rule text only. It
+   `my:spec-review`, so it goes after step 5.
+8. **20 "Specs and plans name what UI tests check".** Rule text only. It
    edits the spec rules in `global/methods/my.md`, as 40 and 53 do, so it
    goes after them.
-8. **Waiting rows: 29 "Measure the auto runs", then 30 "Split `my:handoff`
+9. **Waiting rows: 29 "Measure the auto runs", then 30 "Split `my:handoff`
    by mode"; and 17 "Generalize the gates"; after 29, 39 "`kit:setup` offers
    a Parallel runs section" and 42 "Parallel runs parser".** 29 waits for
    weeks of auto runs, and 30 waits for 29. 39 and 42 matter only if 29's
@@ -219,6 +225,17 @@ Make the harness reusable in new projects without forking copies. Spec:
   It asks for the ports already in use, and fixes a `CLAUDE.local.md` line
   that says the project has no such section (zitamu, 2026-10-15). Split out
   of row 9's first spec draft. Blocked by row 29.
+- 💭 68 **Launch method switch** — a launcher named `claude` picks each
+  session's method, from `CLAUDE_METHOD` or the project's one method line,
+  and starts the real `claude` with that method's rules and settings. It
+  replaces the import line, the plugin keys and `method-guard.py`, so a
+  project can switch method for one session. Large; brief approved,
+  brainstorming next. Row 48 was folded in on 2026-10-18.
+  [brief](docs/plans/2026-10-18-launch-method-switch-architecture.md)
+- 💭 69 **Shared skills move to `kit`** — `design-system`,
+  `roadmap-management` and `changelog-management` leave `my` for `kit`, so
+  other methods can use them, and every `my:` reference is renamed.
+  `design-system`'s refresh step stays tied to step 13 of `my`. Medium.
 - ✅ 16 **Swappable methods** — split `global/CLAUDE.md` into a neutral core
   and per-method files, and split `my` into `my` (the method) and `kit`
   (neutral tools), so one project can try another method. Shipped; 11 of 22
@@ -363,12 +380,6 @@ above.
 - 💭 47 **`clean-plans` moves by script** — the candidate list, the date,
   `git mv` or `mv`, and repointing the links; "Moving a document" in
   `docs-layout.md` uses the same script. Report S8.
-- 💭 48 **`kit:setup` by script, and a method hint** — a script runs the fact
-  discovery and the `settings.json` merge of `kit:setup`; the "already set
-  up" check reuses `method-guard.py`. Report S9. In a git repo that imports
-  no method, `method-guard.py` also prints one line naming `/kit:setup my`,
-  `tutor` or `none`; `none` silences that repo through a list outside it,
-  `~/.claude/kit/no-method.txt`. Row 58 was folded in on 2026-10-16.
 - 💭 49 **`dev-reports` dates and TODOs by script** — the ISO week, the Monday
   rule, the days with commits and the TODO extraction. Report S10.
 - 💭 50 **`clean-gone-branches` as a script** — list, check and delete; the
