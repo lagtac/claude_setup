@@ -80,16 +80,20 @@ types a fourth, `/my:handoff run auto <stage> <doc>`, into each window. See
 
 ## How a launch works
 
-1. **Name.** The window and session get the name `<stage>-<slug>`. The slug is
+1. **Name.** The session gets the name `<stage>-<slug>`. The slug is
    the doc's file name without the date and without `-spec.md` or `.md`. For
    example, `docs/plans/2026-09-29-typed-numbers-spec.md` gives
-   `plan-typed-numbers`.
+   `plan-typed-numbers`. The window gets the same name with the roadmap row
+   in front, for example `r122: plan-typed-numbers`. The row is the one in
+   `ROADMAP.md` that links the doc and whose title names the same change. A
+   row that only cites the doc does not count. When no single row is left,
+   the window name has no prefix.
 2. **No duplicates.** If a session with that name already runs, the launch
    stops.
 3. **Copy the flags.** The new session gets the same `--plugin-dir` flags and
    the same permission mode as the current one.
 4. **Open the window.** It runs
-   `tmux new-window -d … "claude -n <name> … '/my:handoff run <stage> <doc>'"`.
+   `tmux new-window -d -n '<window>' … "claude -n <name> … '/my:handoff run <stage> <doc>'"`.
    `-d` means your screen stays where it is.
 
 A window opens only when you are inside tmux and the session runs in `auto` or
@@ -167,7 +171,7 @@ A stage stops and waits at these points:
 
 At each point it does three things:
 
-1. Renames its window to `<name> ⚠`.
+1. Renames its window to `<window> ⚠`.
 2. Sends a notification with `PushNotification`, when the session has that
    tool. This is often not delivered while you work in another window, so
    the `⚠` mark is the main signal.
@@ -177,16 +181,19 @@ When you answer in that window, the `⚠` goes away before the stage goes on.
 
 ## The window marks
 
+`<window>` is the window name from "How a launch works", for example
+`r122: code-typed-numbers`.
+
 | Window name | Meaning |
 | --- | --- |
-| `<name>` | Working. |
-| `<name> ⚠` | Waiting for you. |
-| `<name> ✓` | Finished. Close the window. |
+| `<window>` | Working. |
+| `<window> ⚠` | Waiting for you. |
+| `<window> ✓` | Finished. Close the window. |
 
 ## When a stage finishes
 
 A stage finishes when it has launched the next stage, or after the merge. It
-then renames its window to `<name> ✓` and prints:
+then renames its window to `<window> ✓` and prints:
 `<name>: done. Close this window, and start new work in a new session.`
 
 Close the window. New work in the old window rereads the whole old context on

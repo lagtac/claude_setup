@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 65
+**Next number:** 67
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -52,11 +52,12 @@ files.
    "`clean-gone-branches` as a script"; 51 "Roadmap number and link check".
 4. **One at a time, all in `my:handoff`: 34 "Merges read a message file",
    44 "`git-fold-fixups.py list <path>`", 43 "`handoff` start checks as a
-   script", 57 "An auto run that stops before the merge", then 35 "Trim
-   `my:handoff` text".** 34 reworks the command that 33 fixed in step 1. 43
-   does not wait for 42's parser: without a "Parallel runs" section, `<n>`
-   is `1`. 57 is a feature, so it follows the scripts. The trims come last,
-   so they trim the text the scripts leave.
+   script", 66 "Window row lookup by script", 57 "An auto run that stops
+   before the merge", then 35 "Trim `my:handoff` text".** 34 reworks the
+   command that 33 fixed in step 1. 43 does not wait for 42's parser:
+   without a "Parallel runs" section, `<n>` is `1`. 57 is a feature, so it
+   follows the scripts. The trims come last, so they trim the text the
+   scripts leave.
 5. **40 "Every spec has a Files section", then 52 "`status` gates and
    overlap by script".** Both edit `my:status` `SKILL.md`, and 40 also edits
    `my:spec-review`, so it goes after step 3.
@@ -309,9 +310,19 @@ Their order is in "Order of work" above.
   an `auto` flag, that stops at stop-table row 14 "Ready to squash-merge".
   A test drive can then run the auto path, `decide` included, without a
   merge. Found on zitamu on 2026-10-15; not from the audit report.
+- 💭 66 **Window row lookup by script** — a tested helper finds the roadmap
+  row for a doc, or the `auto rows` queue passes its stored row through, in
+  place of the prose lookup of row 65. Clears its known limits: a batch
+  plan whose slug differs from its spec's gets no prefix, a missing
+  `ROADMAP.md` is not named as "no row", Launch step 1 builds `<window>`
+  before step 3 finds the repo root, and `resume` windows get a prefix.
 - ✅ 38 **Rubric fixes in `my:handoff`** — `PushNotification` is loaded before
   use, findings are classified in writing before a fix, and the code stage's
   auto sub-steps have their own letters. Small. Report R1 to R4.
+- ✅ 65 **Windows name their roadmap row** — `my:handoff` names each tmux
+  window `r<row>: <stage>-<slug>`, the `kit:name-pane` prefix, with the row
+  that links the doc. Small; known limits are in the squash commit and in
+  row 66. Not from the audit report.
 
 ## Scripted skill steps
 

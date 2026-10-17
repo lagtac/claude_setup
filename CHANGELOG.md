@@ -16,6 +16,16 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-17 — `my:handoff` windows name their roadmap row (row 65)
+
+The tmux windows that `my:handoff` opens now start with the roadmap row, as
+`r<row>:`, the prefix that `kit:name-pane` uses. A code stage for row 122
+opens the window `r122: code-<slug>`, and its marks follow, as in
+`r122: code-<slug> ⚠`. The row is the one in `ROADMAP.md` that links the doc
+and names the same change. With no such row, the window name is
+`<stage>-<slug>` as before. Session names and the lines a stage prints do not
+change.
+
 ### 2026-10-16 — `my:design-system`: an inventory every UI spec reads (row 64)
 
 Each project with UI can keep `docs/DESIGN-SYSTEM.md`, an inventory of its

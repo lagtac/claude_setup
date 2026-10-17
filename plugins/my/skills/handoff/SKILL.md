@@ -84,6 +84,32 @@ numbers.
 For `auto resume`, `<name>` is `resume-<slug>`. For the `auto rows` forms, it
 is `rows`.
 
+`<window>` is the tmux window name: `r<row>: <name>`, for example
+`r122: code-landing-match-grade`, or `<name>` alone when no row is found.
+`<row>` is the number of the roadmap row that links the doc, as written in
+`ROADMAP.md` (`\d+[a-z]?`). To find it, run
+`grep -nE '[0-9]{4}-[0-9]{2}-[0-9]{2}-<slug>(-spec|-architecture)?\.md' <repo root>/ROADMAP.md`,
+with `<repo root>` as in Launch step 3. The date anchor keeps a longer slug
+that ends in the same words from matching. A row is a bullet
+`- <icon> <row> **<title>**` or a table line `| <row> | **<title>** |`, and a
+bullet goes on over its indented lines up to a blank line or a line that is
+not indented. A hit belongs to the row it sits in; a hit outside every row,
+such as in a section intro, counts for none. Count ✅ rows too: the review
+stage renames its window after the `done` marks. Of those rows, keep only the
+ones whose title names the same change as the spec's title or Goal, as
+`my:status` step 4 does: a row that links the doc as the place where
+something was found is not its row. When exactly one row is left and it has
+a number, that number is `<row>`. Otherwise there is no row. The `auto rows`
+forms have no slug, so their own `<window>` is `rows`. A Launch builds
+`<window>` for the session it opens, from that session's `<name>` and a
+lookup of its slug. A Run session does not look up its row again: at the
+start of the stage, before the start checks, it reads its window's name with
+`tmux display-message -p -t "$TMUX_PANE" '#W'`. When that name is `<name>`
+or `r<row>: <name>`, that name is `<window>`. Otherwise (no `$TMUX_PANE`, or
+a window the user opened after a fallback), it looks up the row as above. It
+keeps `<window>` to the end, so the window name does not change in the
+middle of a stage.
+
 `<base>` is the branch that specs and plans are committed on and that work
 branches squash-merge into. Take it from the project's rules when they name
 one for this work. Otherwise it is the branch checked out in the main
@@ -189,7 +215,7 @@ server: that process keeps the lock until it ends.
 "Signal" means these three actions, in this order, then stop and wait:
 
 1. If `$TMUX_PANE` is set, run
-   `tmux rename-window -t "$TMUX_PANE" "<name> ⚠"`. Always pass `-t`: without
+   `tmux rename-window -t "$TMUX_PANE" "<window> ⚠"`. Always pass `-t`: without
    it tmux renames the window the user is looking at.
 2. Call `PushNotification` with one line under 200 characters that leads with
    `<name>:` and says what the user must do. It may be a deferred tool: if
@@ -201,7 +227,7 @@ server: that process keeps the lock until it ends.
 
 In a Run session only: after a signal, when the user next replies in this
 window and `$TMUX_PANE` is set, first run
-`tmux rename-window -t "$TMUX_PANE" "<name>"`, then act on the reply. So the
+`tmux rename-window -t "$TMUX_PANE" "<window>"`, then act on the reply. So the
 mark means "waiting for the user" and nothing else. A Launch never renames a
 window. A finished stage uses another mark, `✓`; see "Finish".
 
@@ -269,7 +295,7 @@ mark names the test.
 
 Run these steps in order.
 
-1. **Name.** Build `<name>` from the args.
+1. **Name.** Build `<name>` and `<window>` from the args.
 2. **Duplicate.** Call `ListAgents`. If a session named `<name>` is listed,
    print `<name> already exists; not launching a second one.` and stop.
 3. **Flags.**
@@ -314,7 +340,7 @@ Run these steps in order.
 5. **Open.**
 
    ```bash
-   tmux new-window -d -n <name> -c <repo root> \
+   tmux new-window -d -n '<window>' -c <repo root> \
      "claude -n <name> <plugin-dir flags> <mode flag> '/my:handoff run <stage> <doc>'"
    ```
 
@@ -323,7 +349,7 @@ Run these steps in order.
    **In auto mode:**
 
    ```bash
-   tmux new-window -d -n <name> -c <repo root> \
+   tmux new-window -d -n '<window>' -c <repo root> \
      "MY_AUTORUN=<slug> claude -n <name> <plugin-dir flags> <mode flag> '/my:handoff run auto <stage> <doc>'"
    ```
 
@@ -1097,14 +1123,14 @@ A stage finishes when it has launched the next stage, or after the review
 stage's merge. Then:
 
 1. If `$TMUX_PANE` is set, run
-   `tmux rename-window -t "$TMUX_PANE" "<name> ✓"`.
+   `tmux rename-window -t "$TMUX_PANE" "<window> ✓"`.
 2. Print as the last line of your output:
    `<name>: done. Close this window, and start new work in a new session.`
 
 A finished session's context is large. New work in this window rereads that
 context on every turn, and after an hour the cache has expired, so the first
 reply rewrites all of it. If the user replies here anyway, first run
-`tmux rename-window -t "$TMUX_PANE" "<name>"`, then act on the reply.
+`tmux rename-window -t "$TMUX_PANE" "<window>"`, then act on the reply.
 
 ## Rules for every stage
 
