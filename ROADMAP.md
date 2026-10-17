@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 67
+**Next number:** 68
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -21,11 +21,14 @@ and the same edit raises it by one.
 Set on 2026-10-14; the shipped steps were removed on 2026-10-16, and the
 `my:handoff` fixes moved to step 1 the same day. Row 64 shipped on
 2026-10-16 ahead of its place; rows 33, 37, 56, 45 and 61 rebase onto its
-text. The steps run top to
+text. Row 67 was put first on 2026-10-18. The steps run top to
 bottom. Rows in one step can run side by side, because they edit different
 files.
 
-1. **33 "Skill text loses `$1` and `$2`" and 37 "Launch from a session
+1. **67 "Brainstorming's paths replace the size table".** It changes how
+   every row is sized and which documents it gets, so the rows after it are
+   specced under the new rule instead of being reviewed again later.
+2. **33 "Skill text loses `$1` and `$2`" and 37 "Launch from a session
    outside tmux" on one branch, then 56 "Supervised runs in parallel share
    slot 1". Beside them, 45 "Review preparation as a script", then 46
    "`git-squasher` plan and apply scripts"; and 62 "Question prompts follow
@@ -36,35 +39,35 @@ files.
    row. 45 is in `my` and 46 in `kit`, but both edit `README.md`, so 46 goes
    after 45. 46 builds on 41's fix. 62 edits only
    `global/output-styles/plain.md`.
-2. **61 "Auto start on approval, and re-review findings as rows", then 55
+3. **61 "Auto start on approval, and re-review findings as rows", then 55
    "Decisions that go back to the user", then 53 "`my:draft-spec`", then 54
    "Small rows in forks while the user is away".** 61 is two small rules in
    `global/methods/my.md`, the file 55 and 53 edit, so it goes first. 53 and
    54 both use the rule of 55. 55 and 53 both edit
    `global/methods/my.md`. 54 comes after 53, because both run forks while
    the user is away, and 53 is being designed now.
-3. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
+4. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
    `my:spec-review` `SKILL.md`. Side by side with 8: **60 "Project facts in
    `CLAUDE.local.md`", then 48 "`kit:setup` by script, and a method
    hint"**, which both edit `kit:setup`, and 48 also `method-guard.py`; 60
    is a fix, so 48's script reads both files; 47 "`clean-plans` moves by
    script"; 49 "`dev-reports` dates and TODOs by script"; 50
    "`clean-gone-branches` as a script"; 51 "Roadmap number and link check".
-4. **One at a time, all in `my:handoff`: 34 "Merges read a message file",
+5. **One at a time, all in `my:handoff`: 34 "Merges read a message file",
    44 "`git-fold-fixups.py list <path>`", 43 "`handoff` start checks as a
    script", 66 "Window row lookup by script", 57 "An auto run that stops
    before the merge", then 35 "Trim `my:handoff` text".** 34 reworks the
-   command that 33 fixed in step 1. 43 does not wait for 42's parser:
+   command that 33 fixed in step 2. 43 does not wait for 42's parser:
    without a "Parallel runs" section, `<n>` is `1`. 57 is a feature, so it
    follows the scripts. The trims come last, so they trim the text the
    scripts leave.
-5. **40 "Every spec has a Files section", then 52 "`status` gates and
+6. **40 "Every spec has a Files section", then 52 "`status` gates and
    overlap by script".** Both edit `my:status` `SKILL.md`, and 40 also edits
-   `my:spec-review`, so it goes after step 3.
-6. **20 "Specs and plans name what UI tests check".** Rule text only. It
+   `my:spec-review`, so it goes after step 4.
+7. **20 "Specs and plans name what UI tests check".** Rule text only. It
    edits the spec rules in `global/methods/my.md`, as 40 and 53 do, so it
    goes after them.
-7. **Waiting rows: 29 "Measure the auto runs", then 30 "Split `my:handoff`
+8. **Waiting rows: 29 "Measure the auto runs", then 30 "Split `my:handoff`
    by mode"; and 17 "Generalize the gates"; after 29, 39 "`kit:setup` offers
    a Parallel runs section" and 42 "Parallel runs parser".** 29 waits for
    weeks of auto runs, and 30 waits for 29. 39 and 42 matter only if 29's
@@ -391,6 +394,21 @@ Findings of [`docs/reports/2026-10-15-row-74-handoff-run-audit.md`](docs/reports
 - 💭 62 **Question prompts follow `plain`** — `global/output-styles/plain.md`
   covers the text of question prompts, which name a screen element as the
   user sees it. Small. Report H5.
+
+## Superpowers fit
+
+Findings of [`docs/reports/2026-10-14-superpowers-fit-critique.md`](docs/reports/2026-10-14-superpowers-fit-critique.md).
+Only F1 is routed so far.
+
+- 💭 67 **Brainstorming's paths replace the size table** — superpowers'
+  brainstorming picks spike, bounded or architectural, and `my` only adapts
+  it: a change to stored data, permissions or a contract is architectural;
+  an architectural change puts its tasks in the spec (today's Medium) or in
+  a separate plan (today's Large); a bug takes superpowers' debugging route,
+  and goes to brainstorming when its root cause needs a design decision.
+  Edits `global/methods/my.md`, `docs-layout.md`, `my:handoff`,
+  `my:design-system`, both READMEs and zitamu's local file, and the open
+  rows that use the sizes (40, 53, 54, 61). Report F1.
 
 ## Other
 

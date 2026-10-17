@@ -1,6 +1,6 @@
 # Critique: how the `my` method fits with superpowers
 
-**Status:** current, 2026-10-14. Five findings (F1 to F5) and one no-action note (N1) on where the `my` method and superpowers 6.4.1 overlap, two measurements of where the flow waits (B1, B2), two tests (T1, T2) to compare the code stages, and five options (O1 to O5) for the overlap; not yet routed to roadmap rows.
+**Status:** current, 2026-10-14. Five findings (F1 to F5) and one no-action note (N1) on where the `my` method and superpowers 6.4.1 overlap, two measurements of where the flow waits (B1, B2), two tests (T1, T2) to compare the code stages, and five options (O1 to O5) for the overlap; F1 routed to row 67 on 2026-10-18, the rest not yet routed.
 
 ## How to read this
 
@@ -415,5 +415,8 @@ and O4 until T1 gives evidence: both remove a part whose value nobody has measur
 
 ## Where these went
 
-Not routed yet. The user decides the rows and their place in `ROADMAP.md`, section "Order of
-work".
+- **F1** → row 67, "Brainstorming's paths replace the size table", routed on 2026-10-18. The
+  row goes further than the fix proposed here: it drops the size table instead of mapping
+  brainstorming onto it, so the spike path stays.
+- **F2 to F5, N1, T1, T2, O1 to O5:** not routed yet. The user decides the rows and their place
+  in `ROADMAP.md`, section "Order of work".
