@@ -16,6 +16,16 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-18 — Roadmap rows say what kind of work they are
+
+`my:roadmap-management` now gives every row body a fixed order. First the
+kind of work, where it happens and its size, as in `bug in my:handoff,
+Small.` Then what the user sees, then the fix or goal, then the status and the
+link. A row's short name uses the words of the person using the tool, not the
+name of an internal step. A row that links no document keeps the cause and the
+chosen fix, because it is their only record. Rows 33, 37, 56, 45, 46 and 62
+follow the new order; other rows follow it when they are next edited.
+
 ### 2026-10-17 — `my:handoff` windows name their roadmap row (row 65)
 
 The tmux windows that `my:handoff` opens now start with the roadmap row, as

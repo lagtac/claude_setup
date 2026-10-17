@@ -82,7 +82,7 @@ A new row goes in only **after** the user has agreed to the idea in conversation
 - Choose the next free number, in the scheme the roadmap already uses: per table, the section's next `#`; with one sequence for the whole file, the next number the roadmap names (raise it by one in the same edit), or else the highest number in the file plus one. Use a suffix form like `1b`, `1c` when the row clearly extends a previous one. Never change or reuse a number, also when a row ships or is deleted.
 - In a bullet roadmap, the number goes between the icon and the title: `- 💭 12 **<Short Name>** — …`. `my:status` reads it there.
 - Status: `💭`. Spec/plan column: `—`. No link required at this stage.
-- Title format: `**<Short Name>** — <one-clause framing>`. Match the style of existing rows.
+- Title format: `**<Short Name>** — <body>`. The short name says what changes, in the words a user of the tool would use, not the name of an internal step. The body follows the order in rule 11.
 - Place it in the order. If the roadmap has an `## Order of work` section (rule 12), ask the user where the new row goes, or whether it stays unordered, and write the answer in the same edit. Never guess a position: the order is the user's decision.
 
 ### 4. Promote 💭 → 📋 — spec landed
@@ -91,7 +91,7 @@ Verify a spec file exists at `docs/plans/YYYY-MM-DD-<slug>-spec.md` (or the proj
 
 - Update the status cell to `📋`.
 - Add a markdown link to the spec in the Spec / Plan column: `[spec](docs/plans/YYYY-MM-DD-<slug>-spec.md)`.
-- If the row body needs to grow (e.g., the spec materially reframed the feature), edit the title's tail clause to match — never leave the row title contradicting its linked spec.
+- If the row body needs to grow (e.g., the spec materially reframed the feature), edit the short name and the row body to match — never leave the row contradicting its linked spec.
 
 ### 5. Promote 📋 → 🚧 — plan written and work started
 
@@ -118,7 +118,7 @@ Preconditions:
 Roadmap edit:
 
 - Status → `✅`.
-- Update the row body if the implementation diverged from the plan (this is common — the row should describe what shipped, not what was planned). Keep it to framing + one-line verdict; deep narrative belongs in the CHANGELOG and the linked docs, not the row (rule 11).
+- Update the row body if the implementation diverged from the plan (this is common — the row should describe what shipped, not what was planned). Keep it in rule 11's order (kind, place and size; what the user sees; the fix; verdict; pointer); deep narrative belongs in the CHANGELOG and the linked docs, not the row (rule 11).
 
 CHANGELOG edit (in the **same commit**): hand off to the `changelog-management` skill for scope, structure, dating, and linking. Both edits land in one commit (rule 9 below).
 
@@ -160,7 +160,7 @@ Edit-scoped only — no full-file audits:
 
 - The status reflects reality (the integration has actually landed for ✅; plan file actually exists for 🚧; spec file actually exists for 📋).
 - The Spec / Plan column links resolve.
-- The row body is still index-level (framing + one-line verdict + pointer) — you didn't append numbers, SHAs, or play-by-play that a linked doc already owns (rule 11).
+- The row body is still index-level and in rule 11's order (kind, place and size; what the user sees; the fix; verdict; pointer) — you didn't append numbers, SHAs, or play-by-play that a linked doc already owns (rule 11).
 - The markdown table is still well-formed (no broken pipes, no missing cells).
 
 Skip broad audits (stale-💭 sweeps, orphan-row scans, full-file link greps). Run those only when the user explicitly asks for a roadmap audit.
@@ -169,9 +169,11 @@ Skip broad audits (stale-💭 sweeps, orphan-row scans, full-file link greps). R
 
 A roadmap row is an **index entry**, not the record of the work. The linked spec / plan / experiment-log / briefing is the source of truth; the row points at it. The same fact must not be maintained in both places — when the linked doc is later corrected, a duplicated row silently goes stale and ends up contradicting its own link.
 
-Keep in the row body (target ≤ ~2 sentences):
+Keep in the row body, in this order, so that a reader who opens the roadmap cold knows what the row is without opening a link. Target: one sentence each for the first three parts, then the verdict and the pointer as short fragments (≤ ~5 lines in all):
 
-- **What** it is — the one-clause framing.
+- **Kind, place and size** — the kind of work (`bug`, `feature`, `rule` for a change to instruction text, or another kind the roadmap already uses), where it happens (the skill, file or area), and the size. In a project that sizes its work (`Small`, `Medium`, `Large` in the `my` method), write `size not set` until someone sizes it; in a project that does not, leave the size out. Example: `bug in my:handoff, Small.`
+- **What the user sees** — for a bug, what goes wrong for the person using the tool; for a feature, what they can do once it ships. Start from that effect, not from its cause in the code. Replace or define every term a reader may not know.
+- **The fix or the goal** — one sentence. When the row links no document, this sentence keeps the facts a fixer needs (the cause, the chosen approach), because the row is their only record.
 - **Current bottom line** — one line: shipped / NO-GO / blocked-on-X. Include a single figure *only when that figure is itself the verdict* (e.g. a NO-GO whose crux is "background-FP 51 vs 12") — one decisive number, not a metrics dump.
 - **A pointer** — "detail in the linked X" when the row links somewhere.
 
@@ -179,7 +181,7 @@ Push to the linked doc, never copied into the row:
 
 - Metrics and numbers (mAP, AUC, counts, thresholds, dates beyond the row's own status), commit SHAs, per-phase / per-experiment play-by-play, mechanism explanations, full verdict reasoning, supersession chains.
 
-**Trim trigger** (applies whenever you write or edit a body — rules 3–7): if the body would run past ~2 sentences / ~3 lines, or you're about to paste a figure or SHA that already lives in a linked doc, **compress instead of appending**. When you touch a row that has already accumulated history, trim it to framing + verdict + pointer in the *same* edit — never add one more clause to an already-oversized cell. (Markdown table cells can't contain paragraph breaks, so an over-long cell can't even be reformatted into readable prose — the only available fix is less content.)
+**Trim trigger** (applies whenever you write or edit a body — rules 3–7): if the body would run past the target above (~5 lines), or you're about to paste a figure or SHA that already lives in a linked doc, **compress instead of appending**. When you touch a row that has already accumulated history, trim it to the order above (kind, effect, fix, verdict, pointer) in the *same* edit — never add one more clause to an already-oversized cell. (Markdown table cells can't contain paragraph breaks, so an over-long cell can't even be reformatted into readable prose — the only available fix is less content.)
 
 Why this is a rule and not a style preference: the row and the linked doc are two copies of one fact, and only the linked doc is maintained as ground truth. Most `ROADMAP.md` files state this contract in their own intro ("Keep this short — details live in the linked docs"). Enforce it on every edit, not just new rows.
 

@@ -28,13 +28,13 @@ files.
 1. **67 "Brainstorming's paths replace the size table".** It changes how
    every row is sized and which documents it gets, so the rows after it are
    specced under the new rule instead of being reviewed again later.
-2. **33 "Skill text loses `$1` and `$2`" and 37 "Launch from a session
-   outside tmux" on one branch, then 56 "Supervised runs in parallel share
-   slot 1". Beside them, 45 "Review preparation as a script", then 46
-   "`git-squasher` plan and apply scripts"; and 62 "Question prompts follow
-   `plain`".** 33, 37 and 56 are bugs in `my:handoff`, so they come first.
-   33 is live in every project with a "Parallel runs" section. 33 and 37 are
-   Small fixes and may share one branch. 56 no longer waits for row 29:
+2. **33 "Parallel squash-merge uses the wrong branch" and 37 "Handoff opens
+   no window from outside tmux" on one branch, then 56 "Two supervised runs
+   get the same port". Beside them, 45 "Review preparation as a script",
+   then 46 "`git-squasher` plan and apply scripts"; and 62 "Question prompts
+   follow `plain`".** 33, 37 and 56 are bugs in `my:handoff`, so they come
+   first. 33 is live in every project with a "Parallel runs" section. 33 and
+   37 are Small fixes and may share one branch. 56 no longer waits for row 29:
    zitamu hits it now, and row 29 takes weeks. 45 is the most-used script
    row. 45 is in `my` and 46 in `kit`, but both edit `README.md`, so 46 goes
    after 45. 46 builds on 41's fix. 62 edits only
@@ -286,11 +286,12 @@ Their order is in "Order of work" above.
   the commit's heredoc rule. Report P3. Shipped in `39000ec`; known limits are
   in the spec's Risk section.
   [spec](docs/plans/2026-10-12-locked-commit-spec.md)
-- 💭 33 **Skill text loses `$1` and `$2`** — fix: Claude Code replaces `$1` and
-  `$2` in a loaded skill with its arguments, so the parallel squash-merge in
-  `my:handoff` (`"$1"`, `"$2"`) merges a branch named after the stage. Live in
-  every project with a "Parallel runs" section. The fix also widens kit's
-  `test_skill_placeholders.py` to `my`.
+- 💭 33 **Parallel squash-merge uses the wrong branch** — bug in
+  `my:handoff`, Small. With a "Parallel runs" section, the review stage's
+  squash-merge fails or merges the wrong branch. Fix: the merge command stops
+  using `$1` and `$2`, which Claude Code fills with the skill's arguments,
+  and kit's placeholder test also checks `my`.
+  [Report](docs/reports/2026-10-14-scriptable-skill-steps.md) S1.
 - 💭 34 **Merges read a message file** — `handoff-state.py merge` and the
   parallel squash-merge take `-F <file>`, so the heredoc rule leaves
   `my:handoff`. Changes the `handoff-state.py` interface. Out of scope of the
@@ -300,15 +301,17 @@ Their order is in "Order of work" above.
   *Locked commit*, *shared-doc check* and *waiting fixups* replace "as in
   Plan stage, step N". Small. Report P4, P5. Row 36 was folded in on
   2026-10-16.
-- 💭 37 **Launch from a session outside tmux** — fix: Launch reads only `TMUX`,
-  so a background session falls back to printing the command even when a
-  tmux server runs. When `TMUX` is empty, pick the target session from
-  `tmux ls` (for example the one named after the repo) and open the window
-  with `-t <session>:`. Found on 2026-10-13; not from the audit report.
-- 💭 56 **Supervised runs in parallel share slot 1** — fix: a supervised run
-  has no state file and uses slot `1`, so two of them get the same
-  Isolation values. On zitamu both previews took port 54321, and the second
-  failed to start. Found on 2026-10-15; not from the audit report.
+- 💭 37 **Handoff opens no window from outside tmux** — bug in `my:handoff`,
+  Small. When Claude runs outside tmux, a handoff prints a command to paste
+  by hand, even when tmux is running. Fix: the Launch step reads only
+  `TMUX`; when it is empty, pick a session from `tmux ls` (for example the
+  one named after the repo) and open the window with `-t <session>:`.
+- 💭 56 **Two supervised runs get the same port** — bug in `my:handoff`, size
+  not set. Two supervised (not auto) runs at the same time get the same
+  preview port and other per-run values, so the second fails to start. Fix:
+  a supervised run has no state file and always takes slot `1`, so give it
+  a slot of its own.
+  [Critique](docs/reports/2026-10-15-parallel-runs-section-critique.md) P1.
 - 💭 57 **An auto run that stops before the merge** — a Delegation key, or
   an `auto` flag, that stops at stop-table row 14 "Ready to squash-merge".
   A test drive can then run the auto path, `decide` included, without a
@@ -347,13 +350,16 @@ above.
   `main` that would block the fold ([run audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md) H4).
 - 💭 44 **`git-fold-fixups.py list <path>`** — lists a document's waiting
   fixups, which `my:handoff` finds by hand in three places. Small. Report S6.
-- 💭 45 **Review preparation as a script** — the argument sorting, the diff
-  file, the mode table, the review file name and the template filling of
-  `my:soundness-review` and `my:spec-review`. Report S5. Two runs that start
-  in the same second share one work folder today (zitamu, 2026-10-15); the
-  script makes it with an atomic `mkdir`.
-- 💭 46 **`git-squasher` plan and apply scripts** — the grouping rules run as a
-  script, and the apply step reads the messages from a file. Report S7.
+- 💭 45 **Review preparation as a script** — feature in `my:soundness-review`
+  and `my:spec-review`, Medium. Every review starts with the same fixed
+  steps, done by hand today, and two reviews that started in the same second
+  once shared one work folder. Goal: a script does these steps. Report S5;
+  [draft spec](docs/plans/2026-10-14-review-prep-script-spec.md).
+- 💭 46 **`git-squasher` plan and apply scripts** — feature in
+  `kit:git-squasher`, Medium. The model applies the skill's fixed grouping
+  rules by hand, and a commit message may not contain a single quote. Goal:
+  scripts plan the groups and apply them, reading messages from a file.
+  Report S7; [draft spec](docs/plans/2026-10-14-git-squasher-scripts-spec.md).
 - 💭 47 **`clean-plans` moves by script** — the candidate list, the date,
   `git mv` or `mv`, and repointing the links; "Moving a document" in
   `docs-layout.md` uses the same script. Report S8.
@@ -391,9 +397,10 @@ Findings of [`docs/reports/2026-10-15-row-74-handoff-run-audit.md`](docs/reports
   per review" sends a re-review finding that today's code can reach to a new
   roadmap row; **Risk** keeps only input that today's code never produces
   (report H8). Small. Row 63 was folded in on 2026-10-16.
-- 💭 62 **Question prompts follow `plain`** — `global/output-styles/plain.md`
-  covers the text of question prompts, which name a screen element as the
-  user sees it. Small. Report H5.
+- 💭 62 **Question prompts follow `plain`** — rule in
+  `global/output-styles/plain.md`, Small. Multiple-choice questions use the
+  agent's own terms, such as "force" or "tab", so the user cannot answer
+  them. Fix: the `plain` style also covers these questions. Report H5.
 
 ## Superpowers fit
 
