@@ -6,7 +6,8 @@ My Claude Code setup. The repo is also a plugin marketplace, named
 - **`plugins/`** — my local plugins. Every local plugin goes here and gets a
   row in `.claude-plugin/marketplace.json` at the repo root.
   - **`plugins/my/`** — the `my` plugin: skills, commands, agents and hooks
-    for development workflows.
+    for development workflows. Its README explains the method and how it
+    builds on superpowers.
   - **`plugins/kit/`** — the `kit` plugin: neutral skills, commands, agents and
     the tutor hook, which work under any method.
   - **`plugins/vue-lsp/`** — the `vue-lsp` plugin: the TypeScript language
