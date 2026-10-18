@@ -426,15 +426,12 @@ Findings of [`docs/reports/2026-10-15-row-74-handoff-run-audit.md`](docs/reports
 Findings of [`docs/reports/2026-10-14-superpowers-fit-critique.md`](docs/reports/2026-10-14-superpowers-fit-critique.md).
 Only F1 is routed so far.
 
-- 💭 67 **Brainstorming's paths replace the size table** — superpowers'
-  brainstorming picks spike, bounded or architectural, and `my` only adapts
-  it: a change to stored data, permissions or a contract is architectural;
-  an architectural change puts its tasks in the spec (today's Medium) or in
-  a separate plan (today's Large); a bug takes superpowers' debugging route,
-  and goes to brainstorming when its root cause needs a design decision.
-  Edits `global/methods/my.md`, `docs-layout.md`, `my:handoff`,
-  `my:design-system`, both READMEs and zitamu's local file, and the open
-  rows that use the sizes (40, 53, 54, 61). Report F1.
+- 📋 67 **Brainstorming's paths replace the size table** — rule in
+  `global/methods/my.md` and the files that name the sizes, Large. A session
+  picks its process as superpowers' brainstorming does (spike, bounded or
+  architectural), not by a second `my` size. `my` adapts the paths with a risk
+  line, a two-file limit on bounded, a bug route and a spike file. Report F1.
+  [spec](docs/plans/2026-10-18-brainstorming-routes-spec.md)
 
 ## Other
 
