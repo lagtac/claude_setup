@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 70
+**Next number:** 71
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -209,6 +209,14 @@ Follow-ups spawned by the planner retirement. Spec:
   2026-10-16; `sync` is not rehearsed yet (plan Risk). Large.
   [spec](docs/plans/2026-10-16-design-system-skill-spec.md),
   [plan](docs/plans/2026-10-16-design-system-skill.md)
+- 💭 70 **Choose the design skill** — rule in `global/methods/my.md` (the UI
+  trigger row and "UI Design"), size not set. The rules call
+  `my:design-system`, which the user has not tried in use yet, and several
+  other design skills are installed (`design:design-system`,
+  `design-skills:design-systems`, the `design-superpowers` set). Try
+  `my:design-system` on a real project, compare the others, then decide which
+  skill the rules call and when. It also settles two limits that row 67
+  leaves: when the audit runs, and the checks a bounded UI change skips.
 
 ## Harness generalization
 
