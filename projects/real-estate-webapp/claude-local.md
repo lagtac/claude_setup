@@ -148,11 +148,15 @@ These shape screens and flows, so the UI must respect them.
   shares what locates it: the exact address, the exact map location and the
   electronic building ID. The seller gives those in the chat when they arrange
   a visit (the user decided this on 2026-10-14; row 76).
-- «Επαγγελματίας Real Estate» alone, as one term that covers agencies and
+- «Επαγγελματίας real estate» alone, as one term that covers agencies and
   builders, is a rule for UI labels: buttons, cards, menus, hints. Content
   pages (`/faq`, `/pricing`'s prose, `/terms`, articles) keep the bracket
   «(μεσιτικά γραφεία και κατασκευαστικές εταιρείες)» (the user decided this
   on 2026-10-14; row 28).
+- Greek UI copy takes sentence case, the role names included, and English UI
+  labels take title case (row 156, the user, 2026-10-16). The Terms keep
+  their defined term, «Επαγγελματίες Real Estate» and "Real Estate
+  Professionals".
 
 ## Web architecture
 
