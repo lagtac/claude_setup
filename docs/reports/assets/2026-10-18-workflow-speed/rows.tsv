@@ -1,0 +1,59 @@
+row	size	who	commits	docs	code	files	src	tests	lock	plans_md	other_md	reviews	bcommits	fixes	lead	active	docs_per_code	code_share	spec_to_code	build	wait_merge	branch	title
+1,2	P	own	3	2	1	2	16	31	0	80	327	0	2	0	0.5	2.5	1.7	0.2	-	0.0	0.4	fix/landing	Withheld counters
+2b	L	own	6	5	1	8	361	477	0	2889	176	8	12	0	1.8	3.7	3.45	0.28	0.7	1.1	0.1	feat/landing-motion	Landing motion
+2c	L	own	7	6	1	4	82	53	0	3425	236	5	5	0	62.1	4.4	25.37	0.37	0.8	0.5	61.6	feat/landing-match-grade	Match grade, not percentage
+3	S	own	2	1	1	3	44	82	0	59	173	1	2	0	2.7	2.4	0.47	0.15	-	2.3	0.4	fix/match-crawlable	Crawlable `/match` pitch
+4	P	own	3	1	2	5	77	160	0	692	9	1	4	0	0.4	0.4	2.92	1.0	-	0.1	0.1	fix/pricing-defects	`/pricing` crawl policy
+5	P	own	5	4	1	11	137	177	0	1568	156	5	5	0	0.6	2.1	4.99	0.27	-	0.4	0.1	feat/seo-meta	Descriptions and Open Graph
+8	S	other	9	8	1	104	754	1131	6962	496	124	2	0	0	2.5	6.2	0.26	0.16	-	-	-	-	Indexable English
+11	P	own	4	2	2	39	2286	350	3785	1093	202	3	0	0	656.1	2.2	0.41	0.46	-	-	-	-	Explainer video
+23	L	own	8	7	1	32	359	205	0	2268	247	3	13	1	5.3	5.8	4.02	0.29	1.2	3.9	0.2	client-requests-1	Names
+24	L	own	7	6	1	6	162	311	0	2165	309	2	10	0	8.5	4.1	4.58	0.41	0.6	7.9	0.1	client-requests-3	Option boxes
+25	L	own	7	6	1	13	731	943	0	3301	163	3	12	0	4.2	4.9	1.97	0.45	1.0	3.0	0.1	client-requests-2	Typed numbers
+26	L	own	9	7	2	21	235	522	0	2892	184	4	0	0	192.2	4.4	3.82	0.45	-	-	-	-	Two more floors
+27,32,33,34,52,38,39	L	own	23	17	6	68	1497	1806	0	3131	361	5	25	0	219.1	16.4	0.95	0.47	0.0	120.6	98.5	client-requests-5	The landing's seller answer
+28,58	S	own	9	8	1	16	151	284	0	0	407	0	4	0	0.5	7.1	0.0	0.21	-	0.4	0.1	fix/rows-28-58	The client's open answers of 28 Septem
+29	P	own	4	3	1	8	38	96	0	778	165	1	3	0	2.5	2.4	5.81	0.57	-	0.1	2.5	feat/pricing-tier-names	Package names and the default period
+30,30b,30c,30d,30e,31	S	own	9	8	1	43	936	1381	0	0	249	0	17	1	1.4	7.5	0.0	0.32	-	1.3	0.1	client-requests-7	Matching: a decline can be undone for 
+35,36	S	own	5	4	1	4	115	138	0	0	98	0	3	0	2.8	4.3	0.0	0.31	-	2.8	0.0	client-requests-6	Card click motion
+40	S	other	4	3	1	120	3663	3687	393	0	580	0	0	0	0.0	3.0	0.0	0.33	-	-	-	-	Property photos on listings
+40b,20h,86,87,89,92,73,77,94,78,80,79,83,45,75,81,82,84,85	L	own	56	41	15	117	4927	6311	0	9978	881	13	16	0	361.9	29.6	0.89	0.36	-242.8	244.9	117.0	feat/app-frame	Photos in the buyer's request preview
+60,95	L	own	21	17	4	43	500	871	0	2298	499	4	15	0	114.6	14.1	1.68	0.3	0.5	13.8	2.4	feat/request-match-grade	The match on the buyer's request
+64,44	P	own	5	4	1	7	31	50	0	135	212	0	5	1	1.1	4.1	1.67	0.51	-	0.2	0.8	small-fixes-1	«Αντιστοίχιση», not «βαθμολόγηση»
+65	M	own	6	5	1	17	120	251	0	653	49	1	8	0	1.2	3.2	1.76	0.32	0.2	0.6	0.3	client-requests-8	The match as three grades on a bar
+19,21e	L	own	11	10	1	4	24	28	0	2260	353	7	2	0	0.6	7.1	43.46	0.03	83.6	0.1	0.1	feat/phone-type-roles	Design tokens
+20	S	own	4	4	0	0	0	0	0	0	117	0	0	0	-	2.1	-	0.0	-	-	-	-	Page critique fixes
+74a,74b,139	L	own	13	10	3	29	1802	2079	0	4604	426	7	13	1	12.3	7.2	1.19	0.31	3.0	1.2	8.8	feat/agent-request-list-page	The agent's request list, the API
+147,116,123,141,142	S	own	4	3	1	12	55	113	0	0	121	0	7	1	0.9	3.5	0.0	0.55	-	0.4	0.5	fix/small-fixes-4	A late stale-link retry after leaving 
+76	L	own	17	14	3	35	740	1822	0	2828	239	4	15	0	23.0	13.5	1.1	0.34	1.2	2.9	0.3	feat/request-listing-facts	The listing's facts on the request
+21	L	own	6	5	1	7	74	206	0	1948	172	5	3	0	3.2	4.4	6.96	0.44	1.1	0.3	1.8	feat/zbutton-states	`ZButton` states
+21b	L	own	8	7	1	42	304	424	0	2441	179	3	4	0	19.2	4.6	3.35	0.26	18.2	0.5	0.4	refactor/shared-page-classes	Shared page classes
+21d	L	own	7	6	1	2	26	56	0	1966	155	3	4	0	3.3	3.7	23.98	0.15	3.0	0.4	0.0	feat/radius-motion-tokens	Radius and motion tokens
+21f	L	own	10	9	1	19	74	450	0	2421	201	5	3	0	17.7	5.5	4.62	0.31	0.9	0.3	16.6	fix/busy-buttons	The other busy buttons onto `loading`
+21g	L	own	11	8	3	60	889	422	0	5804	207	12	9	0	76.5	8.0	4.43	0.39	47.5	19.2	28.1	refactor/two-visual-generations-6b	Two visual generations
+41,42	M	own	8	6	2	13	201	384	0	747	247	2	7	0	45.1	5.6	1.28	0.62	1.9	0.6	42.6	feat/composed-titles	Titles built from the selections
+100	S	own	3	3	0	0	0	0	0	0	66	0	0	0	-	0.1	-	0.0	-	-	-	-	An icon set for the signed-in pages
+102	S	own	4	3	1	11	58	185	0	0	77	0	6	1	2.7	2.3	0.0	0.8	-	2.5	0.1	fix/icon-report-small-fixes	The icon report's small fixes
+103	M	own	9	7	2	55	623	633	10	1291	121	3	14	0	8.0	6.4	1.03	0.48	3.2	2.0	2.8	feat/icon-set	Icon set: the package and the shared p
+112,96,101	S	own	11	8	3	7	281	30	0	0	610	0	2	1	1.6	2.1	0.0	0.62	-	0.1	1.5	feat/deploy-installs-backups	A flaky chat test on phones
+130	S	own	2	2	0	0	0	0	0	0	16	0	0	0	-	0.2	-	0.0	-	-	-	-	Component extraction audit
+131	M	own	7	6	1	22	335	371	0	547	358	3	7	0	2.9	4.6	0.77	0.31	1.4	1.2	0.3	feat/profiles-shared-card	The `/profiles` cards as a shared comp
+132	S	own	2	1	1	12	50	69	0	0	358	0	5	0	0.3	0.6	0.0	1.0	-	0.2	0.2	fix/audit-small-fixes	The audit's small fixes
+133	M	own	8	6	2	43	624	430	0	757	365	2	7	1	26.5	5.5	0.72	0.47	25.0	0.6	0.9	feat/list-page-parts	`ZListingThumb`, `ZFactsLine` and the 
+136	S	own	1	0	1	8	212	46	0	0	13	0	2	1	0.6	0.6	0.0	1.0	-	0.3	0.3	refactor/legal-page	`LegalPage`
+156	S	own	6	2	4	94	824	468	0	0	45	0	0	0	1.4	2.4	0.0	0.97	-	-	-	-	Letter case in the UI
+126	S	own	3	2	1	3	315	151	0	0	8	0	2	1	0.4	1.4	0.0	1.0	-	0.1	0.2	chore/style-diff-script	One style-diff script
+22	L	own	7	6	1	8	310	152	0	2624	171	4	4	0	4.0	5.1	5.68	0.21	3.0	1.0	0.0	feat/faq-page	FAQ page
+66	S	other	1	0	1	120	3663	3687	393	0	389	0	0	0	0.0	0.0	0.0	-	-	-	-	-	Listing import by XML file or feed lin
+67	S	other	1	0	1	120	3663	3687	393	0	389	0	0	0	0.0	0.0	0.0	-	-	-	-	-	The daily match digest
+91	S	own	4	3	1	5	105	0	0	0	91	0	3	1	0.3	0.4	0.0	0.87	-	0.1	0.2	backup-scripts	The backup scripts live in `infra/back
+99	S	own	3	2	1	3	363	256	0	0	91	0	2	0	0.2	1.3	0.0	1.0	-	0.2	0.1	chore/dev-seed-listings	More dev seed data
+117	S	own	4	3	1	9	0	235	0	0	89	0	2	1	0.6	2.7	0.0	0.61	-	0.1	0.5	test/row-117-privacy-tests	Privacy tests that fail when a promise
+146	M	own	7	7	0	0	0	0	0	539	62	1	0	0	-	2.5	-	0.0	-	-	-	-	Cold loads hit the edge limit
+152	M	own	8	6	2	5	1277	766	0	1087	46	4	12	0	14.7	4.6	0.53	0.62	0.6	1.6	12.4	feat/linked-dev-seed-data	Linked dev seed data
+155	S	other	6	5	1	104	754	1131	6962	291	111	1	0	0	0.0	4.5	0.15	0.22	-	-	-	-	Mail links follow the user's language
+157,158	S	own	8	6	2	15	76	137	1016	1433	118	4	7	1	24.7	4.0	6.73	0.36	-	0.3	0.0	fix/en-release-round	The review of Kostas's release of 2026
+159	M	own	8	7	1	5	7	28	1016	930	52	3	7	0	15.9	4.8	26.57	0.1	-12.2	15.7	0.2	fix/one-vue-router	One `vue-router` again
+160	S	other	3	2	1	15	313	113	0	512	63	1	0	0	0.0	2.0	1.2	0.0	-	-	-	-	The review of Kostas's site-host commi
+161	S	own	3	1	2	39	350	133	0	512	40	1	0	0	1.8	1.4	1.06	1.0	-	-	-	-	The crawl files' checks
+162,163	S	own	1	0	1	10	99	123	0	0	29	0	3	1	3.7	1.4	0.0	1.0	-	0.4	3.3	feat/hero-promo-video	The signup pitch says the buyer's deta

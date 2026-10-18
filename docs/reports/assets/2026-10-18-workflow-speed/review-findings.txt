@@ -1,0 +1,36 @@
+landing-motion	before 45	after 2
+design-tokens	before 8	after 0
+landing-hero-video	before 3	after 1
+landing-type-rhythm	before 4	after 0
+pricing-card	before 8	after 2
+consent-confirm	before 13	after 0
+faq-page	before 13	after 6
+hero-explainer-video	before 14	after 2
+radius-motion-tokens	before 8	after 0
+seo-meta	before 2	after 0
+account-menu	before 11	after 0
+landing-match-grade	before 5	after 2
+phone-type-roles	before 3	after 0
+busy-buttons	before 3	after 0
+shared-page-classes	before 9	after 1
+zbutton-states	before 4	after 1
+two-visual-generations	before 15	after 1
+role-names	before 11	after 2
+guest-burger-menu	before 5	after 2
+composed-titles	before 5	after 0
+app-frame	before 9	after 2
+request-detail	before 12	after 2
+agent-subscription-state	before 4	after 0
+request-match-grade	before 8	after 1
+icon-set	before 14	after 3
+agent-request-list-api	before 8	after 0
+agent-request-list-page	before 15	after 3
+request-listing-facts	before 15	after 0
+request-photo-viewer	before 9	after 0
+linked-dev-seed-data	before 5	after 0
+list-page-parts	before 6	after 0
+profiles-shared-card	before 6	after 1
+one-vue-router	before 6	after 0
+
+33 features; serious findings (Critical + Warning) per feature: median 8 before the code, 1 after; 90% of all of them before the code.
+Median serious findings: 5.5 per spec review (48), 3 per plan review (47).
