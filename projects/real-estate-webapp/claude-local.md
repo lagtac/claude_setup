@@ -154,9 +154,11 @@ These shape screens and flows, so the UI must respect them.
   «(μεσιτικά γραφεία και κατασκευαστικές εταιρείες)» (the user decided this
   on 2026-10-14; row 28).
 - Greek UI copy takes sentence case, the role names included, and English UI
-  labels take title case (row 156, the user, 2026-10-16). The Terms keep
-  their defined term, «Επαγγελματίες Real Estate» and "Real Estate
-  Professionals".
+  labels take title case, «Sign In» included (the user, 2026-10-16 and
+  2026-10-18; row 156). The taxonomy labels follow the same rule. The Terms
+  keep their defined term, «Επαγγελματίες Real Estate» and "Real Estate
+  Professionals" (row 156's implementer, 2026-10-18; not yet confirmed by
+  the user).
 
 ## Web architecture
 
