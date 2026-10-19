@@ -48,7 +48,7 @@ setup must match it.
 make setup        # first run on a clone
 make up           # dev stack; web on :54300 (LAN-reachable), Mailpit :54025
 make db           # migrate + taxonomy and areas + demo accounts + dev listings + cache clear; safe to rerun
-make seed-demo    # full dev data: demo accounts (buyer/seller/agent @demo.test, password "password") + seed-listings
+make seed-demo    # full dev data: demo accounts (buyer/seller/agent/admin @demo.test, password "password") + seed-listings
 make seed-listings # 116 sale listings, agent1-5 / seller1-10 / buyer1-24 @listings.test, with searches, requests and chats; photos if assets/properties/ exists; clears the cache
 make test-web     # npm test = typecheck + vitest (node) + vitest (Nuxt environment)
 make test-api     # the API suite, on isolated sqlite; never touches dev data
