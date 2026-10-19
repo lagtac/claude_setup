@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 71
+**Next number:** 73
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -73,11 +73,13 @@ files.
 8. **20 "Specs and plans name what UI tests check".** Rule text only. It
    edits the spec rules in `global/methods/my.md`, as 40 and 53 do, so it
    goes after them.
-9. **Waiting rows: 29 "Measure the auto runs", then 30 "Split `my:handoff`
-   by mode"; and 17 "Generalize the gates"; after 29, 39 "`kit:setup` offers
-   a Parallel runs section" and 42 "Parallel runs parser".** 29 waits for
-   weeks of auto runs, and 30 waits for 29. 39 and 42 matter only if 29's
-   count keeps parallel runs. 17 waits for a second project to adopt the gates.
+9. **Waiting rows: 72 "Workflow metrics as one `my` script", then 29
+   "Measure the auto runs", then 30 "Split `my:handoff` by mode"; and 17
+   "Generalize the gates"; after 29, 39 "`kit:setup` offers a Parallel runs
+   section" and 42 "Parallel runs parser".** 72 gives 29 its script, so it
+   comes first. 29 waits for weeks of auto runs, and 30 waits for 29. 39
+   and 42 matter only if 29's count keeps parallel runs. 17 waits for a
+   second project to adopt the gates.
 
 ## `my` plugin hygiene
 
@@ -244,6 +246,12 @@ Make the harness reusable in new projects without forking copies. Spec:
   `roadmap-management` and `changelog-management` leave `my` for `kit`, so
   other methods can use them, and every `my:` reference is renamed.
   `design-system`'s refresh step stays tied to step 13 of `my`. Medium.
+- 📋 71 **Project rules outrank the core** — the core's Precedence paragraph
+  lists the order: protected rules, the user, the project files, the method,
+  the core, then skills. Two protected rules: ask before adding dependencies,
+  and before actions that are hard to undo or leave the machine. Medium;
+  spec drafted, not placed in the order yet.
+  [spec](docs/plans/2026-10-18-project-precedence-spec.md)
 - ✅ 16 **Swappable methods** — split `global/CLAUDE.md` into a neutral core
   and per-method files, and split `my` into `my` (the method) and `kit`
   (neutral tools), so one project can try another method. Shipped; 11 of 22
@@ -292,6 +300,9 @@ no row; the report says why.
   often two or more approved specs waited at once: that count decides whether
   the row queue and parallel runs stay. Waits for those weeks. Report M2;
   [critique](docs/reports/2026-10-15-parallel-runs-section-critique.md).
+  Runs row 72's script; the
+  [speed audit](docs/reports/2026-10-18-workflow-speed-audit.md) holds
+  the numbers to compare with.
 
 ## `my:handoff` instructions
 
@@ -432,6 +443,19 @@ Only F1 is routed so far.
   architectural), not by a second `my` size. `my` adapts the paths with a risk
   line, a two-file limit on bounded, a bug route and a spike file. Report F1.
   [spec](docs/plans/2026-10-18-brainstorming-routes-spec.md)
+
+## Workflow speed audit
+
+Findings of [`docs/reports/2026-10-18-workflow-speed-audit.md`](docs/reports/2026-10-18-workflow-speed-audit.md).
+W1 to W5 are evidence for rows 29, 30, 55, 61 and 67; W6 and W7 are zitamu
+proposals with no row; the report says why.
+
+- 💭 72 **Workflow metrics as one `my` script** — feature in `plugins/my/bin/`,
+  size not set. Four reports each built one-off scripts for the same
+  measures. Goal: one tested script that measures a project's shipped rows
+  from git and its sessions from transcripts, starting from the three in
+  [the report's assets](docs/reports/assets/2026-10-18-workflow-speed/).
+  Row 29 runs it. Report W8.
 
 ## Other
 
