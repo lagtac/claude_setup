@@ -70,6 +70,11 @@ The rules are sequential and keyed by the decision table above.
 
 Open `ROADMAP.md` and find the area section the row belongs to (the `##` sections the file already has) plus the row's existing numbering context. Don't open `CHANGELOG.md` from this skill — if the edit pairs with a CHANGELOG entry (rule 6), `changelog-management` owns that file.
 
+**Old rows.** While you read, check the open rows (💭, 📋, 🚧). If some of them do not follow rule 11's order — most often, the body does not open with the kind of work, such as `bug in …` or `feature in …` — ask the user once, before the requested edit: "N open rows do not follow the row order, so they are hard to read cold. Rewrite them now, in a separate commit?" Ask at most once per session.
+
+- **On yes:** rewrite every open row to rule 11's order, in one commit of its own (`docs: rewrite ROADMAP rows in the row order`), before the requested edit. Read a row's linked document when the row alone does not say its kind or what the user sees. Never drop a fact that no linked document holds (rule 11). Keep every number. Change a title only when it names an internal step and not what changes for the user, and then update every place in `## Order of work` that quotes it. ✅ rows stay as they are: they are records.
+- **On no:** do the requested edit only. The trim trigger in rule 11 still moves each row you touch.
+
 ### 2. Identify the lifecycle transition
 
 Look up the user's request in the decision table above and jump to the rule it points to. The table is the source of truth for which files to touch — don't edit anything until the situation matches a row.

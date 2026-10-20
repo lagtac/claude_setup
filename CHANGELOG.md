@@ -16,6 +16,15 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-20 — `my:roadmap-management` offers to rewrite old rows
+
+When a roadmap's open rows (💭, 📋, 🚧) do not follow the row order (kind
+and place, what the user sees, the fix, the verdict, the link), the skill
+asks once per session whether to rewrite them. On yes, it rewrites them in
+a commit of its own before the requested edit, keeps every number, and
+leaves ✅ rows as they are. On no, each row still moves to the order when
+it is next edited.
+
 ### 2026-10-20 — Brainstorming picks the route, not a size (row 67)
 
 `global/methods/my.md` no longer sizes work as Small, Medium or Large. A
