@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 73
+**Next number:** 74
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -35,21 +35,22 @@ files.
    then 46 "`git-squasher` plan and apply scripts"; and 62 "Question prompts
    follow `plain`".** 33, 37 and 56 are bugs in `my:handoff`, so they come
    first. 33 is live in every project with a "Parallel runs" section. 33 and
-   37 are Small fixes and may share one branch. 56 no longer waits for row 29:
+   37 are bug fixes and may share one branch. 56 no longer waits for row 29:
    zitamu hits it now, and row 29 takes weeks. 45 is the most-used script
    row. 45 is in `my` and 46 in `kit`, but both edit `README.md`, so 46 goes
    after 45. 46 builds on 41's fix. 62 edits only
    `global/output-styles/plain.md`.
 3. **68 "Launch method switch", then 69 "Shared skills move to `kit`".**
-   68 comes after 67, so its spec uses the new sizing, and after 33, 37 and
+   68 comes after 67, so its spec uses the new routes, and after 33, 37 and
    56, because it changes the launch lines in `my:handoff` that they fix. It
    replaces `kit:setup`'s two switches and `method-guard.py`, so 60 in step
    5 edits the new `kit:setup`. 69 renames skills in files 68 also edits, so
    it comes right after, and each name changes once.
 4. **61 "Auto start on approval, and re-review findings as rows", then 55
    "Decisions that go back to the user", then 53 "`my:draft-spec`", then 54
-   "Small rows in forks while the user is away".** 61 is two small rules in
-   `global/methods/my.md`, the file 55 and 53 edit, so it goes first. 53 and
+   "Bugs and approved bounded rows in forks while the user is away".** 61 is
+   two small rules in `global/methods/my.md`, the file 55 and 53 edit, so it
+   goes first. 53 and
    54 both use the rule of 55. 55 and 53 both edit
    `global/methods/my.md`. 54 comes after 53, because both run forks while
    the user is away, and 53 is being designed now.
@@ -113,7 +114,8 @@ Follow-ups spawned by the planner retirement. Spec:
   manual step before the merge, which an auto run can never take (zitamu,
   2026-10-15). The flag informs and does not push toward `stop`: row 74a's
   user chose `decide` on a contract change on purpose
-  ([run audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md) H2). Small.
+  ([run audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md) H2).
+  Route not set.
 - ✅ 9 **Start auto runs from roadmap rows** — one command takes a list of
   rows, starts the ones with an approved spec as parallel auto runs up to
   **Max runs**, and starts a waiting row each time a run finishes. Shipped in
@@ -122,14 +124,14 @@ Follow-ups spawned by the planner retirement. Spec:
   [spec](docs/plans/2026-10-13-roadmap-auto-runs-spec.md),
   [plan](docs/plans/2026-10-13-roadmap-auto-runs.md)
 - 💭 40 **Every spec has a Files section** — a spec rule in
-  `global/methods/my.md`; a Medium spec's Tasks section counts when it names
+  `global/methods/my.md`; a spec's Tasks section counts when it names
   the files. `my:spec-review` flags a missing one, and `my:status` reads Tasks
   as a file list. Lets row 9's queue tell which rows may run side by side.
   Split out of row 9's first spec draft.
-- 💭 53 **`my:draft-spec`** — a second route to an approved spec, only for
+- 💭 53 **`my:draft-spec`** — a second way to an approved spec, only for
   a row that cites a source with concrete findings (a report, a bug, a
   review); other rows go through brainstorming. One intake call first (goal,
-  scope, size, limits). Then an agent drafts, with options for each key
+  scope, route, limits). Then an agent drafts, with options for each key
   decision, hardens the draft through the draft-time checks of the
   [spec hardening audit](docs/reports/2026-10-14-spec-hardening-audit.md)
   until a round finds nothing new, and brings the user only the decisions
@@ -150,11 +152,14 @@ Follow-ups spawned by the planner retirement. Spec:
   decided not to check production first, so it missed that the live edge
   sent scripts uncompressed; a row that depends on live state needs a read
   of it (the live site in Playwright, the server config) before deciding.
-  A 10-line server change got a 340-line spec, so the route needs a size
-  check of its own. The agent acted on an unclear two-word reply in the Q&A
-  round; an unclear reply gets a question back.
-- 💭 54 **Small rows in forks while the user is away** — rows with no spec,
-  which `my:handoff auto` cannot start, each run in a fork and its own
+  A 10-line server change got a 340-line spec, so the intake must first ask
+  whether the row is bounded and needs no spec. The agent acted on an
+  unclear two-word reply in the Q&A round; an unclear reply gets a question
+  back.
+- 💭 54 **Bugs and approved bounded rows in forks while the user is away** —
+  bug rows, and bounded rows whose chat design the user approved before
+  leaving. They have no spec, so `my:handoff auto` cannot start them. Each
+  runs in a fork and its own
   worktree up to the merge, under one e2e lock that every session takes. The
   main session reads each fork's e2e log and test diff itself, then merges
   one branch at a time. Tried on zitamu on 2026-10-14 (rows 112 and 102,
@@ -212,7 +217,7 @@ Follow-ups spawned by the planner retirement. Spec:
   [spec](docs/plans/2026-10-16-design-system-skill-spec.md),
   [plan](docs/plans/2026-10-16-design-system-skill.md)
 - 💭 70 **Choose the design skill** — rule in `global/methods/my.md` (the UI
-  trigger row and "UI Design"), size not set. The rules call
+  trigger row and "UI Design"), route not set. The rules call
   `my:design-system`, which the user has not tried in use yet, and several
   other design skills are installed (`design:design-system`,
   `design-skills:design-systems`, the `design-superpowers` set). Try
@@ -239,18 +244,20 @@ Make the harness reusable in new projects without forking copies. Spec:
   session's method, from `CLAUDE_METHOD` or the project's one method line,
   and starts the real `claude` with that method's rules and settings. It
   replaces the import line, the plugin keys and `method-guard.py`, so a
-  project can switch method for one session. Large; brief approved,
+  project can switch method for one session. Architectural with plan; brief
+  approved,
   brainstorming next. Row 48 was folded in on 2026-10-18.
   [brief](docs/plans/2026-10-18-launch-method-switch-architecture.md)
 - 💭 69 **Shared skills move to `kit`** — `design-system`,
   `roadmap-management` and `changelog-management` leave `my` for `kit`, so
   other methods can use them, and every `my:` reference is renamed.
-  `design-system`'s refresh step stays tied to step 13 of `my`. Medium.
+  `design-system`'s refresh step stays tied to step 13 of `my`.
+  Architectural with plan.
 - 📋 71 **Project rules outrank the core** — the core's Precedence paragraph
   lists the order: protected rules, the user, the project files, the method,
   the core, then skills. Two protected rules: ask before adding dependencies,
-  and before actions that are hard to undo or leave the machine. Medium;
-  spec drafted, not placed in the order yet.
+  and before actions that are hard to undo or leave the machine. Route not
+  set; spec drafted, not placed in the order yet.
   [spec](docs/plans/2026-10-18-project-precedence-spec.md)
 - ✅ 16 **Swappable methods** — split `global/CLAUDE.md` into a neutral core
   and per-method files, and split `my` into `my` (the method) and `kit`
@@ -277,7 +284,7 @@ no row; the report says why.
   in e2e tests. In `global/methods/my.md`, "End-to-end coverage" asks the
   test to check what the user gets (the video plays), not only the markup,
   and the spec rules ask a spec that adds UI to decide the off-path events
-  of row 23, next to Visual Language. Small. Report M4. Rows 21 and 22 were
+  of row 23, next to Visual Language. Route not set. Report M4. Rows 21 and 22 were
   folded in on 2026-10-16.
 - ✅ 23 **Spec review checks off-path events** — `my:spec-review` asks a spec
   that adds UI to decide Back and Forward, a deleted or restored record, an
@@ -323,7 +330,7 @@ Their order is in "Order of work" above.
   in the spec's Risk section.
   [spec](docs/plans/2026-10-12-locked-commit-spec.md)
 - 💭 33 **Parallel squash-merge uses the wrong branch** — bug in
-  `my:handoff`, Small. With a "Parallel runs" section, the review stage's
+  `my:handoff`. With a "Parallel runs" section, the review stage's
   squash-merge fails or merges the wrong branch. Fix: the merge command stops
   using `$1` and `$2`, which Claude Code fills with the skill's arguments,
   and kit's placeholder test also checks `my`.
@@ -335,15 +342,15 @@ Their order is in "Order of work" above.
 - 💭 35 **Trim `my:handoff` text** — the lock exit-code table points to
   `handoff-lock.py --help`, and design explanations stay in the specs.
   *Locked commit*, *shared-doc check* and *waiting fixups* replace "as in
-  Plan stage, step N". Small. Report P4, P5. Row 36 was folded in on
+  Plan stage, step N". Route not set. Report P4, P5. Row 36 was folded in on
   2026-10-16.
-- 💭 37 **Handoff opens no window from outside tmux** — bug in `my:handoff`,
-  Small. When Claude runs outside tmux, a handoff prints a command to paste
+- 💭 37 **Handoff opens no window from outside tmux** — bug in `my:handoff`.
+  When Claude runs outside tmux, a handoff prints a command to paste
   by hand, even when tmux is running. Fix: the Launch step reads only
   `TMUX`; when it is empty, pick a session from `tmux ls` (for example the
   one named after the repo) and open the window with `-t <session>:`.
-- 💭 56 **Two supervised runs get the same port** — bug in `my:handoff`, size
-  not set. Two supervised (not auto) runs at the same time get the same
+- 💭 56 **Two supervised runs get the same port** — bug in `my:handoff`.
+  Two supervised (not auto) runs at the same time get the same
   preview port and other per-run values, so the second fails to start. Fix:
   a supervised run has no state file and always takes slot `1`, so give it
   a slot of its own.
@@ -385,14 +392,15 @@ above.
   (zitamu, 2026-10-15). An auto launch also asks once about changes on
   `main` that would block the fold ([run audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md) H4).
 - 💭 44 **`git-fold-fixups.py list <path>`** — lists a document's waiting
-  fixups, which `my:handoff` finds by hand in three places. Small. Report S6.
+  fixups, which `my:handoff` finds by hand in three places. Route not set.
+  Report S6.
 - 💭 45 **Review preparation as a script** — feature in `my:soundness-review`
-  and `my:spec-review`, Medium. Every review starts with the same fixed
+  and `my:spec-review`, route not set. Every review starts with the same fixed
   steps, done by hand today, and two reviews that started in the same second
   once shared one work folder. Goal: a script does these steps. Report S5;
   [draft spec](docs/plans/2026-10-14-review-prep-script-spec.md).
 - 💭 46 **`git-squasher` plan and apply scripts** — feature in
-  `kit:git-squasher`, Medium. The model applies the skill's fixed grouping
+  `kit:git-squasher`, route not set. The model applies the skill's fixed grouping
   rules by hand, and a commit message may not contain a single quote. Goal:
   scripts plan the groups and apply them, reading messages from a file.
   Report S7; [draft spec](docs/plans/2026-10-14-git-squasher-scripts-spec.md).
@@ -405,7 +413,7 @@ above.
   command keeps the approval question. Report S11.
 - 💭 51 **Roadmap number and link check** — a script prints the next row
   number and flags `.html`, `../` and dead links in `ROADMAP.md` and
-  `CHANGELOG.md`. Small. Report S12.
+  `CHANGELOG.md`. Route not set. Report S12.
 - 💭 52 **`status` gates and overlap by script** — `my:status` steps 5 and 6
   and the overlap test. Report S13.
 - ✅ 41 **`git-squasher` loses `$1`** — fix: the `squash-todo.sh` example in
@@ -418,7 +426,7 @@ Findings of [`docs/reports/2026-10-15-row-74-handoff-run-audit.md`](docs/reports
 
 - 💭 60 **Project facts in `CLAUDE.local.md`** — fix: the facts check in
   `global/methods/my.md` and `kit:setup` also accept `CLAUDE.local.md`, as
-  the Parallel runs rule does, and `kit:setup` asks which file to use. Small.
+  the Parallel runs rule does, and `kit:setup` asks which file to use.
   Report H4.
 - 💭 61 **Auto start on approval, and re-review findings as rows** — two
   rules in `global/methods/my.md`. When the approved spec has a Delegation
@@ -426,10 +434,10 @@ Findings of [`docs/reports/2026-10-15-row-74-handoff-run-audit.md`](docs/reports
   place of the "supervised or auto?" question (report H3). "One fix round
   per review" sends a re-review finding that today's code can reach to a new
   roadmap row; **Risk** keeps only input that today's code never produces
-  (report H8). Small. Row 63 was folded in on 2026-10-16.
+  (report H8). Route not set. Row 63 was folded in on 2026-10-16.
 - 💭 62 **Question prompts follow `plain`** — rule in
-  `global/output-styles/plain.md`, Small. Multiple-choice questions use the
-  agent's own terms, such as "force" or "tab", so the user cannot answer
+  `global/output-styles/plain.md`, route not set. Multiple-choice questions
+  use the agent's own terms, such as "force" or "tab", so the user cannot answer
   them. Fix: the `plain` style also covers these questions. Report H5.
 
 ## Superpowers fit
@@ -438,11 +446,18 @@ Findings of [`docs/reports/2026-10-14-superpowers-fit-critique.md`](docs/reports
 Only F1 is routed so far.
 
 - 📋 67 **Brainstorming's paths replace the size table** — rule in
-  `global/methods/my.md` and the files that name the sizes, Large. A session
-  picks its process as superpowers' brainstorming does (spike, bounded or
-  architectural), not by a second `my` size. `my` adapts the paths with a risk
-  line, a two-file limit on bounded, a bug route and a spike file. Report F1.
+  `global/methods/my.md` and the files that name the sizes, architectural
+  with plan. A session picks its process as superpowers' brainstorming does
+  (spike, bounded or architectural), not by a second `my` size. `my` adapts
+  the paths with a risk line, a two-file limit on bounded, a bug route and a
+  spike file. Report F1.
   [spec](docs/plans/2026-10-18-brainstorming-routes-spec.md)
+
+- 💭 73 **`my:status` lists every spike branch as unfinished work** — bug in
+  `plugins/my/bin/status-scan.py` and `my:status`. A spike's `spike/<slug>`
+  branch is never merged, so every report asks the user about it, for ever.
+  Fix: treat `spike/` branches as records, not unfinished work. Found by
+  row 67's end-of-branch code review; detail in its plan's Risk section.
 
 ## Workflow speed audit
 
@@ -451,7 +466,7 @@ W1 to W5 are evidence for rows 29, 30, 55, 61 and 67; W6 and W7 are zitamu
 proposals with no row; the report says why.
 
 - 💭 72 **Workflow metrics as one `my` script** — feature in `plugins/my/bin/`,
-  size not set. Four reports each built one-off scripts for the same
+  route not set. Four reports each built one-off scripts for the same
   measures. Goal: one tested script that measures a project's shipped rows
   from git and its sessions from transcripts, starting from the three in
   [the report's assets](docs/reports/assets/2026-10-18-workflow-speed/).

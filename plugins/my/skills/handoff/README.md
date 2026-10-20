@@ -51,8 +51,9 @@ Each arrow is a new session in a new tmux window. The spec stage is not part
 of the skill: you write the spec with Claude in your own session. You then
 start the chain with `/my:handoff plan <spec path>`.
 
-A spec with its own **Tasks** section (a Medium change) has no plan. Commit
-its `approved` status as a fixup of the spec commit, fold the fixup with
+A spec with its own **Tasks** section (an architectural change without a
+plan) has no plan.
+Commit its `approved` status as a fixup of the spec commit, fold the fixup with
 `git-fold-fixups.py`, then start the chain with
 `/my:handoff code <spec path>`. The code stage refuses a spec whose status is
 not committed as `approved`.
@@ -221,10 +222,11 @@ reasons are in `docs/plans/2026-10-12-autonomous-run-spec.md`.
 
 ### The commands
 
-- `/my:handoff auto plan <spec>`: for a Large change, a spec without a
-  **Tasks** section. The run writes the plan, the code and the reviews.
-- `/my:handoff auto code <spec>`: for a Medium change, a spec with a
-  **Tasks** section. The run commits the spec's `approved` edit itself.
+- `/my:handoff auto plan <spec>`: for an architectural change with a
+  plan, a spec without a **Tasks** section. The run writes the plan, the
+  code and the reviews.
+- `/my:handoff auto code <spec>`: for an architectural change without a
+  plan, a spec with a **Tasks** section. The run commits the spec's `approved` edit itself.
 - `/my:handoff auto resume <spec>`: continues a stopped run whose window is
   gone.
 
@@ -249,7 +251,7 @@ The spec says what the run may decide without you, in a section titled
   other new dependency stops the run.
 - **Design-changing findings:** `stop`, or `decide`. With `decide`, the
   stage picks the fix it judges best and writes one line about it into the
-  **Risk** section of the plan, or of the spec for a Medium change. Read
+  **Risk** section of the plan, or of the spec when there is no plan. Read
   those lines before you push.
 - **Failing end-of-branch tests:** `none`, or the names of tests that may
   fail. The `done` mark names each one that did.
@@ -270,8 +272,9 @@ before it starts. Names are compared exactly.
    check of the auto run does that.
 3. **Approve the spec:** set its status to `approved`. You can leave that
    edit uncommitted. The plan stage commits it for `auto plan`, and the code
-   stage commits it for `auto code`. The supervised route for a Medium
-   change asks you to commit and fold it first; auto mode does not.
+   stage commits it for `auto code`. The supervised hand-off for an
+   architectural change without a plan asks you to commit and fold it first;
+   auto mode does not.
 4. **Start the run** from a session inside tmux, in `auto` or
    `bypassPermissions` mode:
    - `/my:handoff auto plan <spec>` when the spec has no **Tasks** section.
@@ -282,7 +285,7 @@ before it starts. Names are compared exactly.
 6. **After the run,** the last window prints `done; squash commit <hash>`.
    Before you push:
    - Read the lines that a `decide` added to the **Risk** section of the
-     plan, or of the spec for a Medium change.
+     plan, or of the spec when there is no plan.
    - Check the `done` mark for tests that were allowed to fail.
    - Run `git log origin/main..main` to see what the push will send. The
      run never pushes, so `origin/main` should be where it was before.

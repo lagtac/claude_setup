@@ -4,7 +4,7 @@
 [superpowers](https://github.com/obra/superpowers), a third-party plugin.
 Superpowers gives the steps of one change: brainstorm, write a spec, write a
 plan, build it test-first, review it, finish the branch. `my` adds the layer
-around those steps: the roadmap that orders the work, the size of each change,
+around those steps: the roadmap that orders the work, the route of each change,
 its own reviews, and the git rules for getting code onto `main`.
 
 This file explains what `my` adds and where it differs from superpowers. The
@@ -20,7 +20,7 @@ The method has two parts, and only one of them is this plugin:
 
 - **The rules** are in `global/methods/my.md`. A project loads them with the
   line `@~/.claude/methods/my.md` in its `CLAUDE.md`. They say which skill
-  runs when, and they hold the size table and the Git Workflow.
+  runs when, and they hold the route table and the Git Workflow.
 - **The tools** are this plugin: the skills, the review agents, the scripts in
   `bin/` and the hooks. The rules call them by name.
 
@@ -42,10 +42,10 @@ brainstorming → writing-plans → subagent-driven-development or executing-pla
 
 Superpowers already does more than one fixed path:
 
-- **It sizes the work.** Brainstorming picks one of three paths. A *spike*
-  answers a question and writes no document. A *bounded* change gets a short
-  design in chat, with no spec and no plan. An *architectural* change gets a
-  written spec and then a plan.
+- **It picks a path for the work.** Brainstorming picks one of three paths.
+  A *spike* answers a question and writes no document. A *bounded* change gets
+  a short design in chat, with no spec and no plan. An *architectural* change
+  gets a written spec and then a plan.
 - **It keeps the spec and the plan apart.** The spec goes to
   `docs/superpowers/specs/`, the plan to `docs/superpowers/plans/`.
 - **It reviews code inside the build.** In subagent-driven mode, a reviewer
@@ -72,29 +72,27 @@ A report (an audit or a critique of a whole area) never becomes work itself.
 Its findings become roadmap rows. `global/rules/docs-layout.md` has the rules
 for that.
 
-### The size table
+### The routes
 
-Before any skill runs, the session picks a size and states it in one line.
-The size decides the documents, the reviews and the commits:
+The session states the route in one line, with the reason and the risk check.
+Brainstorming says it before its first question; a task that hits the risk
+line states it before any skill runs; a bug states none. The route decides the
+documents, the reviews and the commits:
 
-| Size | When | Documents | Reviews |
+| Route | Who picks it | Documents | Reviews |
 | --- | --- | --- | --- |
-| Small | A fix or small change in one or two files. | None. | `/code-review high` on the branch. |
-| Medium | A feature or fix across several files. | One spec, with a **Tasks** section instead of a plan. | `my:spec-review` on the spec; the end-of-branch reviews. |
-| Large | A change to stored data, permissions, a public contract, or something hard to reverse; a new subsystem. | Architecture brief when needed, spec, plan. | All reviews. |
+| **Spike** | Brainstorming | `docs/plans/YYYY-MM-DD-<slug>-spike.md` | None |
+| **Bounded** | Brainstorming, one or two files, no risk trigger | None. A short design in chat, approved before any code. | `/code-review high` on the branch |
+| **Architectural** | Brainstorming, or more than two files; no risk trigger | Architecture brief where the trigger table asks for one; one spec, with a **Tasks** section in place of a plan. | `my:spec-review` on the spec; the end-of-branch reviews. No plan review. |
+| **Architectural with plan** | The risk line | Architecture brief where the trigger table asks for one, spec, plan. | All reviews in `my.md`. |
+| **Bug** | `systematic-debugging` | None, unless it goes to brainstorming. | `/code-review high` on the branch |
 
-The full table, with the commits for each size, is in
+The full table, with the commits for each route, is in
 `global/methods/my.md`.
 
-The size table and brainstorming's three paths overlap, and only part of the
-overlap is settled. When an architecture brief exists, `my.md` says that
-brainstorming "classifies the task as architectural, never bounded or
-spike". Without a brief, brainstorming may call a Medium change bounded (no
-spec) or a spike (no document), while the size table asks for a spec. This
-is finding F1 of
-[the superpowers-fit critique](../../docs/reports/2026-10-14-superpowers-fit-critique.md).
-Roadmap row 67 plans to replace the size table with brainstorming's paths,
-plus a few `my` adaptations.
+The old names map as follows: Small is bounded or bug, Medium is
+architectural, Large is architectural with plan. Specs, plans and reviews
+finished before row 67 still use the old names.
 
 ### A review for each document
 
@@ -129,9 +127,11 @@ on `main` as one squash commit. Superpowers' `finishing-a-development-branch`
 does a regular merge and can delete the branch. `my` replaces it: it
 squash-merges and keeps the branch as a record.
 
-A Large change leaves four commits on `main`: the spec with its review, the
-plan with its review, the code, and the `done` mark. Medium leaves three, and
-Small one. The fourteen steps are in `global/rules/docs-layout.md`.
+An architectural change with a plan leaves four commits on `main`: the spec
+with its review, the plan with its review, the code, and the `done` mark. An
+architectural change without a plan leaves three, a bounded change or a bug
+fix one, and a spike one `docs:` commit, its file. The fourteen steps are in
+`global/rules/docs-layout.md`.
 
 ### Where the documents go
 
@@ -143,8 +143,8 @@ All specs, plans and reviews go to `docs/plans/YYYY-MM-DD-<slug>.md`, not to
 
 | Superpowers skill | Under `my` |
 | --- | --- |
-| `brainstorming` | Used for Medium and Large. Writes to `docs/plans/`. `my:architect` runs first when its trigger matches. For UI, the Design artifact replaces the Visual Companion. Its spike and bounded paths are not mapped to a size (row 67). |
-| `writing-plans` | Used for Large only. Writes to `docs/plans/`. The plan must have **Dependencies** and **Risk** sections. |
+| `brainstorming` | Used for every task that is not a bug or on the skip list. Its path picks the route; the risk line can make it heavier. Writes to `docs/plans/`. `my:architect` runs first when its trigger matches. For UI, the Design artifact replaces the Visual Companion. |
+| `writing-plans` | Used for architectural changes with a plan. Writes to `docs/plans/`. The plan must have **Dependencies** and **Risk** sections. |
 | `test-driven-development` | Used as is, for every code change. |
 | `systematic-debugging` | Used as is, for every bug. |
 | `using-git-worktrees` | Used, but the worktree is made with `git worktree add`, never the `EnterWorktree` tool. |
@@ -165,17 +165,14 @@ the same order. How it works: [`skills/handoff/README.md`](skills/handoff/README
 
 ## Limits
 
-- **The size is picked once.** Small skips the spec and the plan. Medium
-  skips the separate plan. After the size is picked, the row follows a fixed
-  path. If the work turns out larger than its size, the session stops and
-  says so.
+- **A route only moves up.** Bounded skips the spec and the plan.
+  Architectural skips the separate plan. If the work turns out heavier than
+  its route, the session stops and says so.
 - **Correctness is checked at fixed gates.** Documents are checked before any
   code. Code is checked once, at the end of the branch. This assumes the design
   can be decided before the code is written. It works badly when you learn the
-  design only by trying things. Superpowers' brainstorming has a spike path
-  for that case. Under `my`, brainstorming runs only after the size is
-  picked, and a Medium or Large size requires a spec. The rules do not say
-  whether brainstorming may still take the spike path.
+  design only by trying things. The spike route covers that case: it writes
+  an answer, not code that lands.
 - **The cost is per row, not per change.** Each row carries fixed work:
   documents, reviews and commits. This cost is highest when there are many
   small rows, or when a row is exploratory.

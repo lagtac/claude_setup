@@ -91,6 +91,7 @@ Verify a spec file exists at `docs/plans/YYYY-MM-DD-<slug>-spec.md` (or the proj
 
 - Update the status cell to `📋`.
 - Add a markdown link to the spec in the Spec / Plan column: `[spec](docs/plans/YYYY-MM-DD-<slug>-spec.md)`.
+- In a project that routes its work, replace `route not set` with the route brainstorming picked (rule 11).
 - If the row body needs to grow (e.g., the spec materially reframed the feature), edit the short name and the row body to match — never leave the row contradicting its linked spec.
 
 ### 5. Promote 📋 → 🚧 — plan written and work started
@@ -118,7 +119,8 @@ Preconditions:
 Roadmap edit:
 
 - Status → `✅`.
-- Update the row body if the implementation diverged from the plan (this is common — the row should describe what shipped, not what was planned). Keep it in rule 11's order (kind, place and size; what the user sees; the fix; verdict; pointer); deep narrative belongs in the CHANGELOG and the linked docs, not the row (rule 11).
+- In a project that routes its work, a row that still says `route not set` gets its route here: a bounded change has no spec, so no 📋 edit set it (rule 11).
+- Update the row body if the implementation diverged from the plan (this is common — the row should describe what shipped, not what was planned). Keep it in rule 11's order (kind, place and route; what the user sees; the fix; verdict; pointer); deep narrative belongs in the CHANGELOG and the linked docs, not the row (rule 11).
 
 CHANGELOG edit (in the **same commit**): hand off to the `changelog-management` skill for scope, structure, dating, and linking. Both edits land in one commit (rule 9 below).
 
@@ -160,7 +162,7 @@ Edit-scoped only — no full-file audits:
 
 - The status reflects reality (the integration has actually landed for ✅; plan file actually exists for 🚧; spec file actually exists for 📋).
 - The Spec / Plan column links resolve.
-- The row body is still index-level and in rule 11's order (kind, place and size; what the user sees; the fix; verdict; pointer) — you didn't append numbers, SHAs, or play-by-play that a linked doc already owns (rule 11).
+- The row body is still index-level and in rule 11's order (kind, place and route; what the user sees; the fix; verdict; pointer) — you didn't append numbers, SHAs, or play-by-play that a linked doc already owns (rule 11).
 - The markdown table is still well-formed (no broken pipes, no missing cells).
 
 Skip broad audits (stale-💭 sweeps, orphan-row scans, full-file link greps). Run those only when the user explicitly asks for a roadmap audit.
@@ -171,7 +173,7 @@ A roadmap row is an **index entry**, not the record of the work. The linked spec
 
 Keep in the row body, in this order, so that a reader who opens the roadmap cold knows what the row is without opening a link. Target: one sentence each for the first three parts, then the verdict and the pointer as short fragments (≤ ~5 lines in all):
 
-- **Kind, place and size** — the kind of work (`bug`, `feature`, `rule` for a change to instruction text, or another kind the roadmap already uses), where it happens (the skill, file or area), and the size. In a project that sizes its work (`Small`, `Medium`, `Large` in the `my` method), write `size not set` until someone sizes it; in a project that does not, leave the size out. Example: `bug in my:handoff, Small.`
+- **Kind, place and route** — the kind of work (`bug`, `feature`, `rule` for a change to instruction text, or another kind the roadmap already uses), where it happens (the skill, file or area), and the route when it is already known. In a project that routes its work (spike, bounded, architectural in the `my` method): a row of kind `bug` names no route, even when its fix may touch the risk line; a row that hits the risk line (a change to stored data or its shape, permissions, a message or public contract, or something hard to reverse) names `architectural with plan`; every other row names `route not set` until brainstorming picks its route (rules 4 and 6). A bug that brainstorming routed follows rules 4 and 6 for the route it got. A row routed to a spike gets `spike` in the edit that links the spike file, since no spec or merge follows. In a project that does not route its work, leave the route out. Examples: `bug in my:handoff.` and `feature in my:status, route not set.`
 - **What the user sees** — for a bug, what goes wrong for the person using the tool; for a feature, what they can do once it ships. Start from that effect, not from its cause in the code. Replace or define every term a reader may not know.
 - **The fix or the goal** — one sentence. When the row links no document, this sentence keeps the facts a fixer needs (the cause, the chosen approach), because the row is their only record.
 - **Current bottom line** — one line: shipped / NO-GO / blocked-on-X. Include a single figure *only when that figure is itself the verdict* (e.g. a NO-GO whose crux is "background-FP 51 vs 12") — one decisive number, not a metrics dump.

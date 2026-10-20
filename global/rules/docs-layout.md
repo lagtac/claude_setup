@@ -21,6 +21,7 @@ there.
 | Spec | What to build and why. | `docs/plans/` | `YYYY-MM-DD-<slug>-spec.md` |
 | Plan | How to build it: steps, tests, commits. | `docs/plans/` | `YYYY-MM-DD-<slug>.md` |
 | Review | A report on one spec, one plan or one diff. It sits next to what it reviewed. | `docs/plans/` | `…-review.md`, `…-review-2.md` |
+| Spike | The answer to one question: what was tried and what it showed. Its code is never merged. The file names the spike's branch, never a commit from it. | `docs/plans/` | `YYYY-MM-DD-<slug>-spike.md` |
 | Report | Findings about a whole product or area on one day, such as a design critique, an audit or an architecture critique. Other documents fix what it finds. It is never carried out itself. | `docs/reports/` | `YYYY-MM-DD-<slug>-critique.md`, `-audit.md` |
 | Action plan | Optional. Routes a large report's findings into roadmap rows once, then stays as a reference. | `docs/plans/` | `YYYY-MM-DD-<slug>-action-plan.md` |
 | Briefing | A plain-language write-up for readers outside engineering (`kit:briefing`). | `docs/briefings/` | `YYYY-MM-DD-<slug>.md` |
@@ -34,7 +35,7 @@ A report's findings become rows in the project's roadmap. The roadmap is the one
 work, and it keeps the only order. The chain is:
 
 ```text
-report → roadmap rows, placed in the order → spec or plan, by size → branch
+report → roadmap rows, placed in the order → spec or plan, by route → branch
 ```
 
 - **The roadmap keeps the order.** It lives in the roadmap's `## Order of work` section
@@ -108,6 +109,7 @@ Every file in `docs/plans/` and `docs/reports/` opens with one line, just under 
 | `current` | Work in progress, or a report that is still the live source of findings. |
 | `parked` | A draft set aside until a named step decides what happens to it. |
 | `done` | Shipped. The sentence names the commit. |
+| `answered` | A spike. The sentence gives the answer in short. |
 | `superseded` | Will not be carried out. The sentence names what replaces it. |
 | `withdrawn` | Dropped. Nothing replaces it. |
 | `review of <file>` | A review. The sentence names what it reviewed and what answered it. |
@@ -133,17 +135,18 @@ them.
 
 ## One feature, four commits on `main`
 
-A Large feature leaves four commits on `main` (Small and Medium leave fewer, as the size table in
-`~/.claude/methods/my.md` says): the spec with its review, the plan with its review, the squash-merged
-code, and the `done` mark. Without this rule, most commits are small edits to one spec or plan: on
+An architectural change with a plan leaves four commits on `main` (the other routes leave fewer, as
+the route table in `~/.claude/methods/my.md` says): the spec with its review, the plan with its
+review, the squash-merged code, and the `done` mark. Without this rule, most commits are small edits to one spec or plan: on
 zitamu, 44 of 52 commits by 2026-09-18 were `docs:`. Docs are written in the main checkout,
 because an `@` mention cannot reach `.claude/worktrees/`. Code is written in a worktree, because
 sessions often run in parallel. A project's own file names only what differs: its plans index, its
 scopes, its test commands.
 
-Two more commits are allowed. `my:architect` commits the architecture brief on its own, before
+Three more commits are allowed. `my:architect` commits the architecture brief on its own, before
 step 1. An edit to another document that the spec forces, such as a glossary or a data model, is
-its own commit, not a fixup of the spec.
+its own commit, not a fixup of the spec. The spike file of a spike that runs inside an
+architectural route, before the spec, is its own `docs:` commit, before step 1.
 
 1. Write the spec on `main`.
 2. Write the spec review on `main`.

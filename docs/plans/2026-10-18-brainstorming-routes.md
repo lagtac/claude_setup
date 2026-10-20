@@ -370,6 +370,11 @@ that fails because `my:architect` ran before the route line is such a case
 (Risk): stop, and do not add a timing rule. Keep both result
 folders until the branch is merged; the `done` mark cites their counts.
 
+Code stage, 2026-10-19: this step stopped twice. On the user's decisions,
+the `pdf` prompt was dropped and the timing sentence was added (Risk). The
+final green run is 12 runs, and all 12 passed. Task 1's commit body holds
+the red and green counts.
+
 - [ ] **Step 13: Lint and commit**
 
 ```bash
@@ -719,6 +724,9 @@ the rows as they are.
   Also rejected: "state the route before any skill runs" for every task,
   which would also settle when the design-system audit runs, a limit the
   spec leaves to row 70.
+  - Code stage, 2026-10-19: the rehearsal showed the gap (2 of 6 runs), and
+    the user added the risk-line sentence. The rejection of the sentence for
+    every task still stands. See Risk.
 - **The rehearsal fixture has a `docs/DESIGN-SYSTEM.md`.** Without it, the
   rename prompt runs the audit first, whose timing is a known limit. The
   alternative, a non-UI rename prompt, would change the spec's prompt.
@@ -749,6 +757,12 @@ the rows as they are.
 - **The rehearsal may not load the rules by the absolute import.** Task 1,
   step 6's probe detects it, and the fallback copies the file into the
   fixture.
+  - Code stage, 2026-10-18: the probe found the import not loaded, because
+    the worktree path is outside the session's allowed folders. The fixture
+    imports a copy, `@.claude/method/my.md`, recopied before the green run.
+    The fixture is also an untrusted workspace, so its `permissions.allow`
+    list is ignored; `run.sh` passes the same eight entries with
+    `--allowedTools`.
 - **The `deleted_at` rehearsal may fail on the route line's timing.** The
   trigger table runs `my:architect` before brainstorming for a change to a
   data model, and D1 places the route line in brainstorming. If the session
@@ -756,6 +770,17 @@ the rows as they are.
   no rule to prevent it (Trade-Offs, first point), because that would be a
   rule the approved spec does not have. Then the code stage stops, and the
   user decides whether the rule text needs a timing sentence.
+  - Code stage, 2026-10-19: in two green sets, 2 of 6 `deleted_at` runs went
+    to `my:architect` without naming a route. The user chose to add one
+    sentence to "Pick the route": "A task that hits the risk line states its
+    route before any skill in the table runs." The README says the same.
+- **The `pdf` prompt does not test the spike route.** In every run, old and
+  new rules, the session answered "Can the PDF library render Greek fonts?"
+  from what it knows, and never started brainstorming. A question that needs
+  no code gets a plain answer, so no route. On 2026-10-19 the user chose to
+  drop the prompt from the rehearsal. Known limit: the spike route is picked
+  only when the session treats the request as a task, and no rehearsal
+  covers it.
 - **Row 71's draft spec also edits a Precedence paragraph.** Row 71
   ("Project rules outrank the core") was another session's uncommitted
   draft on 2026-10-18. D12 adds a sentence to `my.md`'s Precedence
@@ -770,6 +795,56 @@ the rows as they are.
 - **Found, not fixed:** `METHOD_HEADINGS` in `test_neutral_core.py` lists
   `"Learning workspaces"`, which no method file has. The test still passes,
   because it only checks that the core lacks each heading.
+- **Review stage, 2026-10-19: the user's answers to five gates.** The
+  end-of-branch code review found gaps the spec did not decide. The user
+  chose, and the spec's D6, D7, D9 and Files now say the same:
+  - a bug fix that touches more than two files goes to brainstorming, a
+    fourth case in D6, so the old Small limit stays;
+  - a spike removes its worktree once its file lands, and a spike run
+    before a spec takes a slug of its own, because `my:handoff`'s start
+    checks refuse a branch or worktree with the spec's slug;
+  - a roadmap row routed to a spike gets `spike` in the edit that links
+    the spike file (rule 11);
+  - `clean-plans` learns the `spike` file kind.
+- **Known limit: `my:status` lists spike branches as unfinished.**
+  `status-scan.py` reports a branch with lines not on `main` as
+  maybe-unfinished, and a spike branch is never merged. So each report
+  asks the user about every past spike. The user chose a new row, 73,
+  over a fix on this branch.
+- **The rehearsal checker changed after the red run.** It accepts a
+  route named mid-sentence, and it ignores a shell loop that the
+  permission check refused. The soundness review reran the changed
+  checker on the old-rules folders: every non-bug run still fails, so
+  the red evidence holds.
+- **Re-review, 2026-10-19: known limits, not fixed.** The re-reviews are
+  final and found nothing Critical, so these wait for a later row:
+  - **Rule conflicts.** A task on the risk line states `architectural with
+    plan` first, and a route only moves up, so the risk line's spike
+    exemption can never be reached; rule 11's `architectural with plan`
+    row label, later `spike`, is a move down. "The table below" and
+    "before any skill in the table runs" sit above the route table, which
+    also names skills, so "the table" can be misread. The Precedence
+    paragraph's "only" list and its next sentence disagree on who has the
+    last word on the route.
+  - **Spike gaps.** The own-slug rule covers only a spike before a spec; a
+    standalone spike's kept branch also blocks a later spec with its slug
+    (the refusal is loud, and a new slug fixes it). A row routed to a spike
+    gets its route word, but no rule moves its status, so it stays 💭. The
+    skip line says the route section names the rows a spike runs, but the
+    Spike bullet names none (worktree, test-driven-development).
+  - **Wording.** `my:handoff` `SKILL.md` labels `auto code` "(architectural)"
+    for the no-plan route, and `my.md` uses the bare word both ways. The
+    risk line is copied into rule 11, the README and zitamu's local file,
+    so an edit to it must be made four times. Row 60 lost "Small" and has
+    no kind word and no `route not set`; D10 asked only to drop the size.
+  - **The rehearsal predates the fix round.** Its 12 of 12 passes ran on
+    `my.md` before the fix round. Two fix-round edits touch tested paths:
+    the "once the route below is picked" clause (the `deleted_at` timing)
+    and the bug sentence removed from Bounded.
+  - **Row 73's number.** `main`'s uncommitted edit (another session) adds
+    rows 71 and 72 and sets the next number to 73. If another row 73 lands
+    on `main` first, both sides write `74` and git shows no conflict. The
+    squash-merge checks that 73 is still free on `main`.
 - **Known limits the spec carries:** a change to the build in one or two
   files is bounded; the two-file limit is rough; a route moves up only if
   the session notices; a bounded UI change skips the UI checks; the
@@ -784,7 +859,8 @@ the rows as they are.
    lines; Task 5, step 5 checks that only the listed lines remain.
 2. **The rehearsal:** Task 1, steps 3 to 6 (red: the 12 runs of the four non-bug prompts fail) and step 12
    (green, 15 passing, three per prompt). The bug escalation (D6) is checked
-   by reading, in Task 1, step 9.
+   by reading, in Task 1, step 9. Since 2026-10-19 the rehearsal has four
+   prompts, so green is 12 passing runs; the `pdf` prompt was dropped (Risk).
 3. **Unit tests:** both suites, after each task that touches code or skill
    text, and once more in Task 5, step 5. Task 2 adds
    `test_answered_spike_is_not_open`, proven able to fail by a deliberate

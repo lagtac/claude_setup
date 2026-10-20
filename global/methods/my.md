@@ -9,30 +9,89 @@ The rules of the `my` method. A project uses them by importing this file from it
 
 ### Superpowers Integration
 
-Auto-dispatch of skills is unreliable on Opus 4.7+, so invoke the relevant `superpowers:` skill via the Skill tool **before** starting work. Treat the table below as explicit triggers, not suggestions — once the size below is picked, the corresponding skill must run first, even if the task looks small enough to handle inline.
+Auto-dispatch of skills is unreliable on Opus 4.7+, so invoke the relevant `superpowers:` skill via the Skill tool **before** starting work. Treat the table below as explicit triggers, not suggestions — the corresponding skill must run first, even if the task looks small enough to handle inline. "Pick the route" says when the route line comes.
 
-#### Size the process to the change
+#### Pick the route
 
-Before any skill in the table runs, pick a size and state it in one line with
-the reason, for example "Small: a fix in one file, no stored data changes". The
-user can change it. If unsure between two sizes, pick the larger. If the work
-turns out larger than its size, stop and say so before going on.
+Brainstorming sorts a task into spike, bounded or architectural. `my` uses
+these paths as its routes. It adapts them with the risk line and the two-file
+limit on bounded, and it gives bugs their own route. "An architectural change"
+means either architectural route, with or without a plan; "architectural"
+alone in the route table means the one without a plan. State the route in one
+line with the reason and the risk check, for example "Bounded: a flag on the
+existing `status` command; no risk trigger." Brainstorming says this line
+before its first question. A task that hits the risk line states its route
+before any skill in the table runs. A bug states no route, even when its fix
+may touch the risk line (see Bug below).
+The user can change the route. When unsure between two routes, pick the
+heavier one. A route only moves up: when the work turns out heavier than its
+route, stop and say so before going on.
 
-| Size | When | Documents | Reviews | Commits on `main` |
+**The risk line.** A change to stored data or its shape, permissions, a
+message or public contract, or something hard to reverse is architectural
+with plan, whatever path brainstorming would pick. A spike is exempt, because
+its code never lands. The risk line also decides where the tasks go: an
+architectural change without a risk trigger keeps its tasks in the spec; one
+with a trigger gets a separate plan.
+
+| Route | Who picks it | Documents | Reviews | Commits on `main` |
 |---|---|---|---|---|
-| **Small** | A bug fix or a small behaviour change in one or two files. No change to stored data, permissions, a message or public contract, or the build. | None. The reason goes in the commit message and, where the project keeps them, the roadmap row and the changelog. | `/code-review high` on the branch. | One: the squash-merged code. |
-| **Medium** | A feature or a fix across several files, with none of the Large triggers. | One spec, with a **Tasks** section in place of a separate plan. | `my:spec-review` on the spec; the end-of-branch reviews. No plan review. | Three: the spec with its review, the code, the `done` mark. |
-| **Large** | Any change to stored data or its shape, permissions, a message or public contract, or something hard to reverse; a new subsystem. | Everything as below: architecture brief where the table asks for one, spec, plan. | All reviews as below. | Four, as in "One feature, four commits". |
+| **Spike** | Brainstorming | `docs/plans/YYYY-MM-DD-<slug>-spike.md` | None | One `docs:` commit, the spike file. Its code is never merged. |
+| **Bounded** | Brainstorming, one or two files, no risk trigger | None. A short design in chat, approved before any code. | `/code-review high` on the branch | One: the squash-merged code. |
+| **Architectural** | Brainstorming, or more than two files; no risk trigger | Architecture brief where the trigger table asks for one; one spec, with a **Tasks** section in place of a plan. | `my:spec-review` on the spec; the end-of-branch reviews. No plan review. | Three: the spec with its review, the code, the `done` mark. |
+| **Architectural with plan** | The risk line | Architecture brief where the trigger table asks for one, spec, plan. | All reviews in this file. | Four, as in "One feature, four commits". |
+| **Bug** | `systematic-debugging` | None, unless it goes to brainstorming. | `/code-review high` on the branch | One: the squash-merged code. |
 
-- **Small** skips the brainstorming, writing-plans and executing-plans rows.
-  A bug still starts with `superpowers:systematic-debugging`, and every code
-  change still starts with a failing test. It still runs in a worktree. Known
-  limits from its review go into the squash commit message, because there is
-  no **Risk** section to hold them. Several Small fixes may share one branch
-  when each one alone is Small. Each fix is its own commit with its own
+- **Spike** answers one question. Brainstorming's gate stays: the user
+  approves the question and the probe first.
+  - Its code lives in a worktree on a branch named `spike/<slug>`. The branch
+    is never merged and is kept as a record, like any other branch. Once
+    the spike file lands, remove the worktree with `git worktree remove`.
+  - It writes `docs/plans/YYYY-MM-DD-<slug>-spike.md` with four parts: the
+    question, what was tried (with the branch name), the answer, and the
+    recommendation. The file names the branch, never a commit hash from it:
+    docs cite only commits on `main`. The `pre-commit` hook catches such a
+    hash only when it is written in backticks.
+  - The file's status is `answered, <date>`. `my:status` treats any status
+    outside its open list as closed, so a spike file never shows as open
+    work.
+  - One `docs:` commit lands the file. No review runs.
+  - A spike needs no roadmap row. When a row exists, it links the spike file.
+  - Keeping the spike's code is a new task, and brainstorming classifies it
+    again.
+
+  A spike may also run inside an architectural route, before the spec, to
+  answer one design question. It writes the same file, and the spec lists
+  that file under "How to read this spec". Give the spike a slug of its own,
+  not the spec's: `my:handoff` refuses to start when a branch `*/<slug>` or a
+  worktree `.claude/worktrees/<slug>` exists for the spec's slug. `my:architect`'s own spikes stay as
+  they are: throwaway code in its work folder, never committed, with the
+  result written into the brief.
+- **Bounded** touches one or two files in an existing flow, with no risk
+  trigger. A change to more files in an existing flow is architectural, with a
+  spec that holds its tasks. Brainstorming runs, on its bounded path: a short
+  design in chat, and no code starts before the user says yes. Bounded skips
+  the writing-plans and executing-plans rows. Every code change still starts
+  with a failing test. It still runs in a worktree. Known limits from its review go
+  into the squash commit message, because there is no **Risk** section to hold
+  them. Several bounded changes and bug fixes may share one branch when each
+  one alone is bounded or a bug fix. Each fix is its own commit with its own
   failing test first. The branch gets one review round and one squash commit,
   whose body names each fix's roadmap row.
-- **Medium** writes the Tasks section by the rules of
+- **Bug** starts with `superpowers:systematic-debugging`, with no route line.
+  After the root cause is found, the bug goes to brainstorming in any of four
+  cases:
+  - the fix hits the risk line;
+  - there are several reasonable fixes;
+  - the fix touches more than two files, which is bounded's limit;
+  - three fixes have failed, which is the debugging skill's own "question the
+    architecture" step.
+
+  Brainstorming then picks the route as for any task, with the root cause as
+  its input. A bug skips the brainstorming, writing-plans and executing-plans
+  rows, unless it goes to brainstorming. Otherwise the fix follows the bounded
+  rules, without the design gate.
+- **Architectural** writes the Tasks section by the rules of
   `superpowers:writing-plans` "What a Step Contains": test names and assertions
   as code, signatures and files for code steps, no code bodies. It runs the
   brainstorming row and skips the writing-plans row. There is no plan stage to
@@ -43,19 +102,19 @@ turns out larger than its size, stop and say so before going on.
   runs" section, the `approved` edit is a normal commit in the locked form of
   Git Workflow, not a fixup, and nothing folds. When the spec has a Delegation
   section, ask "Hand off the code, supervised or auto?": supervised is the
-  route above, and auto runs `/my:handoff auto code <spec path>` with the
+  hand-off above, and auto runs `/my:handoff auto code <spec path>` with the
   `approved` edit left uncommitted. The auto code stage commits and folds
   that edit itself. Where the project keeps a plans
   index, its row goes into the spec commit. Wherever this file says "the
-  plan" for a Medium change, read "the spec": its **Tasks** section and its
-  **Risk** section play the plan's part.
-- **Large** follows the rest of this file unchanged.
+  plan" for an architectural change without a plan, read "the spec": its
+  **Tasks** section and its **Risk** section play the plan's part.
+- **Architectural with plan** follows the rest of this file unchanged.
 
 | Task class | Invoke first |
 |---| ---|
 | New project, new subsystem, or change to a data model, storage choice or public contract | `my:architect`, then `superpowers:brainstorming` |
 | New feature, component, or behavior change (any non-trivial creative work) | `superpowers:brainstorming` |
-| UI work (a screen, a state or a component) in a Medium or Large change, in a project with no `docs/DESIGN-SYSTEM.md` | `my:design-system audit`, then `superpowers:brainstorming`. When the `my:architect` row also matches, `my:architect` runs first |
+| UI work (a screen, a state or a component) in an architectural change, with or without a plan, in a project with no `docs/DESIGN-SYSTEM.md` | `my:design-system audit`, then `superpowers:brainstorming`. When the `my:architect` row also matches, `my:architect` runs first |
 | Multi-step implementation from a spec or written requirements | `superpowers:writing-plans` |
 | Writing or modifying production code (>1 file or >~30 lines) | `superpowers:test-driven-development` |
 | Bug, test failure, or unexpected behavior | `superpowers:systematic-debugging` |
@@ -64,15 +123,15 @@ turns out larger than its size, stop and say so before going on.
 | Branch is feature-complete and ready to integrate | Steps 12 and 13 in `~/.claude/rules/docs-layout.md`, or `/my:handoff review` for a handed-off branch (not `superpowers:finishing-a-development-branch`) |
 | Major work needs review before merge | The end-of-branch reviews in Code Review Routing: `my:soundness-review` and `/code-review high` on `main..<branch>` (not `superpowers:requesting-code-review`) |
 
-Skip the table only for: single-line fixes, typo/comment edits, doc-only changes, config tweaks. For Small and Medium changes, the size table above says which rows apply.
+Skip the table only for: single-line fixes, typo/comment edits, doc-only changes, config tweaks. For spikes, bounded changes and bugs, the route section above says which rows apply.
 
-**Precedence:** these rules and the core in `~/.claude/CLAUDE.md` are the highest authority — when plan mode, a skill, or any system default conflicts, follow them. Superpowers may override **only** plan output format and the core's Simplicity Rules (announce when it does). Everything else here is non-overridable: `docs/plans/` output path, Git Workflow (GitLab/worktrees/squash-merge), Risk + Trade-Off Analysis, and that plans include **Dependencies** + **Risk** sections and follow **Red → Green → Refactor** (tests before implementation).
+**Precedence:** these rules and the core in `~/.claude/CLAUDE.md` are the highest authority — when plan mode, a skill, or any system default conflicts, follow them. Superpowers may override **only** plan output format and the core's Simplicity Rules (announce when it does). Brainstorming's path decides the route of a task, adapted only by the risk line and the two-file limit on bounded (see "Pick the route"), and a spike's file goes to `docs/plans/`. Everything else here is non-overridable: `docs/plans/` output path, Git Workflow (GitLab/worktrees/squash-merge), Risk + Trade-Off Analysis, and that plans include **Dependencies** + **Risk** sections and follow **Red → Green → Refactor** (tests before implementation).
 
 **Discovery authority:** while `superpowers:brainstorming` or `writing-plans` runs, it owns exploration — don't also run other planning workflows. `my:architect` runs before brainstorming, never during it. When an architecture brief (`docs/plans/*-architecture.md`) exists for the task:
 
 - Brainstorming treats the brief as settled input. It asks only about items under the brief's "Open for brainstorming" section.
 - The brief's Decision replaces brainstorming's "Propose 2-3 approaches" step. Brainstorming presents its design sections starting from that Decision.
-- Brainstorming classifies the task as architectural, never bounded or spike.
+- Brainstorming classifies the task as architectural, never bounded or spike. Whether it also gets a plan follows the risk line.
 
 If brainstorming upgrades a task to architectural partway through, and the task matches the `my:architect` trigger row, stop and run `my:architect` first.
 
@@ -80,7 +139,7 @@ If brainstorming upgrades a task to architectural partway through, and the task 
 
 #### Spec → Plan two-artifact flow
 
-When `superpowers:brainstorming` produces a deliverable, keep spec and plan as **separate files** (Large changes only; a Medium change keeps its tasks in the spec):
+When `superpowers:brainstorming` produces a deliverable, keep spec and plan as **separate files** (architectural changes with a plan only; an architectural change without one keeps its tasks in the spec):
 
 1. **Spec** → `docs/plans/YYYY-MM-DD-<slug>-spec.md` — product-level (what/why, design decisions, architecture, trade-offs, risk; new UI gets a **Visual Language** section mapping elements to design-system primitives/semantic classes/motion; each element also names the other pages that use it, today or in a roadmap row already ordered, and one with two or more becomes a shared component, built in this row or in a shared row ordered before it; the spec reads `docs/DESIGN-SYSTEM.md` first and maps each element to a component, variant or token listed there, or labels it «new: `<name>`» when this row or a row ordered before it builds it as a shared component). Self-contained: a cold reader could write the plan from it alone. First section is **"How to read this spec"** — all related docs (specs, plans, ROADMAP, CHANGELOG, sources, skills) with paths, in reading order. When an architecture brief exists, it is listed first. Ask the user whether the spec may run in auto mode (`/my:handoff auto`); on yes, add a **Delegation** section with the four keys that the `my:handoff` skill defines in its "Delegation" section.
 2. Self-review the spec (placeholders, consistency, scope, ambiguity, self-containment). Then run `my:spec-review <spec path>` and act on its report: fix every `editorial` finding — but first check whether the fix changes what a component owns, a contract, the chosen option, or the scope, and if it does treat it as `design`; never fix a `design` finding — ask the user in the "No silent reinterpretation" form below; list rejected findings with one line of reasoning each. Then ask the user to review the spec, the report and the open design questions before proceeding.
@@ -105,7 +164,7 @@ Three reviewers, complementary — route by what you want:
 
 **When to review:** once, at the end of the branch. This is enough because the spec and the plan were reviewed before any code, and every code commit runs the tests. It also needs a small branch, because a review of a very large diff misses things. If a branch grows past what one review can read carefully, split the plan into batches, and give each batch its own branch, review round and squash-merge. Run the reviews in parallel on the whole range (`BASE..HEAD`): one message with one `Agent` call per review, each subagent running one review skill. Two skills called directly load into the current turn and run one after another. Each subagent's prompt says: "Do not write commit IDs from this branch. Name the change in words, like 'the fix round' or 'the branch head'." Subagents do not read CLAUDE.md, and branch IDs in a review break the "cite only commits on `main`" rule. Before each commit, only reread `git diff --cached`. Reviewing every commit and then the whole branch again only adds waits.
 
-**The end-of-branch reviews are the only reviews, so each one gets what it needs.** Pass the explicit range `main..<branch>` to every review. Some review skills diff against `origin/main` by default, which can lag local `main`, so check each review's scope note and rerun a review that read the wrong range. Name the `/code-review` level every time (`high` unless the project says otherwise). Without a level it reuses the last one typed, which may be `low`. Each subagent's prompt names the spec, the plan, the plan's **Risk** section and the map from "Before any review", and says that a known limit in **Risk** is not a finding. When a plan runs through `superpowers:subagent-driven-development` or `superpowers:executing-plans`, skip the skill's own reviews: its pre-flight plan review, its per-task reviewer and fix loop, and its final `requesting-code-review` pass. The plan review already covered the plan, and these end-of-branch reviews replace the rest. Two checks replace the per-task reviewer. First, after each task, the controller reads `git diff` for the test files the task touched, and stops if an assertion was removed or weakened, because `npm test`-style runs still pass then. Second, `my:soundness-review` gets the plan, not the spec, as its document (`main..<branch> <plan>`), so it checks that each task did what the plan said. A Medium change has no plan, so it gets the spec. The plan links the spec, and the skill takes one document only. A project can set its own level or review list, but never a default range.
+**The end-of-branch reviews are the only reviews, so each one gets what it needs.** Pass the explicit range `main..<branch>` to every review. Some review skills diff against `origin/main` by default, which can lag local `main`, so check each review's scope note and rerun a review that read the wrong range. Name the `/code-review` level every time (`high` unless the project says otherwise). Without a level it reuses the last one typed, which may be `low`. Each subagent's prompt names the spec, the plan, the plan's **Risk** section and the map from "Before any review", and says that a known limit in **Risk** is not a finding. When a plan runs through `superpowers:subagent-driven-development` or `superpowers:executing-plans`, skip the skill's own reviews: its pre-flight plan review, its per-task reviewer and fix loop, and its final `requesting-code-review` pass. The plan review already covered the plan, and these end-of-branch reviews replace the rest. Two checks replace the per-task reviewer. First, after each task, the controller reads `git diff` for the test files the task touched, and stops if an assertion was removed or weakened, because `npm test`-style runs still pass then. Second, `my:soundness-review` gets the plan, not the spec, as its document (`main..<branch> <plan>`), so it checks that each task did what the plan said. An architectural change without a plan gives it the spec. The plan links the spec, and the skill takes one document only. A project can set its own level or review list, but never a default range.
 
 **One fix round per review.** A finding about input that today's code never produces goes into the plan's **Risk** section as a known limit, not into a fix. A fix gets one re-review, and that re-review is final. The one exception is a new Critical finding in the re-review: bring it to the user before the merge. A lesser finding goes into **Risk**. Without this limit, each fix invites a new edge case and the rounds do not end.
 
@@ -136,7 +195,7 @@ no tokens file yet skips this, and its canvas takes its direction from
 `frontend-design`. A project with no `docs/DESIGN-SYSTEM.md` skips this
 paragraph.
 
-A Small change (see the size table) that adds no screen and no state, such as
+A bounded change or a bug fix that adds no screen and no state, such as
 a label, a colour or a spacing value, needs no canvas.
 
 Prose may summarise a design that has been drawn. It may not stand in for one.
@@ -167,7 +226,7 @@ We use **GitLab** unless stated otherwise in the project. There are no "pull req
 
 ### One feature, four commits on `main`
 
-A Large feature leaves four commits on `main`: the spec with its review, the plan with its review, the squash-merged code, and the `done` mark. Small and Medium leave fewer, as the size table says. The fourteen steps, and when to fixup and fold, are in `~/.claude/rules/docs-layout.md`, section "One feature, four commits on `main`". That rule loads when a file in `docs/plans/` is read or written. Before any numbered step, read it if it has not loaded.
+An architectural change with a plan leaves four commits on `main`: the spec with its review, the plan with its review, the squash-merged code, and the `done` mark. The other routes leave fewer, as the route table says. The fourteen steps, and when to fixup and fold, are in `~/.claude/rules/docs-layout.md`, section "One feature, four commits on `main`". That rule loads when a file in `docs/plans/` is read or written. Before any numbered step, read it if it has not loaded.
 
 **Before step 1 in a project for the first time,** check that the project's `CLAUDE.md` has a `## Project facts` block that names the method, the commit scopes, the test command, the plans index and the remote. If it is missing or incomplete, run `/kit:setup my`.
 

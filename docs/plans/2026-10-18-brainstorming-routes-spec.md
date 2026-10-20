@@ -124,10 +124,11 @@ the missed files came after the code. The user chose the limit after reading tha
 
 **D6. Bugs take superpowers' debugging route.** A bug starts with
 `superpowers:systematic-debugging`, with no route line. After the root cause is found, the bug
-goes to brainstorming in any of three cases:
+goes to brainstorming in any of four cases:
 
 - the fix hits the risk line;
 - there are several reasonable fixes;
+- the fix touches more than two files, which is bounded's limit (D5);
 - three fixes have failed, which is the debugging skill's own "question the architecture" step.
 
 Brainstorming then picks the route as for any task, with the root cause as its input. Otherwise
@@ -137,10 +138,12 @@ the fix follows the bounded rules (D5), without the design gate.
 user approves the question and the probe first. Under `my`:
 
 - Its code lives in a worktree on a branch named `spike/<slug>`. The branch is never merged and is
-  kept as a record, like any other branch.
+  kept as a record, like any other branch. Once the spike file lands, the worktree is removed with
+  `git worktree remove`.
 - It writes `docs/plans/YYYY-MM-DD-<slug>-spike.md` with four parts: the question, what was tried
   (with the branch name), the answer, and the recommendation. It names the branch, never a commit
-  hash from it: the `pre-commit` hook refuses a doc that cites a commit not on `main`.
+  hash from it: docs cite only commits on `main`. The `pre-commit` hook catches such a hash only
+  when it is written in backticks.
 - The file's status is `answered, <date>`, a new value in the status table. `my:status` treats any
   status outside its open list as closed, so a spike file never shows as open work.
 - One `docs:` commit lands the file. No review runs.
@@ -150,6 +153,8 @@ user approves the question and the probe first. Under `my`:
 
 A spike may also run inside an architectural route, before the spec, to answer one design
 question. It writes the same file, and the spec lists that file under "How to read this spec".
+The spike gets a slug of its own, not the spec's: `my:handoff` refuses to start when a branch
+`*/<slug>` or a worktree `.claude/worktrees/<slug>` exists for the spec's slug.
 
 `my:architect`'s own spikes stay as they are: throwaway code in its work folder, never committed,
 with the result written into the brief. They answer a question for the brief, and the brief is
@@ -176,7 +181,8 @@ set` in the row's next edit after brainstorming picks it:
 - an architectural route: in the 📋 edit that links the spec (rule 4);
 - a bounded route: in the ✅ edit (rule 6), since no spec lands before it.
 
-A bug that brainstorming routed follows the same two cases for the route it got.
+A bug that brainstorming routed follows the same two cases for the route it got. A row routed to
+a spike gets `spike` in the edit that links the spike file, since no spec or merge follows.
 
 The skill's sentence for projects without `my` stays neutral, in new words: "In a project that
 routes its work (spike, bounded, architectural in the `my` method)". Today it reads "In a project
@@ -369,6 +375,7 @@ to the change" becomes "Pick the route", so the guard keeps checking a heading t
 | `plugins/my/skills/handoff/SKILL.md` | Three labels |
 | `plugins/my/skills/handoff/README.md` | Six labels |
 | `plugins/my/skills/design-system/SKILL.md` | One label |
+| `plugins/my/skills/clean-plans/SKILL.md` | The `spike` kind in its type list |
 | `plugins/my/README.md` | The routes section, the commits paragraph, the skill table, "Limits" |
 | `projects/real-estate-webapp/claude-local.md` | Three sentences |
 | `plugins/kit/tests/test_neutral_core.py` | One heading in `METHOD_HEADINGS` |

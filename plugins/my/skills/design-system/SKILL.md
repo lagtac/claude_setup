@@ -128,8 +128,9 @@ number into the block.
 
 ## `audit`
 
-A full review. Run it by hand at any time, and before the first UI spec of a
-Medium or Large change in a project with no inventory. In a new project,
+A full review. Run it by hand at any time, and before the first UI spec of an
+architectural change, with or without a plan, in a project with no
+inventory. In a new project,
 `my:architect` runs first.
 
 1. **Sources.** Find the tokens file and the components folder by searching

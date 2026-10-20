@@ -14,8 +14,8 @@ Older documents might say "the web team cannot edit `api/`". Read those as histo
 
 - `openapi/openapi.yaml` is the API contract. An API change that touches a
   path it lists updates it in the same branch.
-- An API change to stored data, permissions or a response shape is Large
-  under the global size rules.
+- An API change to stored data, permissions or a response shape hits the
+  risk line, so it is architectural with plan under the global route rules.
 
 ## Project facts
 
@@ -266,12 +266,12 @@ specifics are here.
 
 ## Workflow
 
-- **The end-of-branch checks** apply to every code branch, Small ones
-  included (the user decided this on 2026-09-29 and 2026-10-09): run the
-  full e2e suite first (`web/scripts/e2e-worktree.sh <path>`), then add
-  `/security-review` (`docs/ONBOARDING.md` §3.3) to the reviews that
-  `my.md` lists. A Small change records the e2e result in its squash
-  commit body.
+- **The end-of-branch checks** apply to every code branch, bounded ones
+  and bug fixes included (the user decided this on 2026-09-29 and
+  2026-10-09): run the full e2e suite first
+  (`web/scripts/e2e-worktree.sh <path>`), then add `/security-review`
+  (`docs/ONBOARDING.md` §3.3) to the reviews that `my.md` lists. A bounded
+  change or a bug fix records the e2e result in its squash commit body.
 - **The git hooks** live in `~/projects/claude-setup/global/git-hooks/`, so
   edit them there. An `includeIf` in `~/.gitconfig` sets zitamu's
   `core.hooksPath` to that folder.

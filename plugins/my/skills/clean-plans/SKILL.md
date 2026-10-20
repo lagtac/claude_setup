@@ -17,6 +17,7 @@ Organize plan/spec/review `.md` files in `docs/plans/`: give undated documents a
 | `review` | `{YYYY-MM-DD}-{feature}-review.md` (or `-spec-review`, `-plan-review` when it reviews one spec or plan) |
 | `architecture` | `{YYYY-MM-DD}-{feature}-architecture.md` |
 | `action-plan` | `{YYYY-MM-DD}-{feature}-action-plan.md` |
+| `spike` | `{YYYY-MM-DD}-{feature}-spike.md` |
 
 These match the global layout rules (`~/.claude/rules/docs-layout.md`). A plan has no `-plan` suffix. If the project's `CLAUDE.md` documents a different layout, follow the project and say so.
 
@@ -54,10 +55,10 @@ Each candidate is triaged into one of two buckets, with metadata extraction for 
 Every document about this project's work is renamed, including finished work: a plan whose work is done still records why the code is the way it is. Extract metadata:
 
 - **feature**: Main topic in 2-4 kebab-case words (e.g., `batch-export`, `dev-report-todos`). For a descriptive name, use its existing words.
-- **type**: One of `plan`, `spec`, `review`, `architecture`, `action-plan` — infer from:
+- **type**: One of `plan`, `spec`, `review`, `architecture`, `action-plan`, `spike` — infer from:
   - H1 heading (e.g., "# Plan: ..." -> `plan`)
   - Content keywords ("review", "evaluation", "specification", "design")
-  - Existing suffix (e.g., `*-spec.md` or `*-design.md` -> `spec`)
+  - Existing suffix (e.g., `*-spec.md` or `*-design.md` -> `spec`, `*-spike.md` -> `spike`)
   - Default to `plan` if ambiguous
 
 #### DELETE — only these three cases
@@ -80,7 +81,7 @@ Each subagent gets this self-contained prompt (substitute `<PATH>` for the candi
 Classify the plan/spec/review file at <PATH>. It lives in the docs/plans/ folder of the repository <PROJECT>.
 
 Read the file in full, then return ONE JSON object on a single line, no prose, no code fences:
-{"path": "<PATH>", "decision": "RENAME"|"DELETE", "feature": "<kebab-case-2-to-4-words>"|null, "type": "plan"|"spec"|"review"|"architecture"|"action-plan"|null, "reason": "<one short sentence>"}
+{"path": "<PATH>", "decision": "RENAME"|"DELETE", "feature": "<kebab-case-2-to-4-words>"|null, "type": "plan"|"spec"|"review"|"architecture"|"action-plan"|"spike"|null, "reason": "<one short sentence>"}
 
 Decision rules:
 
@@ -89,7 +90,8 @@ including finished work. For RENAME, populate feature and type:
 - feature: 2-4 kebab-case words for the main topic (e.g. "batch-export")
 - type: infer from the H1 heading ("# Plan: ..." -> plan), content keywords
   (review, evaluation, specification, design), existing suffix
-  (*-spec.md or *-design.md -> spec); default to "plan" if ambiguous.
+  (*-spec.md or *-design.md -> spec, *-spike.md -> spike); default to "plan"
+  if ambiguous.
 
 DELETE only when one of these holds:
 - Another project: the document is about a different repository or product than <PROJECT>.

@@ -176,6 +176,13 @@ class DocsTest(ScanTestCase):
                          [["draft", "2026-10-12", "docs/plans/a-spec.md"],
                           ["no-status", "-", "docs/plans/c.md"]])
 
+    def test_answered_spike_is_not_open(self):
+        commit(self.repo, "docs: spike", {
+            "docs/plans/2026-10-18-fonts-spike.md":
+                "# Fonts\n\n**Status:** answered, 2026-10-18. Yes, with a bundled font.\n",
+        })
+        self.assertNotIn("fonts-spike.md", self.scan())
+
 
 class CheckoutTest(ScanTestCase):
     def test_fixup_lists_target(self):

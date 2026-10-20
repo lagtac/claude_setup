@@ -35,7 +35,8 @@ The args are one of:
 - `auto <plan|code> <spec>` — **auto launch**: check the spec, create the
   run's state, and open the stage in auto mode. Go to "Start checks in auto
   mode", then "Launch". `auto plan` is for a spec without a Tasks section
-  (Large); `auto code` is for a spec with one (Medium).
+  (architectural with plan); `auto code` is for a spec with one
+  (architectural).
 - `auto resume <spec>` — **resume**: continue a stopped auto run whose window
   is gone. Go to "Resume".
 - `run auto <stage> <doc>` — **auto run**: this session is the stage, in auto
@@ -286,8 +287,8 @@ stop: it writes nothing (see "Start checks in auto mode").
 With `decide` in Delegation [Design-changing findings], the stage picks the
 fix it judges best, applies it, and writes one line into the task doc's
 **Risk** section: the finding, the choice and the reason. The task doc is
-the plan (Large) or the spec (Medium). While the worktree exists, that edit
-is made and committed in the worktree. With a failing test listed in
+the plan, or the spec when there is no plan. While the worktree exists, that
+edit is made and committed in the worktree. With a failing test listed in
 Delegation [Failing end-of-branch tests], the run goes on, and the `done`
 mark names the test.
 
@@ -863,7 +864,7 @@ file would count as a live run.
 Before step 1, when the task doc is a spec and its `approved` edit is not
 committed (`git status --porcelain -- <spec>` prints it), commit that edit
 in the main checkout with sub-steps a and b, then run sub-step c. This is
-the commit the plan stage makes for a Large change.
+the commit the plan stage makes for a change with a plan.
 
 - **a.** Find `<spec commit>`, the commit that added the spec, as in Plan
   stage, step 8. Run `git-fold-fixups.py check <spec commit>`. If it exits

@@ -15,7 +15,7 @@ CORE = REPO / "global" / "CLAUDE.md"
 KIT = REPO / "plugins" / "kit"
 
 METHOD_HEADINGS = [
-    "Learning workspaces", "Superpowers Integration", "Size the process to the change",
+    "Learning workspaces", "Superpowers Integration", "Pick the route",
     "Spec → Plan two-artifact flow", "No silent reinterpretation of approved decisions",
     "Code Review Routing", "UI Design", "Git Workflow", "One feature, four commits on `main`",
     "Splitting scope before branching", "When to use worktrees", "When NOT to use worktrees",
