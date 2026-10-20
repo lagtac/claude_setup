@@ -220,6 +220,44 @@ changes.
    check (D7), so it loses nothing.
 5. **Known limits.** A target that contains `)` is cut at the first `)`. A file never committed
    passes as present. `#anchor` targets and `<a href>` tags are not checked (Out of scope).
+   From the end-of-branch reviews; none of the 22 roadmap and changelog files under
+   `~/projects` holds any of these today:
+   - A line that starts with three backticks used as inline code (```` ```x``` text ````) opens
+     a fence, so the links after it, up to the next fence, are not checked.
+   - A link whose text holds brackets (`[see [1]](x)`, a linked badge `[![b](i.png)](x)`) is
+     not matched, so its target is not checked.
+   - A link inside an HTML comment, or written with escaped brackets (`\[x\](y)`), is checked
+     as a link and may be listed.
+   - A root-relative target (`/docs/a.md`) shows as `climbs`, though the Git host resolves it
+     from the repo root.
+   - A link through a symlinked folder or into a submodule makes `git check-ignore` fail, so
+     the file exits `2` and the skill falls back to its hand check.
+   - `git check-ignore` reads and writes one path per line without `-z`, so a target that
+     starts with `"` or holds a tab, a newline or a backslash can make the file exit `2`.
+   - git's output is decoded in the locale's encoding, not always UTF-8; the locale here is
+     UTF-8.
+   - Against D6: any failure of `git rev-parse --verify -q HEAD^{commit}` counts as "no commit
+     yet", so a repo with a broken HEAD, whose root git still finds, marks every line `new`.
+     `-q` hides the message that would tell the two apart.
+
+   From the final re-review, kept as known limits by the one-fix-round rule. The first two are
+   the ones worth a later row:
+   - `git diff -U0` obeys `diff.interHunkContext` and textconv drivers. With either set, unchanged
+     lines between two edited lines count as `new`. The fix is `--inter-hunk-context=0
+     --no-textconv`. The user's git config sets neither today.
+   - In a paired run, the exit-`2` fallback in `roadmap-management` rule 10 hand-checks only "the
+     row you touched", and `changelog-management` skips its own run, so a changelog that exits
+     `2` leaves the new entry's links unchecked. The fix is one wording change: hand-check the
+     changed lines of both files.
+   - `git ls-files` and `git diff` read the path as a glob, so a file name with `[`, `*` or `?`
+     can match another file and get the wrong `new` or `old`.
+   - An escaped backtick (`` \` ``) opens a code span, so links between two of them are not
+     checked. A `` `` `` opener with no closer can match as a shorter span and end too early.
+   - A target that holds `(` (`gone(1).md`) is not matched, so it is not checked.
+   - A reference definition whose target sits on the next line is not matched.
+   - `GIT_DIR`, `GIT_WORK_TREE` and `GIT_INDEX_FILE` from the caller reach git, so a run from a
+     git hook can read another repository.
+   - A file that starts with a byte-order mark hides a fence or a reference definition on line 1.
 6. **Row 69 comes after.** When `roadmap-management` and
    `changelog-management` move to `kit`, the script, its test and its `README.md` sentence move
    too, and D8's path changes. Row 69's text names them (Out of scope).
@@ -227,6 +265,24 @@ changes.
    `markdownlint-cli2` error and `changelog-management/SKILL.md` has 3, with the global config
    `~/.config/markdownlint-cli2/.markdownlint-cli2.jsonc` (the repo has none). No changed file may
    gain one; rewrapping whole files is out of scope.
+8. **Choices made in the code stage.** The behaviour follows D4 and D5; these are the places
+   where the code differs from the Task 2 text, recorded here so a review does not redo them:
+   - `repo_root(folder)` returns `None` outside git, not the folder, so `check` can tell a
+     file at the repo root from a file outside git. `new_lines` takes `(path, root)`. Two
+     helpers were added: `resolve` (the D4 path) and `ignored_paths` (the one
+     `git check-ignore --stdin` call).
+   - A fence line may have any indentation, because fences inside list items are indented.
+     Indented lines that are not fences are still searched (D2). Known limit: a line that
+     starts with three backticks deep in a list blanks text up to the next fence.
+   - git runs with `LC_ALL=C`. "Not a repo" is found by git's English message, and a Greek
+     message locale would otherwise make every file outside git exit `2`.
+   - The 13 tests that expect no problem check exit `0` and empty stderr too: with stdout
+     alone they passed while the script did not exist.
+   - `roadmap-management` rule 10 also says how a paired edit runs the check (both files, the
+     changelog's `new` problems fixed by `changelog-management` rule 8). D7 gives that skill
+     the paired run but no text for it.
+   - Task 5 changed no file. Its results are in the body of an empty commit on the branch, so
+     the squash message carries them.
 
 ## Testing strategy
 

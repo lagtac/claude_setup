@@ -123,6 +123,7 @@ Same link discipline as `roadmap-management` rule 8 — a CHANGELOG is read on t
 
 - **CHANGELOG-only edits**: one commit. Conventional Commits format: `docs(changelog): note <change>`.
 - **Paired with roadmap promotion (🚧 → ✅)**: one commit covers both files. Roadmap-management rule 6 owns the message — typically `docs: mark <feature> shipped on roadmap and changelog`. Don't split the edits across two commits; a reader bisecting `main` should never see a half-paired state.
+- Run rule 10's link check first.
 
 ### 10. Cross-check the entry you just wrote
 
@@ -131,8 +132,9 @@ Edit-scoped only — no full-file audits:
 - The new entry sits in the right subsection (deployment-contract changes at the top of `[Unreleased]`, not under `### Added`).
 - The change actually landed on `main` (you should know this from context — don't speculate; if uncertain, ask the user before committing).
 - Re-run rule 2: would this have fit better in `docs/dev-reports/`?
+- Before the commit in rule 9, run `link-check.py CHANGELOG.md`. Fix every `new` problem by rule 8: `html` → the `.md` twin's path; `climbs` → the absolute web URL on the Git host; `dead` → the moved file's path, or, when the document was deleted, unlink it and keep its name as plain text; ask the user when you cannot tell which. List every `old` problem to the user, one line each, and leave it. If `link-check.py` is not on `PATH`, or it exits `2`, show its stderr line (or say it is missing) and check by hand that the links in the entry you wrote resolve. Skip this run when the entry is the changelog half of a paired edit: `roadmap-management` rule 10 runs the check once on both files.
 
-Skip broad scans (orphan-entry sweeps, link-resolution greps across all entries). Run those only when the user explicitly asks for a CHANGELOG audit.
+Skip broad scans (orphan-entry sweeps). Run those only when the user explicitly asks for a CHANGELOG audit. The link check reads the whole file, but fixing old links is audit work.
 
 ### 11. Entry content discipline — summarise the change, link the detail
 

@@ -201,6 +201,10 @@ and branches that may hold unmerged work. It reads and never writes; its
 tests run with the same command. `ds-count.py`, in the same folder, counts the
 search patterns in the `ds-patterns` block of `docs/DESIGN-SYSTEM.md`, and with
 `--write` stores the counts there; its tests run with the same command.
+`link-check.py`, in the same folder, lists bad links in `ROADMAP.md` and
+`CHANGELOG.md` and marks the ones on lines the current edit changed; both
+skills run it after each edit, before the commit; its tests run with the same
+command.
 
 ## Commands
 

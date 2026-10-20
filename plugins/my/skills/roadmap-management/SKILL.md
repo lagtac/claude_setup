@@ -158,6 +158,7 @@ CHANGELOG-side linking lives in `changelog-management`. The two files are tied t
 - Roadmap-only edits (rules 3–5, 7): one commit. Message: `docs: <verb> ROADMAP for <feature>`.
 - Roadmap + CHANGELOG paired edits (rule 6): **one commit**, never two. Message: `docs: mark <feature> shipped on roadmap and changelog`. Splitting them breaks atomicity — a reader bisecting `main` should never see a ✅ row whose CHANGELOG entry hasn't landed yet, or vice versa.
 - CHANGELOG-only edits: see `changelog-management` rule 9.
+- Run rule 10's link check first.
 
 Use Conventional Commits in all cases (project rule).
 
@@ -166,11 +167,11 @@ Use Conventional Commits in all cases (project rule).
 Edit-scoped only — no full-file audits:
 
 - The status reflects reality (the integration has actually landed for ✅; plan file actually exists for 🚧; spec file actually exists for 📋).
-- The Spec / Plan column links resolve.
+- Before the commit in rule 9, run `link-check.py ROADMAP.md`. Fix every `new` problem by rule 8: `html` → the `.md` twin's path; `climbs` → the absolute web URL on the Git host; `dead` → the moved file's path, or ask the user when no moved file exists. List every `old` problem to the user, one line each, and leave it. If `link-check.py` is not on `PATH`, or it exits `2`, show its stderr line (or say it is missing) and check by hand that the links in the row you touched resolve. In a paired edit (rule 6), run it once with both files, `link-check.py ROADMAP.md CHANGELOG.md`, and fix the changelog's `new` problems by `changelog-management` rule 8.
 - The row body is still index-level and in rule 11's order (kind, place and route; what the user sees; the fix; verdict; pointer) — you didn't append numbers, SHAs, or play-by-play that a linked doc already owns (rule 11).
 - The markdown table is still well-formed (no broken pipes, no missing cells).
 
-Skip broad audits (stale-💭 sweeps, orphan-row scans, full-file link greps). Run those only when the user explicitly asks for a roadmap audit.
+Skip broad audits (stale-💭 sweeps, orphan-row scans). Run those only when the user explicitly asks for a roadmap audit. The link check reads the whole file, but fixing old links is audit work.
 
 ### 11. Row-body content discipline — index, not archive
 
