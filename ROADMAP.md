@@ -40,7 +40,7 @@ files.
    row. 45 is in `my` and 46 in `kit`, but both edit `README.md`, so 46 goes
    after 45. 46 builds on 41's fix. 62 edits only
    `global/output-styles/plain.md`.
-3. **68 "Launch method switch", then 69 "Shared skills move to `kit`".**
+3. **68 "Methods as plugins", then 69 "Shared skills move to `kit`".**
    68 comes after 67, so its spec uses the new routes, and after 33, 37 and
    56, because it changes the launch lines in `my:handoff` that they fix. It
    replaces `kit:setup`'s two switches and `method-guard.py`, so 60 in step
@@ -240,14 +240,14 @@ Make the harness reusable in new projects without forking copies. Spec:
   It asks for the ports already in use, and fixes a `CLAUDE.local.md` line
   that says the project has no such section (zitamu, 2026-10-15). Split out
   of row 9's first spec draft. Blocked by row 29.
-- 💭 68 **Launch method switch** — a launcher named `claude` picks each
-  session's method, from `CLAUDE_METHOD` or the project's one method line,
-  and starts the real `claude` with that method's rules and settings. It
-  replaces the import line, the plugin keys and `method-guard.py`, so a
-  project can switch method for one session. Architectural with plan; brief
-  approved,
-  brainstorming next. Row 48 was folded in on 2026-10-18.
-  [brief](docs/plans/2026-10-18-launch-method-switch-architecture.md)
+- 💭 68 **Methods as plugins** — each method becomes a plugin whose forced
+  output style holds its rules and whose `dependencies` hold its plugins. A
+  directory's settings name its method, and `claude-method <m>` switches one
+  session at launch. It replaces the import line, the plugin keys and
+  `method-guard.py`. Architectural with plan; brief approved, brainstorming
+  next. Reframed on 2026-10-20 from a launcher named `claude`; row 48 was
+  folded in on 2026-10-18.
+  [brief](docs/plans/2026-10-20-method-bundles-architecture.md)
 - 💭 69 **Shared skills move to `kit`** — `design-system`,
   `roadmap-management` and `changelog-management` leave `my` for `kit`, so
   other methods can use them, and every `my:` reference is renamed.

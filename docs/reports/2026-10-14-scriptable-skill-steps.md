@@ -202,7 +202,7 @@ and steps 1 and 3 of the `my:summarizer` agent.
 | S6 | Row 44 "`git-fold-fixups.py list <path>`". |
 | S7 | Row 46 "`git-squasher` plan and apply scripts". |
 | S8 | Row 47 "`clean-plans` moves by script". |
-| S9 | Row 48 "`setup` facts by script", folded into row 68 "Launch method switch" on 2026-10-18. |
+| S9 | Row 48 "`setup` facts by script", folded into row 68 "Methods as plugins" (then "Launch method switch") on 2026-10-18. |
 | S10 | Row 49 "`dev-reports` dates and TODOs by script". |
 | S11 | Row 50 "`clean-gone-branches` as a script". |
 | S12 | Row 51 "Roadmap number and link check". |

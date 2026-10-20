@@ -1,6 +1,6 @@
 # Architecture brief: launch method switch
 
-**Status:** approved, 2026-10-18. Candidate D (a launcher named `claude`), chosen by the user; brainstorming writes the spec next.
+**Status:** superseded, 2026-10-20. Its Decision (candidate D, a launcher named `claude`) is replaced by candidate A in `docs/plans/2026-10-20-method-bundles-architecture.md`; its forces and flag tests 1–16 still hold as evidence.
 
 ## How to read this brief
 
