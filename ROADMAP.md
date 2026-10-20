@@ -106,16 +106,17 @@ Follow-ups spawned by the planner retirement. Spec:
 
 ## Design workflow
 
-- 💭 8 **`my:spec-review` checks Delegation content** — when a spec has a
-  Delegation section, check that its values fit the design: the listed
-  dependencies match what the design adds, the check commands and test names
-  exist, and `decide` is flagged on a spec that changes stored data or a
-  contract. Not the format: the auto start check owns that. Also flags a
-  manual step before the merge, which an auto run can never take (zitamu,
+- 💭 8 **`my:spec-review` checks Delegation content** — feature in
+  `my:spec-review`, route not set. A spec's Delegation section can hold values
+  that do not fit its design, and the review does not notice. Goal: when a
+  spec has a Delegation section, check that its values fit the design: the
+  listed dependencies match what the design adds, the check commands and test
+  names exist, and `decide` is flagged on a spec that changes stored data or a
+  contract. Not the format: the auto start check owns that. Also flag a manual
+  step before the merge, which an auto run can never take (zitamu,
   2026-10-15). The flag informs and does not push toward `stop`: row 74a's
-  user chose `decide` on a contract change on purpose
-  ([run audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md) H2).
-  Route not set.
+  user chose `decide` on a contract change on purpose ([run
+  audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md) H2).
 - ✅ 9 **Start auto runs from roadmap rows** — one command takes a list of
   rows, starts the ones with an approved spec as parallel auto runs up to
   **Max runs**, and starts a waiting row each time a run finishes. Shipped in
@@ -123,39 +124,41 @@ Follow-ups spawned by the planner retirement. Spec:
   [brief](docs/plans/2026-10-13-roadmap-auto-runs-architecture.md),
   [spec](docs/plans/2026-10-13-roadmap-auto-runs-spec.md),
   [plan](docs/plans/2026-10-13-roadmap-auto-runs.md)
-- 💭 40 **Every spec has a Files section** — a spec rule in
-  `global/methods/my.md`; a spec's Tasks section counts when it names
-  the files. `my:spec-review` flags a missing one, and `my:status` reads Tasks
-  as a file list. Lets row 9's queue tell which rows may run side by side.
-  Split out of row 9's first spec draft.
-- 💭 53 **`my:draft-spec`** — a second way to an approved spec, only for
-  a row that cites a source with concrete findings (a report, a bug, a
-  review); other rows go through brainstorming. One intake call first (goal,
-  scope, route, limits). Then an agent drafts, with options for each key
-  decision, hardens the draft through the draft-time checks of the
-  [spec hardening audit](docs/reports/2026-10-14-spec-hardening-audit.md)
-  until a round finds nothing new, and brings the user only the decisions
-  that row 55 names. First framed as "Draft specs in forks"; reframed on
-  2026-10-14 after the fork drafts of rows 45 and 46 and the audit, and
-  gated on a source the same day. Open: how the hardening loop stops, since
-  `global/methods/my.md` allows one fix round per review; and drafting
-  several specs from one request, which the reframe dropped and no row
-  covers. Tried without this design on zitamu on 2026-10-15 (rows 76, 77
-  and 74): forks ran `my:architect` and wrote three specs with no intake
-  call, decisions came as defaults, and 35 questions came in one batch. The
-  user named it a skipped brainstorming. 76 and 77 are test-driven through
-  plan and code in worktrees, unmerged, as evidence for this row.
-  Tried again on zitamu row 146 on 2026-10-16, by hand, with brainstorming
-  run and a "Decisions made without you" section: 2 questions and 4 marked
-  decisions in place of 35 questions, and the review's design findings
-  became decisions. Three lessons. The agent measured a local build and
-  decided not to check production first, so it missed that the live edge
-  sent scripts uncompressed; a row that depends on live state needs a read
-  of it (the live site in Playwright, the server config) before deciding.
-  A 10-line server change got a 340-line spec, so the intake must first ask
-  whether the row is bounded and needs no spec. The agent acted on an
-  unclear two-word reply in the Q&A round; an unclear reply gets a question
-  back.
+- 💭 40 **Every spec has a Files section** — rule in `global/methods/my.md`,
+  with checks in `my:spec-review` and `my:status`; route not set. A spec need
+  not list the files it changes, so row 9's queue cannot tell which rows may
+  run side by side. Goal: a spec rule asks for a Files section, and a spec's
+  Tasks section counts when it names the files. `my:spec-review` flags a
+  missing one, and `my:status` reads Tasks as a file list. Split out of row
+  9's first spec draft.
+- 💭 53 **`my:draft-spec`** — feature, a new skill in `my`; route not set. A
+  second way to an approved spec, only for a row that cites a source with
+  concrete findings (a report, a bug, a review); other rows go through
+  brainstorming. The user answers only the decisions that row 55 names. Goal:
+  one intake call first (goal, scope, route, limits). Then an agent drafts,
+  with options for each key decision, and hardens the draft through the
+  draft-time checks of the [spec hardening
+  audit](docs/reports/2026-10-14-spec-hardening-audit.md) until a round finds
+  nothing new. First framed as "Draft specs in forks"; reframed on 2026-10-14
+  after the fork drafts of rows 45 and 46 and the audit, and gated on a source
+  the same day. Open: how the hardening loop stops, since
+  `global/methods/my.md` allows one fix round per review; and drafting several
+  specs from one request, which the reframe dropped and no row covers. Tried
+  without this design on zitamu on 2026-10-15 (rows 76, 77 and 74): forks ran
+  `my:architect` and wrote three specs with no intake call, decisions came as
+  defaults, and 35 questions came in one batch. The user named it a skipped
+  brainstorming. 76 and 77 are test-driven through plan and code in worktrees,
+  unmerged, as evidence for this row. Tried again on zitamu row 146 on
+  2026-10-16, by hand, with brainstorming run and a "Decisions made without
+  you" section: 2 questions and 4 marked decisions in place of 35 questions,
+  and the review's design findings became decisions. Three lessons. The agent
+  measured a local build and decided not to check production first, so it
+  missed that the live edge sent scripts uncompressed; a row that depends on
+  live state needs a read of it (the live site in Playwright, the server
+  config) before deciding. A 10-line server change got a 340-line spec, so the
+  intake must first ask whether the row is bounded and needs no spec. The
+  agent acted on an unclear two-word reply in the Q&A round; an unclear reply
+  gets a question back.
 - 💭 54 **Bugs and approved bounded rows in forks while the user is away** —
   bug rows, and bounded rows whose chat design the user approved before
   leaving. They have no spec, so `my:handoff auto` cannot start them. Each
@@ -168,14 +171,16 @@ Follow-ups spawned by the planner retirement. Spec:
   saw (Greek copy, new tokens, scope dropped from a finding, review findings
   declined). Some of these must go back to the developer, the user, but
   which ones is not settled yet. Pairs with 53.
-- 💭 55 **Decisions that go back to the user** — one rule in
-  `global/methods/my.md` for forks, auto runs and review fixes: a choice
-  goes back when it changes what users see, a shared definition or contract,
-  the scope of the row or finding, or the verdict on a review finding. It
-  may narrow which `design` findings go to the user. Rows 53 and 54 use it.
-  Sources: the
-  [spec hardening audit](docs/reports/2026-10-14-spec-hardening-audit.md)
-  and row 54's zitamu run, and the [run audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md) H1 and H2.
+- 💭 55 **Decisions that go back to the user** — rule in
+  `global/methods/my.md`, route not set. Forks, auto runs and review fixes
+  make some choices without the user that the user should make. Goal: one rule
+  for all three: a choice goes back when it changes what users see, a shared
+  definition or contract, the scope of the row or finding, or the verdict on a
+  review finding. It may narrow which `design` findings go to the user. Rows
+  53 and 54 use it. Sources: the [spec hardening
+  audit](docs/reports/2026-10-14-spec-hardening-audit.md) and row 54's zitamu
+  run, and the [run
+  audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md) H1 and H2.
 - ✅ 10 **`my:architect`** — forces-first architecture brief before brainstorming.
   [spec](docs/plans/2026-09-17-architect-skill-spec.md),
   [plan](docs/plans/2026-09-17-architect-skill.md)
@@ -231,34 +236,43 @@ Follow-ups spawned by the planner retirement. Spec:
 Make the harness reusable in new projects without forking copies. Spec:
 [`docs/plans/2026-06-16-harness-generalization-audit.md`](docs/plans/2026-06-16-harness-generalization-audit.md).
 
-- 💭 17 **Generalize the gates** — move the gate logic (`e2e-gate`, `review-gate`,
-  `require-*`) into the plugin behind a per-repo `.claude/harness.json`, with a
-  `/harness-init` bootstrap. Waits for a second project to adopt the gates;
-  today only `diagoradisa-annotator` uses them. Design and reasons in the spec.
-- 💭 39 **`kit:setup` offers a Parallel runs section** — `/kit:setup my` asks
-  whether to allow parallel auto runs, and proposes the section's four lines
-  from the machine's memory and the repo's compose, `.env` and e2e files.
-  It asks for the ports already in use, and fixes a `CLAUDE.local.md` line
-  that says the project has no such section (zitamu, 2026-10-15). Split out
-  of row 9's first spec draft. Blocked by row 29.
-- 💭 68 **Methods as plugins** — each method becomes a plugin whose forced
-  output style holds its rules and whose `dependencies` hold its plugins. A
-  directory's settings name its method, and `claude-method <m>` switches one
-  session at launch. It replaces the import line, the plugin keys and
-  `method-guard.py`. Architectural with plan; brief approved, brainstorming
+- 💭 17 **Generalize the gates** — feature in the gate hooks (`e2e-gate`,
+  `review-gate`, `require-*`), route not set. A new project that wants the
+  gates has to copy them. Goal: move the gate logic into the plugin behind a
+  per-repo `.claude/harness.json`, with a `/harness-init` bootstrap. Waits for
+  a second project to adopt the gates; today only `diagoradisa-annotator` uses
+  them. Design and reasons in the spec.
+- 💭 39 **`kit:setup` offers a Parallel runs section** — feature in
+  `kit:setup`, route not set. The user writes a project's Parallel runs
+  section by hand, and a `CLAUDE.local.md` line can wrongly say the project
+  has none (zitamu, 2026-10-15). Goal: `/kit:setup my` asks whether to allow
+  parallel auto runs, proposes the section's four lines from the machine's
+  memory and the repo's compose, `.env` and e2e files, asks for the ports
+  already in use, and fixes that line. Split out of row 9's first spec draft.
+  Blocked by row 29.
+- 💭 68 **Methods as plugins** — feature across the methods, `kit` and the
+  marketplace; architectural with plan. Today a directory picks its method
+  through an import line, plugin keys and `method-guard.py`. Goal: each method
+  becomes a plugin whose forced output style holds its rules and whose
+  `dependencies` hold its plugins. A directory's settings name its method, and
+  `claude-method <m>` switches one session at launch. It replaces the import
+  line, the plugin keys and `method-guard.py`. Brief approved, brainstorming
   next. Reframed on 2026-10-20 from a launcher named `claude`; row 48 was
   folded in on 2026-10-18.
   [brief](docs/plans/2026-10-20-method-bundles-architecture.md)
-- 💭 69 **Shared skills move to `kit`** — `roadmap-management` and
-  `changelog-management` leave `my` for `kit`, so other methods can use them,
-  and every `my:` reference is renamed. Row 70 takes the `design-system`
-  rules out of the method, so this row decides whether that skill moves to
-  `kit` or is deleted. Architectural with plan.
-- 📋 71 **Project rules outrank the core** — the core's Precedence paragraph
-  lists the order: protected rules, the user, the project files, the method,
-  the core, then skills. Two protected rules: ask before adding dependencies,
-  and before actions that are hard to undo or leave the machine. Route not
-  set; spec drafted, not placed in the order yet.
+- 💭 69 **Shared skills move to `kit`** — feature, moving skills from `my` to
+  `kit`; architectural with plan. `roadmap-management` and
+  `changelog-management` live in `my`, so other methods cannot use them. Goal:
+  both move to `kit`, and every `my:` reference is renamed. Row 70 takes the
+  `design-system` rules out of the method, so this row decides whether that
+  skill moves to `kit` or is deleted.
+- 📋 71 **Project rules outrank the core** — rule in the core's Precedence
+  paragraph (`global/CLAUDE.md`), route not set. Today the core and the method
+  call themselves the highest authority, so a project's own rules can lose to
+  them. Goal: the paragraph lists the order: protected rules, the user, the
+  project files, the method, the core, then skills. Two protected rules: ask
+  before adding dependencies, and before actions that are hard to undo or
+  leave the machine. Spec drafted, not placed in the order yet.
   [spec](docs/plans/2026-10-18-project-precedence-spec.md)
 - ✅ 16 **Swappable methods** — split `global/CLAUDE.md` into a neutral core
   and per-method files, and split `my` into `my` (the method) and `kit`
@@ -279,14 +293,16 @@ Findings of
 Rows are unordered unless a row says what it waits for. S2, S3, M1 and M3 got
 no row; the report says why.
 
-- 💭 20 **Specs and plans name what UI tests check** — `plan-format.md` asks
-  a plan that changes UI to list the widths at its breakpoint edges, every
-  language the project ships, and its longest real text, and to measure them
-  in e2e tests. In `global/methods/my.md`, "End-to-end coverage" asks the
-  test to check what the user gets (the video plays), not only the markup,
-  and the spec rules ask a spec that adds UI to decide the off-path events
-  of row 23, next to Visual Language. Route not set. Report M4. Rows 21 and 22 were
-  folded in on 2026-10-16.
+- 💭 20 **Specs and plans name what UI tests check** — rule in `plan-format.md`
+  and `global/methods/my.md`, route not set. A plan that changes UI need not
+  say which widths, languages and texts its tests check, so a test can check
+  the markup and miss what the user gets. Goal: `plan-format.md` asks such a
+  plan to list the widths at its breakpoint edges, every language the project
+  ships, and its longest real text, and to measure them in e2e tests. In
+  `global/methods/my.md`, "End-to-end coverage" asks the test to check what
+  the user gets (the video plays), not only the markup, and the spec rules ask
+  a spec that adds UI to decide the off-path events of row 23, next to Visual
+  Language. Report M4. Rows 21 and 22 were folded in on 2026-10-16.
 - ✅ 23 **Spec review checks off-path events** — `my:spec-review` asks a spec
   that adds UI to decide Back and Forward, a deleted or restored record, an
   element that hides, a language change, and empty and error text. Small.
@@ -302,15 +318,17 @@ no row; the report says why.
   [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md)
 - ✅ 28 **`check` asks the fold** — fix: `git-fold-fixups.py check` runs the
   fold's own rules. Small. [spec](docs/plans/2026-10-10-git-fold-fixups-spec.md)
-- 💭 29 **Measure the auto runs** — after a few weeks of `my:handoff auto` on
-  zitamu, rerun the spec-to-`done` timing and the docs-only commits per branch
-  (zitamu's commit size audit) against the 2026-10-12 numbers. Also count how
-  often two or more approved specs waited at once: that count decides whether
-  the row queue and parallel runs stay. Waits for those weeks. Report M2;
+- 💭 29 **Measure the auto runs** — measurement of `my:handoff auto`, route not
+  set. Nobody knows yet whether auto runs made work faster, or whether the row
+  queue and parallel runs are worth keeping. Goal: after a few weeks of
+  `my:handoff auto` on zitamu, rerun the spec-to-`done` timing and the
+  docs-only commits per branch (zitamu's commit size audit) against the
+  2026-10-12 numbers. Also count how often two or more approved specs waited
+  at once: that count decides whether the row queue and parallel runs stay.
+  Runs row 72's script; the [speed
+  audit](docs/reports/2026-10-18-workflow-speed-audit.md) holds the numbers to
+  compare with. Waits for those weeks. Report M2;
   [critique](docs/reports/2026-10-15-parallel-runs-section-critique.md).
-  Runs row 72's script; the
-  [speed audit](docs/reports/2026-10-18-workflow-speed-audit.md) holds
-  the numbers to compare with.
 
 ## `my:handoff` instructions
 
@@ -318,13 +336,14 @@ Findings of
 [`docs/reports/2026-10-12-handoff-instructions-audit.md`](docs/reports/2026-10-12-handoff-instructions-audit.md).
 Their order is in "Order of work" above.
 
-- 💭 30 **Split `my:handoff` by mode** — move auto-only and parallel-only text
-  out of `SKILL.md` into files read through a pointer step, so a stage loads
-  only its own branch. The four versions of review step 8, the merge step,
-  become one list per mode; smaller patches sit under the step they change.
-  Rehearse a supervised and an auto run headless before and after. Waits for
-  row 29 "Measure the auto runs". Report P1, P2. Row 31 was folded in on
-  2026-10-16.
+- 💭 30 **Split `my:handoff` by mode** — refactor of `my:handoff` `SKILL.md`,
+  route not set. Every stage loads the auto-only and parallel-only text too,
+  and review step 8, the merge step, has four versions. Goal: move that text
+  into files read through a pointer step, so a stage loads only its own
+  branch. The four versions of step 8 become one list per mode; smaller
+  patches sit under the step they change. Rehearse a supervised and an auto
+  run headless before and after. Waits for row 29 "Measure the auto runs".
+  Report P1, P2. Row 31 was folded in on 2026-10-16.
 - ✅ 32 **One script for the locked commit** — a `locked-commit.py` that reads
   the message from a file replaces the five copies of the locked command and
   the commit's heredoc rule. Report P3. Shipped in `39000ec`; known limits are
@@ -337,15 +356,18 @@ Their order is in "Order of work" above.
   and kit's placeholder test also checks `my`.
   [Report](docs/reports/2026-10-14-scriptable-skill-steps.md) B1 (the bug),
   S1 (the fix).
-- 💭 34 **Merges read a message file** — `handoff-state.py merge` and the
-  parallel squash-merge take `-F <file>`, so the heredoc rule leaves
-  `my:handoff`. Changes the `handoff-state.py` interface. Out of scope of the
-  [locked commit spec](docs/plans/2026-10-12-locked-commit-spec.md).
-- 💭 35 **Trim `my:handoff` text** — the lock exit-code table points to
-  `handoff-lock.py --help`, and design explanations stay in the specs.
-  *Locked commit*, *shared-doc check* and *waiting fixups* replace "as in
-  Plan stage, step N". Route not set. Report P4, P5. Row 36 was folded in on
-  2026-10-16.
+- 💭 34 **Merges read a message file** — feature in `handoff-state.py` and
+  `my:handoff`, route not set. The merges take their commit message from a
+  heredoc, so `my:handoff` must keep the heredoc rule. Goal: `handoff-state.py
+  merge` and the parallel squash-merge take `-F <file>`, so the heredoc rule
+  leaves `my:handoff`. Changes the `handoff-state.py` interface. Out of scope
+  of the [locked commit spec](docs/plans/2026-10-12-locked-commit-spec.md).
+- 💭 35 **Trim `my:handoff` text** — rule text in `my:handoff`, route not set.
+  The skill repeats a table and design explanations, and points with "as in
+  Plan stage, step N". Goal: the lock exit-code table points to
+  `handoff-lock.py --help`, and design explanations stay in the specs. *Locked
+  commit*, *shared-doc check* and *waiting fixups* replace "as in Plan stage,
+  step N". Report P4, P5. Row 36 was folded in on 2026-10-16.
 - 💭 37 **Handoff opens no window from outside tmux** — bug in `my:handoff`.
   When Claude runs outside tmux, a handoff prints a command to paste
   by hand, even when tmux is running. Fix: the Launch step reads only
@@ -358,16 +380,19 @@ Their order is in "Order of work" above.
   a slot of its own.
   [Critique](docs/reports/2026-10-15-parallel-runs-section-critique.md) P1,
   which names this bug as one case; shipping this row does not close P1.
-- 💭 57 **An auto run that stops before the merge** — a Delegation key, or
-  an `auto` flag, that stops at stop-table row 14 "Ready to squash-merge".
-  A test drive can then run the auto path, `decide` included, without a
-  merge. Found on zitamu on 2026-10-15; not from the audit report.
-- 💭 66 **Window row lookup by script** — a tested helper finds the roadmap
-  row for a doc, or the `auto rows` queue passes its stored row through, in
-  place of the prose lookup of row 65. Clears its known limits: a batch
-  plan whose slug differs from its spec's gets no prefix, a missing
-  `ROADMAP.md` is not named as "no row", Launch step 1 builds `<window>`
-  before step 3 finds the repo root, and `resume` windows get a prefix.
+- 💭 57 **An auto run that stops before the merge** — feature in `my:handoff`,
+  route not set. A test drive of the auto path, `decide` included, always ends
+  in a merge. Goal: a Delegation key, or an `auto` flag, that stops at
+  stop-table row 14 "Ready to squash-merge". Found on zitamu on 2026-10-15;
+  not from the audit report.
+- 💭 66 **Window row lookup by script** — feature in `my:handoff`, route not
+  set. A handoff window can get no row prefix, or a wrong one, because the row
+  is found by the prose lookup of row 65. Its known limits: a batch plan whose
+  slug differs from its spec's gets no prefix, a missing `ROADMAP.md` is not
+  named as "no row", Launch step 1 builds `<window>` before step 3 finds the
+  repo root, and `resume` windows get a prefix. Goal: a tested helper finds
+  the roadmap row for a doc, or the `auto rows` queue passes its stored row
+  through.
 - ✅ 38 **Rubric fixes in `my:handoff`** — `PushNotification` is loaded before
   use, findings are classified in writing before a fix, and the code stage's
   auto sub-steps have their own letters. Small. Report R1 to R4.
@@ -384,19 +409,24 @@ steps of the `my` and `kit` skills that fixed rules decide, and that a script
 in `bin/` can run instead of the model. Their order is in "Order of work"
 above.
 
-- 💭 42 **Parallel runs parser** — a `handoff-state.py` subcommand prints
-  **Max runs**, `<n>`, the docs paths and the `--docs-paths` arguments, for
-  `my:handoff`, `my:status`, `kit:commit` and `my:architect`. Report S4.
-  Blocked by row 29.
-- 💭 43 **`handoff` start checks as a script** — a subcommand prints `<slug>`,
-  `<name>` and `<base>`, the first failed start check, the Delegation
-  validation and the restart point. Report S2, S3. The validation refuses a
-  command list with prose in a value, or a value wrapped onto two lines
-  (zitamu, 2026-10-15). An auto launch also asks once about changes on
-  `main` that would block the fold ([run audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md) H4).
-- 💭 44 **`git-fold-fixups.py list <path>`** — lists a document's waiting
-  fixups, which `my:handoff` finds by hand in three places. Route not set.
-  Report S6.
+- 💭 42 **Parallel runs parser** — feature in `handoff-state.py`, route not
+  set. `my:handoff`, `my:status`, `kit:commit` and `my:architect` each read
+  the Parallel runs section by hand. Goal: a `handoff-state.py` subcommand
+  prints **Max runs**, `<n>`, the docs paths and the `--docs-paths` arguments
+  for them. Report S4. Blocked by row 29.
+- 💭 43 **`handoff` start checks as a script** — feature in `my:handoff`, route
+  not set. The start checks run by hand, and a Delegation command list with
+  prose in a value, or a value wrapped onto two lines, gets through (zitamu,
+  2026-10-15). Goal: a subcommand prints `<slug>`, `<name>` and `<base>`, the
+  first failed start check, the Delegation validation and the restart point.
+  The validation refuses a command list with prose in a value, or a value
+  wrapped onto two lines. An auto launch also asks once about changes on
+  `main` that would block the fold ([run
+  audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md) H4). Report S2,
+  S3.
+- 💭 44 **`git-fold-fixups.py list <path>`** — feature in `git-fold-fixups.py`,
+  route not set. `my:handoff` finds a document's waiting fixups by hand in
+  three places. Goal: `git-fold-fixups.py list <path>` lists them. Report S6.
 - 💭 45 **Review preparation as a script** — feature in `my:soundness-review`
   and `my:spec-review`, route not set. Every review starts with the same fixed
   steps, done by hand today, and two reviews that started in the same second
@@ -407,18 +437,26 @@ above.
   rules by hand, and a commit message may not contain a single quote. Goal:
   scripts plan the groups and apply them, reading messages from a file.
   Report S7; [draft spec](docs/plans/2026-10-14-git-squasher-scripts-spec.md).
-- 💭 47 **`clean-plans` moves by script** — the candidate list, the date,
-  `git mv` or `mv`, and repointing the links; "Moving a document" in
-  `docs-layout.md` uses the same script. Report S8.
-- 💭 49 **`dev-reports` dates and TODOs by script** — the ISO week, the Monday
-  rule, the days with commits and the TODO extraction. Report S10.
-- 💭 50 **`clean-gone-branches` as a script** — list, check and delete; the
-  command keeps the approval question. Report S11.
-- 💭 51 **Roadmap number and link check** — a script prints the next row
-  number and flags `.html`, `../` and dead links in `ROADMAP.md` and
-  `CHANGELOG.md`. Route not set. Report S12.
-- 💭 52 **`status` gates and overlap by script** — `my:status` steps 5 and 6
-  and the overlap test. Report S13.
+- 💭 47 **`clean-plans` moves by script** — feature in `my:clean-plans`, route
+  not set. The model picks the files, dates them, moves them and repoints the
+  links by hand. Goal: a script does the candidate list, the date, `git mv` or
+  `mv`, and repointing the links; "Moving a document" in `docs-layout.md` uses
+  the same script. Report S8.
+- 💭 49 **`dev-reports` dates and TODOs by script** — feature in
+  `kit:dev-reports`, route not set. The model works out the dates and the TODO
+  list by hand. Goal: a script computes the ISO week, the Monday rule, the
+  days with commits and the TODO extraction. Report S10.
+- 💭 50 **`clean-gone-branches` as a script** — feature in
+  `kit:clean-gone-branches`, route not set. The model lists, checks and
+  deletes the branches by hand. Goal: a script does the list, the check and
+  the delete; the command keeps the approval question. Report S11.
+- 💭 51 **Roadmap number and link check** — feature in `my:roadmap-management`,
+  route not set. The model picks the next row number and checks links by eye.
+  Goal: a script prints the next row number and flags `.html`, `../` and dead
+  links in `ROADMAP.md` and `CHANGELOG.md`. Report S12.
+- 💭 52 **`status` gates and overlap by script** — feature in `my:status`,
+  route not set. The model runs `my:status` steps 5 and 6 and the overlap test
+  by hand. Goal: a script does them. Report S13.
 - ✅ 41 **`git-squasher` loses `$1`** — fix: the `squash-todo.sh` example in
   `kit:git-squasher` step 5 uses `"${1}"`, which Claude Code leaves alone, and
   a test refuses a bare `$` and digit in kit skill text. Small. Report B1.
@@ -431,13 +469,15 @@ Findings of [`docs/reports/2026-10-15-row-74-handoff-run-audit.md`](docs/reports
   `global/methods/my.md` and `kit:setup` also accept `CLAUDE.local.md`, as
   the Parallel runs rule does, and `kit:setup` asks which file to use.
   Report H4.
-- 💭 61 **Auto start on approval, and re-review findings as rows** — two
-  rules in `global/methods/my.md`. When the approved spec has a Delegation
-  section, approval starts `/my:handoff auto` with one line saying so, in
-  place of the "supervised or auto?" question (report H3). "One fix round
-  per review" sends a re-review finding that today's code can reach to a new
-  roadmap row; **Risk** keeps only input that today's code never produces
-  (report H8). Route not set. Row 63 was folded in on 2026-10-16.
+- 💭 61 **Auto start on approval, and re-review findings as rows** — rule in
+  `global/methods/my.md`, route not set. After approving a spec with a
+  Delegation section, the user still answers "supervised or auto?", and a
+  re-review finding that today's code can reach may end up only in **Risk**.
+  Goal: two rules. When the approved spec has a Delegation section, approval
+  starts `/my:handoff auto` with one line saying so, in place of the question
+  (report H3). "One fix round per review" sends a re-review finding that
+  today's code can reach to a new roadmap row; **Risk** keeps only input that
+  today's code never produces (report H8). Row 63 was folded in on 2026-10-16.
 - 💭 62 **Question prompts follow `plain`** — rule in
   `global/output-styles/plain.md`, route not set. Multiple-choice questions
   use the agent's own terms, such as "force" or "tab", so the user cannot answer
