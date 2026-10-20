@@ -334,7 +334,8 @@ Their order is in "Order of work" above.
   squash-merge fails or merges the wrong branch. Fix: the merge command stops
   using `$1` and `$2`, which Claude Code fills with the skill's arguments,
   and kit's placeholder test also checks `my`.
-  [Report](docs/reports/2026-10-14-scriptable-skill-steps.md) S1.
+  [Report](docs/reports/2026-10-14-scriptable-skill-steps.md) B1 (the bug),
+  S1 (the fix).
 - 💭 34 **Merges read a message file** — `handoff-state.py merge` and the
   parallel squash-merge take `-F <file>`, so the heredoc rule leaves
   `my:handoff`. Changes the `handoff-state.py` interface. Out of scope of the
@@ -354,7 +355,8 @@ Their order is in "Order of work" above.
   preview port and other per-run values, so the second fails to start. Fix:
   a supervised run has no state file and always takes slot `1`, so give it
   a slot of its own.
-  [Critique](docs/reports/2026-10-15-parallel-runs-section-critique.md) P1.
+  [Critique](docs/reports/2026-10-15-parallel-runs-section-critique.md) P1,
+  which names this bug as one case; shipping this row does not close P1.
 - 💭 57 **An auto run that stops before the merge** — a Delegation key, or
   an `auto` flag, that stops at stop-table row 14 "Ready to squash-merge".
   A test drive can then run the auto path, `decide` included, without a

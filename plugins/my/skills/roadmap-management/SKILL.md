@@ -175,13 +175,15 @@ Keep in the row body, in this order, so that a reader who opens the roadmap cold
 
 - **Kind, place and route** — the kind of work (`bug`, `feature`, `rule` for a change to instruction text, or another kind the roadmap already uses), where it happens (the skill, file or area), and the route when it is already known. In a project that routes its work (spike, bounded, architectural in the `my` method): a row of kind `bug` names no route, even when its fix may touch the risk line; a row that hits the risk line (a change to stored data or its shape, permissions, a message or public contract, or something hard to reverse) names `architectural with plan`; every other row names `route not set` until brainstorming picks its route (rules 4 and 6). A bug that brainstorming routed follows rules 4 and 6 for the route it got. A row routed to a spike gets `spike` in the edit that links the spike file, since no spec or merge follows. In a project that does not route its work, leave the route out. Examples: `bug in my:handoff.` and `feature in my:status, route not set.`
 - **What the user sees** — for a bug, what goes wrong for the person using the tool; for a feature, what they can do once it ships. Start from that effect, not from its cause in the code. Replace or define every term a reader may not know.
-- **The fix or the goal** — one sentence. When the row links no document, this sentence keeps the facts a fixer needs (the cause, the chosen approach), because the row is their only record.
+- **The fix or the goal** — one sentence. When no linked document holds the facts a fixer needs (the cause, the chosen approach), this sentence keeps them, because the row is their only record.
 - **Current bottom line** — one line: shipped / NO-GO / blocked-on-X. Include a single figure *only when that figure is itself the verdict* (e.g. a NO-GO whose crux is "background-FP 51 vs 12") — one decisive number, not a metrics dump.
 - **A pointer** — "detail in the linked X" when the row links somewhere.
 
 Push to the linked doc, never copied into the row:
 
 - Metrics and numbers (mAP, AUC, counts, thresholds, dates beyond the row's own status), commit SHAs, per-phase / per-experiment play-by-play, mechanism explanations, full verdict reasoning, supersession chains.
+
+The one exception: a cause or a chosen approach that no linked document holds stays in the fix sentence, as above.
 
 **Trim trigger** (applies whenever you write or edit a body — rules 3–7): if the body would run past the target above (~5 lines), or you're about to paste a figure or SHA that already lives in a linked doc, **compress instead of appending**. When you touch a row that has already accumulated history, trim it to the order above (kind, effect, fix, verdict, pointer) in the *same* edit — never add one more clause to an already-oversized cell. (Markdown table cells can't contain paragraph breaks, so an over-long cell can't even be reformatted into readable prose — the only available fix is less content.)
 
