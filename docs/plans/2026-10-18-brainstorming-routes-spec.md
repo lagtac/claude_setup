@@ -1,6 +1,6 @@
 # Spec: brainstorming's paths replace the size table
 
-**Status:** approved, 2026-10-18. Row 67; answers finding F1 of the superpowers-fit critique.
+**Status:** done, 2026-10-20. Shipped in `f03b0e3`; row 67; plan: `docs/plans/2026-10-18-brainstorming-routes.md`, whose status line gives the checks.
 
 **Size:** Large. Under this spec's own rules it is "architectural with plan": it changes the rules
 that nine projects follow, which is a contract. `my:architect` was skipped by the user's choice:

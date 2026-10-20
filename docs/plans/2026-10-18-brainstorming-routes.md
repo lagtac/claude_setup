@@ -1,6 +1,6 @@
 # Brainstorming's routes Implementation Plan
 
-**Status:** approved, 2026-10-18. Written by the `my:handoff` plan stage from the approved spec.
+**Status:** done, 2026-10-20. Merged in `f03b0e3`. End-of-branch checks: 2 run, 2 passed (kit 40 tests, my 234 tests). The rehearsal's 12 of 12 passes ran before the fix round (Risk).
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans
 > to implement this plan task-by-task. The tasks are small text edits that

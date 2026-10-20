@@ -16,6 +16,29 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-20 — Brainstorming picks the route, not a size (row 67)
+
+`global/methods/my.md` no longer sizes work as Small, Medium or Large. A
+session states a route instead, in one line with the reason and the risk
+check, and brainstorming's own path picks it. The route decides the
+documents, the reviews and the commits. Details:
+[spec](docs/plans/2026-10-18-brainstorming-routes-spec.md),
+[plan](docs/plans/2026-10-18-brainstorming-routes.md).
+
+- **Spike** answers one question. It writes a `-spike.md` file with the
+  status `answered`, and its code is never merged.
+- **Bounded** is one or two files with no risk trigger: a short design in
+  chat, approved before any code.
+- **Architectural** keeps its tasks in the spec. **Architectural with plan**
+  is forced by the risk line: a change to stored data, permissions, a
+  message or public contract, or something hard to reverse.
+- **Bug** starts with `superpowers:systematic-debugging` and states no route.
+  It goes to brainstorming when the fix hits the risk line, has several
+  reasonable options, touches more than two files, or three fixes have failed.
+- Roadmap rows name their route, or `route not set` until brainstorming picks
+  it. `my:clean-plans` knows the `spike` kind. The old names map as Small to
+  bounded or bug, Medium to architectural, Large to architectural with plan.
+
 ### 2026-10-18 — Roadmap rows say what kind of work they are
 
 `my:roadmap-management` now gives every row body a fixed order. First the

@@ -445,13 +445,14 @@ Findings of [`docs/reports/2026-10-15-row-74-handoff-run-audit.md`](docs/reports
 Findings of [`docs/reports/2026-10-14-superpowers-fit-critique.md`](docs/reports/2026-10-14-superpowers-fit-critique.md).
 Only F1 is routed so far.
 
-- 📋 67 **Brainstorming's paths replace the size table** — rule in
+- ✅ 67 **Brainstorming's paths replace the size table** — rule in
   `global/methods/my.md` and the files that name the sizes, architectural
   with plan. A session picks its process as superpowers' brainstorming does
   (spike, bounded or architectural), not by a second `my` size. `my` adapts
   the paths with a risk line, a two-file limit on bounded, a bug route and a
-  spike file. Report F1.
-  [spec](docs/plans/2026-10-18-brainstorming-routes-spec.md)
+  spike file. Shipped; known limits are in the plan's Risk section. Report F1.
+  [spec](docs/plans/2026-10-18-brainstorming-routes-spec.md),
+  [plan](docs/plans/2026-10-18-brainstorming-routes.md)
 
 - 💭 73 **`my:status` lists every spike branch as unfinished work** — bug in
   `plugins/my/bin/status-scan.py` and `my:status`. A spike's `spike/<slug>`
