@@ -166,6 +166,9 @@ These shape screens and flows, so the UI must respect them.
   API container, and the proxy target is read at build time.
 - **Auth** keeps the Sanctum bearer token in localStorage
   (`composables/useAuth.ts`). `apiFetch` owns the 401 handling.
+- **The signed-in pages render in the browser only** (`ssr: false`, listed in
+  `utils/rendering.ts`). `tests/frameGuard.spec.ts` keeps the list in step
+  with the pages that use the `auth` middleware.
 - **The production CSP** in `nuxt.config.ts` (`connect-src 'self'`,
   `script-src 'self' 'unsafe-inline'`) is the control that makes the
   localStorage token acceptable. Do not loosen it. It also blocks any
@@ -200,7 +203,9 @@ These shape screens and flows, so the UI must respect them.
 - **Each language has its own URL.** Greek is at the root and English under
   `/en` (the user kept Kostas's release on 2026-10-16, row 157). A saved
   English choice redirects a Greek URL to its `/en` twin, except on Back or
-  Forward within the open page (the user, 2026-10-18). Every Greek page sends `Vary: Cookie`.
+  Forward within the open page (the user, 2026-10-18). Every Greek page the
+  server renders sends `Vary: Cookie`; the signed-in pages send an empty
+  shell that is the same for everyone, and the browser redirects them.
   Crawlers send no
   cookie, so they are never redirected, and the browser's language is never
   read.
