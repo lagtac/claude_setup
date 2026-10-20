@@ -216,13 +216,15 @@ Follow-ups spawned by the planner retirement. Spec:
   2026-10-16; `sync` is not rehearsed yet (plan Risk). Large.
   [spec](docs/plans/2026-10-16-design-system-skill-spec.md),
   [plan](docs/plans/2026-10-16-design-system-skill.md)
-- 📋 70 **Choose the design skill** — feature in `kit` and the core,
+- ✅ 70 **Choose the design skill** — feature in `kit` and the core,
   architectural with plan. Design work runs the installed design skill that
   fits the job, and Claude can no longer call a third-party design skill
   directly. A `kit:design-router` skill names and starts the skill, a
   `PreToolUse` gate refuses other calls, and the design-system rules leave
-  `global/methods/my.md`. Spec approved 2026-10-20; auto plan stage next.
-  [spec](docs/plans/2026-10-20-design-router-spec.md)
+  `global/methods/my.md`. Shipped in `5dfd634`; manual steps and known
+  limits are in the plan's Risk section.
+  [spec](docs/plans/2026-10-20-design-router-spec.md),
+  [plan](docs/plans/2026-10-20-design-router.md)
 
 ## Harness generalization
 

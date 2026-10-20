@@ -1,7 +1,7 @@
 # Design Router Implementation Plan
 
-**Status:** approved, 2026-10-20. Written by the `my:handoff` plan stage from the approved spec;
-row 70.
+**Status:** done, 2026-10-20. Shipped in `5dfd634`; kit 73 and my 234 tests pass; row 70.
+Manual steps are in the Risk section.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this
 > plan task-by-task. The tasks build on each other: the router's table tests read the real

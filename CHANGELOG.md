@@ -16,6 +16,31 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-20 — `kit:design-router` chooses the design skill (row 70)
+
+Several design plugins hold skills that do the same job. A new
+`kit:design-router` skill now names one skill per design job and starts
+it. Claude can no longer call a design skill directly: a `PreToolUse` gate
+in `kit` refuses the call and points to the router. A command the user
+types always runs. Details:
+[spec](docs/plans/2026-10-20-design-router-spec.md),
+[plan](docs/plans/2026-10-20-design-router.md).
+
+- The core (`global/CLAUDE.md`) gains a "Design work" section: invoke
+  `kit:design-router` before any design work.
+- The gate judges a skill by its plugin, from
+  `plugins/kit/skills/design-router/plugins.json`. An installed plugin
+  missing from that list is refused until someone reviews it and adds it.
+- `global/methods/my.md`, `docs-layout.md`, `my:spec-review` and
+  `my:handoff` no longer call or read `my:design-system` and
+  `docs/DESIGN-SYSTEM.md`.
+- Manual steps: run `claude plugin update kit@claude-setup` and
+  `/reload-plugins`; turn off `design-superpowers@synced`; allow
+  `Bash(design-router-ticket.py *)` and
+  `Bash(printenv CLAUDE_CODE_SESSION_ATTENDED)`, so the router works where
+  no user can answer. Until the update, the core names a skill the
+  installed `kit` lacks.
+
 ### 2026-10-20 — `my:roadmap-management` offers to rewrite old rows
 
 When a roadmap's open rows (💭, 📋, 🚧) do not follow the row order (kind
