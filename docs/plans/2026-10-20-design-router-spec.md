@@ -1,6 +1,6 @@
 # Spec: the design router decides which design skill runs
 
-**Status:** draft, 2026-10-20. Row 70; waiting for the user's approval.
+**Status:** approved, 2026-10-20. Row 70.
 
 **Route:** architectural with plan. A gate that refuses skill calls in every project is a change
 to permissions, which is the risk line in `global/methods/my.md`. `my:architect` was skipped with
