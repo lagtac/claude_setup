@@ -216,14 +216,13 @@ Follow-ups spawned by the planner retirement. Spec:
   2026-10-16; `sync` is not rehearsed yet (plan Risk). Large.
   [spec](docs/plans/2026-10-16-design-system-skill-spec.md),
   [plan](docs/plans/2026-10-16-design-system-skill.md)
-- 💭 70 **Choose the design skill** — rule in `global/methods/my.md` (the UI
-  trigger row and "UI Design"), route not set. The rules call
-  `my:design-system`, which the user has not tried in use yet, and several
-  other design skills are installed (`design:design-system`,
-  `design-skills:design-systems`, the `design-superpowers` set). Try
-  `my:design-system` on a real project, compare the others, then decide which
-  skill the rules call and when. It also settles two limits that row 67
-  leaves: when the audit runs, and the checks a bounded UI change skips.
+- 📋 70 **Choose the design skill** — feature in `kit` and the core,
+  architectural with plan. Design work runs the installed design skill that
+  fits the job, and Claude can no longer call a third-party design skill
+  directly. A `kit:design-router` skill names and starts the skill, a
+  `PreToolUse` gate refuses other calls, and the design-system rules leave
+  `global/methods/my.md`. Spec approved 2026-10-20; auto plan stage next.
+  [spec](docs/plans/2026-10-20-design-router-spec.md)
 
 ## Harness generalization
 
@@ -248,11 +247,11 @@ Make the harness reusable in new projects without forking copies. Spec:
   next. Reframed on 2026-10-20 from a launcher named `claude`; row 48 was
   folded in on 2026-10-18.
   [brief](docs/plans/2026-10-20-method-bundles-architecture.md)
-- 💭 69 **Shared skills move to `kit`** — `design-system`,
-  `roadmap-management` and `changelog-management` leave `my` for `kit`, so
-  other methods can use them, and every `my:` reference is renamed.
-  `design-system`'s refresh step stays tied to step 13 of `my`.
-  Architectural with plan.
+- 💭 69 **Shared skills move to `kit`** — `roadmap-management` and
+  `changelog-management` leave `my` for `kit`, so other methods can use them,
+  and every `my:` reference is renamed. Row 70 takes the `design-system`
+  rules out of the method, so this row decides whether that skill moves to
+  `kit` or is deleted. Architectural with plan.
 - 📋 71 **Project rules outrank the core** — the core's Precedence paragraph
   lists the order: protected rules, the user, the project files, the method,
   the core, then skills. Two protected rules: ask before adding dependencies,
