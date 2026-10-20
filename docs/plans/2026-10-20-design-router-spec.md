@@ -160,7 +160,9 @@ Steps each time it runs:
 6. **Chain:** when a job needs several skills, list them in order, numbered, and treat each as
    above.
 
-If the ticket script fails, say so, and print the command for the user to type instead.
+If the ticket script fails, say so, and print the command for the user to type instead. If the
+gate still refuses the call after the ticket, do not invoke `kit:design-router` again: say so,
+and print the same command.
 
 A skill with no plugin prefix, such as `artifact-diagramming` or `dataviz`, and the Artifact
 tool's Design type, are started directly: the gate never refuses them.

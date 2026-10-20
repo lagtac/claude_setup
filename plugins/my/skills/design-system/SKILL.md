@@ -173,8 +173,8 @@ proposes one starting row, placed before the first page row: the token
 families (colour, type roles, spacing, radius, motion, the focus ring) and a
 button, a field (label, input, hint, error), a select, an inline message, a
 page shell and a visually hidden class. Sources says `none yet (row <N>)` for
-the tokens, with that row's number. That row's canvas uses `frontend-design`
-for the visual direction.
+the tokens, with that row's number. That row's canvas takes its visual
+direction through `kit:design-router`.
 
 ## `refresh`
 

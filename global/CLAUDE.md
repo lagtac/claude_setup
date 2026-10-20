@@ -18,6 +18,10 @@
 
 - Match the surrounding code — read sibling files for naming, structure and idiom before adding new ones. Consistency with what is there beats a preference of your own.
 
+## Design work
+
+- Before any design work — a screen, a flow, visual direction, interface copy, an accessibility check, a design system, user research — invoke `kit:design-router`. It names the skill for the job. Do not call a design skill directly; the gate refuses it.
+
 ## Engineering standards
 
 These standards apply to every planning workflow: built-in plan mode, a method's own planning steps, and any agent that writes an implementation plan.

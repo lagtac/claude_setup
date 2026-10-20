@@ -114,7 +114,6 @@ with a trigger gets a separate plan.
 |---| ---|
 | New project, new subsystem, or change to a data model, storage choice or public contract | `my:architect`, then `superpowers:brainstorming` |
 | New feature, component, or behavior change (any non-trivial creative work) | `superpowers:brainstorming` |
-| UI work (a screen, a state or a component) in an architectural change, with or without a plan, in a project with no `docs/DESIGN-SYSTEM.md` | `my:design-system audit`, then `superpowers:brainstorming`. When the `my:architect` row also matches, `my:architect` runs first |
 | Multi-step implementation from a spec or written requirements | `superpowers:writing-plans` |
 | Writing or modifying production code (>1 file or >~30 lines) | `superpowers:test-driven-development` |
 | Bug, test failure, or unexpected behavior | `superpowers:systematic-debugging` |
@@ -141,7 +140,7 @@ If brainstorming upgrades a task to architectural partway through, and the task 
 
 When `superpowers:brainstorming` produces a deliverable, keep spec and plan as **separate files** (architectural changes with a plan only; an architectural change without one keeps its tasks in the spec):
 
-1. **Spec** → `docs/plans/YYYY-MM-DD-<slug>-spec.md` — product-level (what/why, design decisions, architecture, trade-offs, risk; new UI gets a **Visual Language** section mapping elements to design-system primitives/semantic classes/motion; each element also names the other pages that use it, today or in a roadmap row already ordered, and one with two or more becomes a shared component, built in this row or in a shared row ordered before it; the spec reads `docs/DESIGN-SYSTEM.md` first and maps each element to a component, variant or token listed there, or labels it «new: `<name>`» when this row or a row ordered before it builds it as a shared component). Self-contained: a cold reader could write the plan from it alone. First section is **"How to read this spec"** — all related docs (specs, plans, ROADMAP, CHANGELOG, sources, skills) with paths, in reading order. When an architecture brief exists, it is listed first. Ask the user whether the spec may run in auto mode (`/my:handoff auto`); on yes, add a **Delegation** section with the four keys that the `my:handoff` skill defines in its "Delegation" section.
+1. **Spec** → `docs/plans/YYYY-MM-DD-<slug>-spec.md` — product-level (what/why, design decisions, architecture, trade-offs, risk; new UI gets a **Visual Language** section mapping elements to design-system primitives/semantic classes/motion; each element also names the other pages that use it, today or in a roadmap row already ordered, and one with two or more becomes a shared component, built in this row or in a shared row ordered before it). Self-contained: a cold reader could write the plan from it alone. First section is **"How to read this spec"** — all related docs (specs, plans, ROADMAP, CHANGELOG, sources, skills) with paths, in reading order. When an architecture brief exists, it is listed first. Ask the user whether the spec may run in auto mode (`/my:handoff auto`); on yes, add a **Delegation** section with the four keys that the `my:handoff` skill defines in its "Delegation" section.
 2. Self-review the spec (placeholders, consistency, scope, ambiguity, self-containment). Then run `my:spec-review <spec path>` and act on its report: fix every `editorial` finding — but first check whether the fix changes what a component owns, a contract, the chosen option, or the scope, and if it does treat it as `design`; never fix a `design` finding — ask the user in the "No silent reinterpretation" form below; list rejected findings with one line of reasoning each. Then ask the user to review the spec, the report and the open design questions before proceeding.
 3. **Plan** → `docs/plans/YYYY-MM-DD-<slug>.md` via `superpowers:writing-plans` — execution-level: TDD steps, test code, commit breakdown. After the user approves the spec, set its status to `approved`, leave that edit uncommitted (the plan stage commits it), and ask "Hand off the plan?"; on yes, run `/my:handoff plan <spec path>`, which writes the plan, then the code, then runs the end-of-branch reviews, each in a new session. When the approved spec has a Delegation section, ask "Hand off the plan, supervised or auto?" instead: supervised runs `/my:handoff plan <spec path>`, and auto runs `/my:handoff auto plan <spec path>`, which goes on to the squash-merge and the `done` marks without the user, as far as the Delegation section allows, and never pushes.
 
@@ -179,21 +178,9 @@ writing a prose description or a table of class names:
   state or flow.** This holds inside `superpowers:brainstorming` too: that
   skill's own Visual Companion is an ephemeral local server, it is not a
   substitute, and it is not to be offered.
-- **`frontend-design`** — aesthetic direction, typography, and choices that do
-  not read as templated defaults.
+- **Aesthetic direction** — typography, and choices that do not read as
+  templated defaults. `kit:design-router` names the skill.
 - **`artifact-diagramming`** — when the point is a mechanism rather than a screen.
-
-The canvas is built on the project's Design System artifact, whose link is
-in the Sources part of `docs/DESIGN-SYSTEM.md`. Boards use its tokens. Each
-part is labelled with its component name from the inventory, or
-«new: `<name>`». Before drawing, run the staleness
-command, `git log --oneline <synced commit>..HEAD -- '<tokens file>'
-'<components folder>'`, with the paths and the commit from Sources, quoted
-so that git matches them. On any output, or when Sources says `none yet`
-for the artifact, run `my:design-system sync` first. A new app with
-no tokens file yet skips this, and its canvas takes its direction from
-`frontend-design`. A project with no `docs/DESIGN-SYSTEM.md` skips this
-paragraph.
 
 A bounded change or a bug fix that adds no screen and no state, such as
 a label, a colour or a spacing value, needs no canvas.
@@ -209,8 +196,7 @@ drawing decides, the table records.
 the app looks like now), one page per row under review, and «History»
 (options not chosen, earlier versions). When a row's code merges, in the same
 step as its `done` marks, move its chosen boards to «Built», the rest to
-«History», and retitle any board the change made untrue. The same step
-refreshes the inventory: see step 13 in `~/.claude/rules/docs-layout.md`.
+«History», and retitle any board the change made untrue.
 
 ## Git Workflow
 

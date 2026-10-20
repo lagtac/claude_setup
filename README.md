@@ -129,9 +129,10 @@ as `/my:<name>` or `/kit:<name>`.
   in parallel" in one read-only report.
 - `my:design-system` — Keeps `docs/DESIGN-SYSTEM.md`, the inventory of shared
   components and hand-built patterns that UI specs read and spec reviews
-  check. `audit` builds it, `refresh` updates it at step 13, and `sync` makes
+  check. `audit` builds it, `refresh` updates it, and `sync` makes
   the Design System artifact that canvases draw from. It writes no component
-  code: each component to build becomes a roadmap row.
+  code: each component to build becomes a roadmap row. The method no longer
+  calls it; row 69 decides whether it moves to `kit` or is deleted.
 - `my:roadmap-management` — Edits `ROADMAP.md`: adds rows and moves them between
   status tiers.
 - `my:changelog-management` — Edits `CHANGELOG.md` for shipped features, fixes
@@ -174,6 +175,12 @@ as `/my:<name>` or `/kit:<name>`.
   folder on PATH in its sessions only; your shell finds them through symlinks
   in `~/bin`. Both files are symlinks to `~/src/scripts/`, which holds the
   scripts and their tests: `cd ~/src/scripts && python3 -m unittest -v`.
+- `kit:design-router` — Decides which design skill does each design job, and
+  starts it with a one-time ticket (`plugins/kit/bin/design-router-ticket.py`).
+  For a job with two candidate skills, it can run both side by side and keep
+  the winner in the project's `.claude/design-router.json`. Its plugin list is
+  `plugins/kit/skills/design-router/plugins.json`. Tests:
+  `cd plugins/kit && python3 -m unittest discover tests`.
 
 `plugins/my/bin/` also holds `git-fold-fixups.py`, which is not a skill. The
 feature steps in `global/rules/docs-layout.md` and `my:handoff` call it.
@@ -249,6 +256,11 @@ Defined in `plugins/kit/hooks/hooks.json`:
   with its plugins off, an import that is not approved or was declined, `my`
   or superpowers on without the `my` import, or more than one method import.
   It reads and never writes, and prints nothing when all is well.
+- **PreToolUse** (Skill) — `design-router-gate.py` refuses Claude's calls to
+  skills of plugins that `kit:design-router`'s plugin list marks `routed` or
+  `excluded`, and of installed plugins the list lacks, unless the router wrote
+  a ticket for the call. A command the user types always runs. It fails open:
+  a missing or broken list refuses nothing.
 
 ## Settings
 

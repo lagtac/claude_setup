@@ -775,9 +775,54 @@ The spec's R1–R13 hold unchanged. The plan adds:
 - **R17. Line numbers drift.** Task 6 names lines from `main` at 2026-10-20. A later commit on
   `main` may move them; the `grep` in Task 6, Step 1 finds the current lines.
 
+Known limits from the end-of-branch reviews (code review and soundness review of 2026-10-20):
+
+- **R18. Session IDs after `/clear` or a resume.** The ticket script files a ticket under
+  `CLAUDE_CODE_SESSION_ID`; the gate looks it up under the hook's `session_id`. They match in a
+  fresh session. Nobody has checked them after `/clear`, `--resume`, `--fork-session` or a
+  compaction. If they differ, every routed call is refused; the router then says so and prints
+  the command for the user to type (the fix round added that line).
+- **R19. A bare skill name passes.** The gate lets a name without `:` through. The Skill tool's
+  description says plugin skills are called as `plugin:skill`, but nobody has checked what it does
+  with a bare name. Rehearsal step 5 also found three loaded plugins (`cc-plugin-agents-md`,
+  `cc-plugin-plugin-authoring`, `cc-plugin-telemetry`) whose skills carry no prefix. A design
+  plugin loaded that way would pass the gate.
+- **R20. A project skill folder named like a listed plugin.** A folder `design` or `data` of
+  project skills would be refused as `routed` or `excluded`. No project under `~/projects` has one
+  on 2026-10-20.
+- **R21. A broken list warns on every call.** The `systemMessage` shows on each Skill call with a
+  prefix other than `kit`. The list is in this repo, and `test_list_states_are_valid` checks it.
+- **R22. Unused tickets stay.** A ticket the router writes but never uses, and its session folder,
+  stay under `~/.cache/design-router/tickets/`. The gate refuses a stale ticket, so they cause no
+  wrong result.
+- **R23. The ticket write in `auto` mode is not rehearsed.** The headless rehearsal ran in default
+  mode, where the write was denied until `Bash(design-router-ticket.py *)` was allowed.
+- **R24. `my:design-system`'s own text still names step 13.** Its description and body describe
+  `refresh` at step 13, which the method no longer calls. Row 69 decides the skill's future.
+
+Known limits from the re-reviews (both final, 2026-10-20):
+
+- **R25. The attended check may prompt.** The router runs `printenv CLAUDE_CODE_SESSION_ATTENDED`
+  to learn whether a user can answer. Rehearsal step 4 found that call needs approval in default
+  mode. Headless, it was denied, and the router judged from the session instead.
+- **R26. The spec's settings list is shorter than the plan's.** The spec's "The user's settings"
+  section and its R11 do not name the `Bash(design-router-ticket.py *)` allow rule. The manual
+  steps below are the full list.
+- **R27. Case and spaces.** The gate matches the prefix exactly. `Design:ux-copy` or
+  `" design:ux-copy"` passes it. Nobody has checked whether the Skill tool would resolve such a
+  name to a routed skill.
+- **R28. A skill the router never names.** `design:accessibility-review` and
+  `design-skills:design-ops` are refused like every routed skill, and the router does not start
+  them. A user who wants one types the command.
+
 Manual steps at the `done` mark: turn off `design-superpowers@synced` in `~/.claude/settings.json`;
-run `claude plugin update kit@claude-setup` and `/reload-plugins`; and the rehearsal parts left to
-the user (Task 8).
+add `Bash(design-router-ticket.py *)` and `Bash(printenv CLAUDE_CODE_SESSION_ATTENDED)` to
+`permissions.allow` in `~/.claude/settings.json`, so the router can start a skill where no user can
+answer (R11, R25); run `claude plugin update kit@claude-setup` and `/reload-plugins`; repeat
+rehearsal step 3 with `--permission-mode auto` (R23); compare the hook's `session_id` with
+`CLAUDE_CODE_SESSION_ID` after `/clear` and after a resume (R18); check whether the Skill tool
+resolves a bare or differently cased name to a routed skill (R19, R27); and the rehearsal parts
+left to the user (Task 8).
 
 Done marks (review stage): spec and plan `done`, citing the squash commit; `ROADMAP.md` row 70 to
 ✅ with `my:roadmap-management`, and the `CHANGELOG.md` entry with `my:changelog-management`. The

@@ -274,7 +274,7 @@ name.
 | 16 | review | After the merge, `<base>` is not clean, so the fold must wait | stop with `next=fold` |
 | 17 | review | The fold exits 1 or 3 | stop with `next=fold`. Exit 3 also records the HEAD from before the fold. |
 | 18 | any | Lock `main` or a shared-resource lock times out (`handoff-lock.py` exit 75 with a stderr line that starts with `handoff-lock:`), except at the start | stop |
-| 19 | any | A shared doc (`ROADMAP.md`, `CHANGELOG.md`, the plans index, `docs/DESIGN-SYSTEM.md`) holds someone else's edits | stop |
+| 19 | any | A shared doc (`ROADMAP.md`, `CHANGELOG.md`, the plans index) holds someone else's edits | stop |
 | 20 | review | The worktree rebase after `merge` exit 4 conflicts | run `git rebase --abort`, then stop with `next=merge-retry` |
 | 21 | review | The base moved a fourth time | stop with `next=merge-retry` |
 | 22 | review | `handoff-state.py merge` exits 5: the squash conflicts, or its commit fails | stop with `next=merge`, as row 15 |
@@ -743,8 +743,8 @@ file would count as a live run.
    plans index, signal `<name>: <file> holds another session's edit` and
    stop.
 
-   **With a "Parallel runs" section,** the plans index, `ROADMAP.md`,
-   `CHANGELOG.md` and `docs/DESIGN-SYSTEM.md` are shared docs. Before editing
+   **With a "Parallel runs" section,** the plans index, `ROADMAP.md` and
+   `CHANGELOG.md` are shared docs. Before editing
    one, run `git diff --quiet HEAD -- <file>`. If it exits non-zero, someone
    else has uncommitted edits there: signal `<name>: <file> holds someone
    else's edits` and stop (row 19). The hunk check above then covers every

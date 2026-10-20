@@ -7,6 +7,7 @@ the my method live in global/methods/my.md. kit is on in every project, so
 its files must not point at docs/plans, superpowers or a my skill either.
 """
 
+import re
 import unittest
 from pathlib import Path
 
@@ -31,6 +32,15 @@ MY_NAMES = ["handoff", "soundness-review", "status", "spec-review", "architect",
             "design-system"]
 # my names distinct enough to find without the prefix.
 MY_BARE = [n for n in MY_NAMES if "-" in n and n not in ("code-reviewer",)]
+# A my name counts only as a whole name, so design:design-system is no hit.
+MY_PATTERNS = {token: re.compile(r"(?<![A-Za-z0-9:-])" + re.escape(token)
+                                 + r"(?![A-Za-z0-9-])")
+               for token in [f"my:{n}" for n in MY_NAMES] + MY_BARE}
+
+
+def names_in(text):
+    return [token for token, pattern in MY_PATTERNS.items()
+            if pattern.search(text)]
 
 
 def headings(text):
@@ -54,6 +64,11 @@ class NeutralCoreTest(unittest.TestCase):
     def test_core_has_engineering_standards(self):
         self.assertIn("Engineering standards", headings(CORE.read_text()))
 
+    def test_core_sends_design_work_to_router(self):
+        core = CORE.read_text()
+        self.assertIn("Design work", headings(core))
+        self.assertIn("invoke `kit:design-router`", core)
+
     def test_method_files_exist(self):
         for name in ["my.md", "tutor.md"]:
             with self.subTest(name=name):
@@ -69,9 +84,14 @@ class NeutralCoreTest(unittest.TestCase):
                 self.assertTrue(lines[0].startswith("# "))
                 self.assertEqual(lines[1], APPLIES)
 
+    def test_whole_name_match(self):
+        self.assertEqual(names_in("run design:design-system now"), [])
+        self.assertEqual(names_in("use design-skills:design-systems"), [])
+        self.assertEqual(names_in("run the design-system audit"), ["design-system"])
+        self.assertIn("my:handoff", names_in("type /my:handoff run"))
+
     def test_kit_cites_no_method(self):
-        tokens = (["docs/plans", "superpowers:", "global/CLAUDE.md"]
-                  + [f"my:{n}" for n in MY_NAMES] + MY_BARE)
+        tokens = ["docs/plans", "superpowers:", "global/CLAUDE.md"]
         for path in sorted(KIT.rglob("*")):
             rel = path.relative_to(KIT)
             if (path.is_symlink() or not path.is_file()
@@ -83,6 +103,8 @@ class NeutralCoreTest(unittest.TestCase):
             for token in tokens:
                 with self.subTest(file=str(rel), token=token):
                     self.assertNotIn(token, text)
+            with self.subTest(file=str(rel)):
+                self.assertEqual(names_in(text), [])
 
 
 if __name__ == "__main__":
