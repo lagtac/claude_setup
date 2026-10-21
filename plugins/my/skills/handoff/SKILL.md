@@ -312,8 +312,10 @@ Run these steps in order.
    - If `<doc>` contains a quote character (`'` or `"`), stop and print
      `The doc path contains a quote; rename it first.`
 4. **Fallback.** If `$TMUX` is empty, or the mode is not `auto` or
-   `bypassPermissions`, do not open a window. Print this command for the user
-   to run in a new terminal, then stop (in a Run session, go on to "Finish"):
+   `bypassPermissions`, do not open a window. When `$TMUX` is empty, first
+   print `Claude is not running inside tmux, so no window can open. Start
+   Claude inside tmux to get windows.` Then print this command for the user
+   to run in a new terminal, and stop (in a Run session, go on to "Finish"):
 
    ```bash
    cd <repo root> && claude -n <name> <plugin-dir flags> <mode flag> '/my:handoff run <stage> <doc>'
@@ -322,16 +324,10 @@ Run these steps in order.
    When the mode flag is empty, add: `Pick a permission mode in the new
    session; in manual or acceptEdits mode it will wait at its first command.`
 
-   **In auto mode,** the command sets `MY_AUTORUN` and types the auto run
-   form. `MY_AUTORUN` turns on the plugin's push guard, a hook that blocks
-   `git push` in that session:
-
-   ```bash
-   cd <repo root> && MY_AUTORUN=<slug> claude -n <name> <plugin-dir flags> <mode flag> '/my:handoff run auto <stage> <doc>'
-   ```
-
-   When the auto launch or `resume` falls back, print the command as above:
-   the user is at this window. When a `run auto` stage falls back while it
+   **In auto mode,** Launch prints no command: the window check refuses the
+   auto launch, `resume` and `auto rows` outside tmux, or in another mode,
+   before they write anything, so they never reach this step.
+   When a `run auto` stage falls back while it
    launches the next stage, that is a stop (row 2 of "Stop points in auto
    mode"): signal `<name>: cannot open a window for <next name>: <reason>`.
    The state file already names the next stage, so `resume` can launch it.
@@ -347,7 +343,8 @@ Run these steps in order.
 
    `-d` keeps the user's view where it is.
 
-   **In auto mode:**
+   **In auto mode,** the command sets `MY_AUTORUN`, which turns on the
+   plugin's push guard, a hook that blocks `git push` in that session:
 
    ```bash
    tmux new-window -d -n '<window>' -c <repo root> \
@@ -363,7 +360,8 @@ Run these steps in order.
 `auto resume <spec>` continues an auto run whose window is gone: after a
 crash, a reboot or a closed window. `<name>` is `resume-<slug>`. It runs in
 the user's own session, which has no `MY_AUTORUN`, so it never does the
-stage's work itself: it launches the stage in a new window.
+stage's work itself: it launches the stage in a new window. First run the
+window check of "Start checks in auto mode".
 
 1. Run `handoff-state.py check <slug>`. It compares the state file with git
    and prints one mismatch per line. If it exits 1, signal
@@ -457,7 +455,8 @@ their signals is `rows`. `<n>` is as "Parallel runs" says: `1` in a project
 without the section. A row number is `\d+[a-z]?`, as in `ROADMAP.md`, and
 stays a string, as typed. The queue is
 `<git common dir>/my-handoff/queue/rows.json`; only `handoff-state.py` writes
-it, always under lock `main`.
+it, always under lock `main`. Every form except `drop` first runs the window
+check of "Start checks in auto mode".
 
 1. **No numbers** (`auto rows`): run
    `handoff-lock.py main -- handoff-state.py pull --max <n>`, then go to
@@ -553,8 +552,7 @@ it, always under lock `main`.
 7. **Launch.** `pull` prints one line per run it started:
    `<slug><TAB><stage><TAB><spec><TAB><slot>`. For each line, run "Launch" in
    auto mode with the name `<stage>-<slug>`, the stage, the spec as its doc,
-   and `MY_AUTORUN=<slug>`. Launch's fallback prints the command for the
-   user, who is at this window.
+   and `MY_AUTORUN=<slug>`.
 8. **Report.** List the rows started, the rows waiting with what the first
    one waits for (`handoff-state.py queue show`), and the rows skipped with
    their reasons. Then stop. No session stays open to watch: the runs refill
@@ -647,12 +645,23 @@ fails, signal `<name>: start check failed: <reason>` and stop. A failed check
 writes nothing: it never calls `handoff-state.py set`, not even to record the
 stop, because the state file may belong to another run.
 
+**Window check.** An auto run opens a new tmux window for each stage, so it
+needs tmux. The auto launch, every `run auto` session, `auto resume` and the
+`auto rows` forms except `drop` run this check before any other check:
+`$TMUX` is not empty, `tmux display-message -p '#S'` exits 0 (the tmux
+server answers), and your context states your permission mode as `auto` or
+`bypassPermissions`. If not, signal `<name>: start check failed: <reason>`
+and stop, writing nothing. The reason is
+`not inside tmux; start Claude inside tmux for an auto run`, or
+`permission mode is <mode>; an auto run needs auto or bypassPermissions`,
+with `unknown` as `<mode>` when your context does not state it.
+
 `handoff-state.py` is on `PATH` in every session that loads this plugin. It
 keeps the run's state in `<git common dir>/my-handoff/<slug>.json`, outside
 the work tree. `handoff-state.py get <slug>` prints it, or exits 1 when there
 is none.
 
-1. `run auto` only, before any other check: `printenv MY_AUTORUN` prints
+1. `run auto` only, right after the window check: `printenv MY_AUTORUN` prints
    exactly `<slug>`. If not, the reason is
    `MY_AUTORUN is not set to <slug>; the push guard is off`.
 2. The spec's status is `approved`. For `run auto code` and
@@ -1020,7 +1029,7 @@ all land on the branch, and the main checkout stays clean.
      command, with the message as an argument:
 
      ```bash
-     handoff-lock.py main -- sh -c 'test -z "$(git diff --cached --name-only)" || { echo "staged changes in the main checkout" >&2; exit 1; }; git merge --squash "$1" && git commit -m "$2" && git rev-parse --short HEAD || { git reset --merge; exit 1; }' sh <branch> "$(cat <<'EOF'
+     handoff-lock.py main -- sh -c 'test -z "$(git diff --cached --name-only)" || { echo "staged changes in the main checkout" >&2; exit 1; }; git merge --squash "${1}" && git commit -m "${2}" && git rev-parse --short HEAD || { git reset --merge; exit 1; }' sh <branch> "$(cat <<'EOF'
      <message>
      EOF
      )"
@@ -1028,7 +1037,11 @@ all land on the branch, and the main checkout stays clean.
 
      In the command you run, the message lines and the `EOF` line start at
      column 0, because bash ends a heredoc only on a line that is exactly
-     `EOF`; the indent above only keeps the list intact. The command
+     `EOF`; the indent above only keeps the list intact. Keep the braces in
+     `${1}` and `${2}`: Claude Code replaces a dollar sign followed by a
+     digit in skill text with an argument of the skill, so without them the
+     command would get this skill's arguments in place of the branch and
+     the message. The command
      refuses, and changes nothing, when something is already staged in the
      main checkout. When the squash or the commit
      fails, it runs `git reset --merge` inside the lock. On any failure,

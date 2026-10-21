@@ -100,7 +100,9 @@ types a fourth, `/my:handoff run auto <stage> <doc>`, into each window. See
 A window opens only when you are inside tmux and the session runs in `auto` or
 `bypassPermissions` mode. In any other mode, a stage would wait for your
 approval in a window you are not looking at. So in that case the skill only
-prints the command, and you run it yourself in a new terminal.
+prints the command, and you run it yourself in a new terminal. An auto run
+(`auto`, `auto resume`, `auto rows`) prints no command: outside tmux, or in
+another mode, it refuses to start and writes nothing.
 
 ## What each stage does
 

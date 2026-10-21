@@ -1,6 +1,10 @@
-"""Tests that kit skill and command text holds no bare $0, $1, ... placeholder.
+"""Tests that skill and command text holds no bare $0, $1, ... placeholder.
 
 Run from plugins/kit: python3 -m unittest discover tests
+
+It reads every plugin in this repo, not only kit, so a skill keeps the check
+when it moves between plugins. Supporting files and agents are left out:
+they are read as files, and nothing fills their placeholders.
 
 When Claude Code loads a skill or a command, it replaces $N with argument
 number N, counting from zero, whenever that argument exists. A shell snippet
@@ -14,17 +18,18 @@ import re
 import unittest
 from pathlib import Path
 
-KIT = Path(__file__).resolve().parents[1]
+PLUGINS = Path(__file__).resolve().parents[2]
 BARE = re.compile(r"\$\d")
 
 
 class PlaceholderTest(unittest.TestCase):
     def test_no_bare_positional_placeholder(self):
-        files = sorted(KIT.glob("skills/*/SKILL.md")) + sorted(KIT.glob("commands/*.md"))
-        self.assertTrue(files)
+        files = (sorted(PLUGINS.glob("*/skills/*/SKILL.md"))
+                 + sorted(PLUGINS.glob("*/commands/*.md")))
+        self.assertTrue({p.relative_to(PLUGINS).parts[0] for p in files} - {"kit"})
         for path in files:
             for number, line in enumerate(path.read_text().splitlines(), 1):
-                with self.subTest(file=str(path.relative_to(KIT)), line=number):
+                with self.subTest(file=str(path.relative_to(PLUGINS)), line=number):
                     self.assertIsNone(BARE.search(line), line.strip())
 
 
