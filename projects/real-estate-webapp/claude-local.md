@@ -120,13 +120,20 @@ Each rule exists because it was broken once. The reasons are in
   type error and confirm the typecheck fails. CI runs
   `web/scripts/typecheck-canary.sh` for the same reason.
 - **Playwright role-name selectors match case-insensitive substrings.** Use
-  `exact: true`. The footer repeats the header's routes, so scope landing
-  locators to `getByRole('banner')` or `getByRole('contentinfo')`.
+  `exact: true`. Every public page ends with `SiteFooter`, which repeats the
+  header's routes, so scope locators on public pages to `getByRole('banner')`
+  or `getByRole('contentinfo')`.
 - **Every audit slug needs a label.** When the API adds an `AuditLog::record`
   slug, add it to the `auditActions` map in `web/pages/admin.vue`. An unmapped
   slug renders raw and cannot be filtered.
 - **Record photo provenance** in `docs/PHOTOS.md` before renaming a jpg, png or
   webp asset.
+- **Every piece of UI work starts with `frontend-design:frontend-design`**:
+  a canvas board or redraw, a new page or component, or a change to a page's
+  markup or styles. Start it through `kit:design-router` (job
+  `visual-direction`), which may chain other skills after it. Its visual
+  direction yields to the tokens in `assets/css/tokens.css` (the user,
+  2026-10-21).
 
 ## Product decisions not to re-litigate
 
@@ -183,7 +190,8 @@ These shape screens and flows, so the UI must respect them.
   user-facing string ships in both languages.
 - **Pure logic** lives in `utils/*.ts` and is unit-tested from `tests/`. Shared
   state lives in `composables/`. `utils/legal.ts` is the only source of company
-  details. A source-literal test fails if the landing footer retypes them.
+  details. A source-literal test fails if `components/SiteFooter.vue` retypes
+  them.
 - **Styling.** Every colour comes from `--z-*` tokens in
   `assets/css/tokens.css`. Light is the authoritative theme and dark is derived.
   The light palette appears twice, under `prefers-color-scheme` and under
