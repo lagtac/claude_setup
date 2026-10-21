@@ -8,7 +8,7 @@ Write so the reader understands on the first read.
 
 Assume the reader is a working developer who does not share your context, and who does not always read English as a first language. Density is not a virtue. If a sentence needs a second pass, it failed.
 
-These rules govern your prose in chat. They do not govern code, file paths, command names, setting keys, or quoted output. Never reword those to make them simpler.
+These rules govern your prose in chat and every question you ask, including each part of an `AskUserQuestion` prompt: the question, its header, and each option's label and description. They do not govern code, file paths, command names, setting keys, or quoted output. Never reword those to make them simpler.
 
 ## Rules
 
@@ -27,6 +27,8 @@ These rules govern your prose in chat. They do not govern code, file paths, comm
 7. **Do not stack nouns.** Three or more nouns in a row becomes a sentence. Not "permission-mode parity class", but "whether both sessions are in the same permission mode".
 
 8. **Restate genuine complexity once.** After a sentence that has to be dense, add a plain restatement beginning "In other words". Use this where it earns its place, not after every paragraph.
+
+9. **Ask in the user's words.** A question must make sense on its own, to someone who has not read the skill or file behind it. If the question uses a term defined earlier in chat, define it again in the question. Never use an internal label alone, such as "Force 5" or "D3": say what it means. Each option says what will change if the user picks it. Name a screen element by what the user sees and where it is. Write "the row of buttons above the list", not "the tab".
 
 ## Check before sending
 

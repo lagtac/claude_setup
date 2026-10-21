@@ -24,7 +24,7 @@ Set on 2026-10-14; the shipped steps were removed on 2026-10-16, and the
 text. Row 67 was put first on 2026-10-18. Rows 68 and 69 became step 3
 the same day, and row 48 was folded into 68. Row 51 was moved ahead of
 its place by the user on 2026-10-20, to the head of step 2's script chain,
-and shipped on 2026-10-21.
+and shipped on 2026-10-21. Row 62 shipped on 2026-10-21.
 The steps run top to bottom. Rows in one step can run side by side,
 because they edit different files.
 
@@ -34,13 +34,13 @@ because they edit different files.
 2. **33 "Parallel squash-merge uses the wrong branch" and 37 "Handoff opens
    no window from outside tmux" on one branch, then 56 "Two supervised runs
    get the same port". Beside them, 45 "Review preparation as a script",
-   then 46 "`git-squasher` plan and apply scripts"; and 62 "Question prompts
-   follow `plain`".** 33, 37 and 56 are bugs in `my:handoff`, so they come
-   first. 33 is live in every project with a "Parallel runs" section. 33 and
+   then 46 "`git-squasher` plan and apply scripts".** 33, 37 and 56 are
+   bugs in `my:handoff`, so they come first. 33 is live in every project with
+   a "Parallel runs" section. 33 and
    37 are bug fixes and may share one branch. 56 no longer waits for row 29:
    zitamu hits it now, and row 29 takes weeks. 45 is the most-used script
    row. 45 is in `my` and 46 in `kit`, but both edit `README.md`, so 46 goes
-   after 45. 46 builds on 41's fix. 62 edits only `global/output-styles/plain.md`.
+   after 45. 46 builds on 41's fix.
 3. **68 "Methods as plugins", then 69 "Shared skills move to `kit`".**
    68 comes after 67, so its spec uses the new routes, and after 33, 37 and
    56, because it changes the launch lines in `my:handoff` that they fix. It
@@ -484,10 +484,11 @@ Findings of [`docs/reports/2026-10-15-row-74-handoff-run-audit.md`](docs/reports
   (report H3). "One fix round per review" sends a re-review finding that
   today's code can reach to a new roadmap row; **Risk** keeps only input that
   today's code never produces (report H8). Row 63 was folded in on 2026-10-16.
-- 💭 62 **Question prompts follow `plain`** — rule in
-  `global/output-styles/plain.md`, route not set. Multiple-choice questions
-  use the agent's own terms, such as "force" or "tab", so the user cannot answer
-  them. Fix: the `plain` style also covers these questions. Report H5.
+- ✅ 62 **Question prompts follow `plain`** — rule in
+  `global/output-styles/plain.md`, bounded. Multiple-choice questions used
+  the agent's own terms, such as "force" or "tab", so the user could not
+  answer them. The style now covers every question, and its new rule 9 asks
+  for the user's words. Shipped. Report H5.
 
 ## Superpowers fit
 

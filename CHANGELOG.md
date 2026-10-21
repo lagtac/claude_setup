@@ -16,6 +16,17 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-21 — Questions follow the `plain` style (row 62)
+
+The `plain` output style now covers every question a session asks,
+including each part of an `AskUserQuestion` prompt: the question, its
+header, and each option's label and description. Its new rule 9, "Ask in
+the user's words", says a question must make sense on its own. It defines
+again a term that chat defined earlier, never uses an internal label such
+as "Force 5" alone, says what each option will change, and names a screen
+element by what the user sees. Source: finding H5 of the
+[handoff run audit](docs/reports/2026-10-15-row-74-handoff-run-audit.md).
+
 ### 2026-10-21 — The roadmap and changelog skills check links by script (row 51)
 
 `my:roadmap-management` and `my:changelog-management` no longer check links
