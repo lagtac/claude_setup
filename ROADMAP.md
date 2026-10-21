@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 74
+**Next number:** 75
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -18,39 +18,35 @@ and the same edit raises it by one.
 
 ## Order of work
 
-Set on 2026-10-14; the shipped steps were removed on 2026-10-16, and the
-`my:handoff` fixes moved to step 1 the same day. Row 64 shipped on
-2026-10-16 ahead of its place; rows 33, 37, 56, 45 and 61 rebase onto its
-text. Row 67 was put first on 2026-10-18. Rows 68 and 69 became step 3
-the same day, and row 48 was folded into 68. Row 51 was moved ahead of
-its place by the user on 2026-10-20, to the head of step 2's script chain,
-and shipped on 2026-10-21. Row 62 shipped on 2026-10-21.
+Set on 2026-10-14; shipped steps are removed. On 2026-10-21 the user made
+rows 68, 69 and 74 the priorities, behind the three `my:handoff` bugs; every
+other row keeps its order behind them. Row 48 was folded into 68 on
+2026-10-18.
 The steps run top to bottom. Rows in one step can run side by side,
 because they edit different files.
 
-1. **67 "Brainstorming's paths replace the size table".** It changes how
-   every row is sized and which documents it gets, so the rows after it are
-   specced under the new rule instead of being reviewed again later.
-2. **33 "Parallel squash-merge uses the wrong branch" and 37 "Handoff opens
+1. **33 "Parallel squash-merge uses the wrong branch" and 37 "Handoff opens
    no window from outside tmux" on one branch, then 56 "Two supervised runs
-   get the same port". Beside them, 45 "Review preparation as a script",
-   then 46 "`git-squasher` plan and apply scripts".** 33, 37 and 56 are
-   bugs in `my:handoff`, so they come first. 33 is live in every project with
-   a "Parallel runs" section. 33 and
-   37 are bug fixes and may share one branch. 56 no longer waits for row 29:
-   zitamu hits it now, and row 29 takes weeks. 45 is the most-used script
-   row. 45 is in `my` and 46 in `kit`, but both edit `README.md`, so 46 goes
-   after 45. 46 builds on 41's fix.
-3. **68 "Methods as plugins", then 69 "Shared skills move to `kit`"; and
-   after 68, 71 "Project rules outrank the core".** 68 comes after 67, so
-   its spec uses the new routes, and after 33, 37 and 56, because it changes
-   the launch lines in `my:handoff` that they fix. It replaces `kit:setup`'s
-   two switches and `method-guard.py`, so 60 in step 5 edits the new
-   `kit:setup`. 69 renames skills in files 68 also edits, so it comes right
-   after, and each name changes once. 71 rewrites the Precedence paragraph
-   that 68 rewrites, and its draft edits `global/methods/`, which 68 deletes,
-   so its spec is redrafted after 68 (user, 2026-10-21).
-4. **61 "Auto start on approval, and re-review findings as rows", then 55
+   get the same port".** They are bugs in `my:handoff`, and 33 is live in
+   every project with a "Parallel runs" section. 33 and 37 are bug fixes and
+   may share one branch. 56 no longer waits for row 29: zitamu hits it now,
+   and row 29 takes weeks. They come before 68, because 68 changes the launch
+   lines in `my:handoff` that they fix (user, 2026-10-21).
+2. **68 "Methods as plugins", then 69 "Shared skills move to `kit`".** 68
+   replaces `kit:setup`'s two switches and `method-guard.py`, so 60 in step
+   6 edits the new `kit:setup`. 69 renames skills in files 68 also edits, so
+   it comes right after, and each name changes once.
+3. **74 "Find more prose that scripts can replace".** It comes after 68 and
+   69, so it reads the files where they leave them. Each row it adds gets a
+   place in this order when it is added.
+4. **45 "Review preparation as a script", then 46 "`git-squasher` plan and
+   apply scripts". Beside them, 71 "Project rules outrank the core".** 45 is
+   the most-used script row. 45 is in `my` and 46 in `kit`, but both edit
+   `README.md`, so 46 goes after 45. 46 builds on 41's fix. 71 rewrites the
+   Precedence paragraph that 68 rewrites, and its draft edits
+   `global/methods/`, which 68 deletes, so its spec is redrafted after 68
+   (user, 2026-10-21).
+5. **61 "Auto start on approval, and re-review findings as rows", then 55
    "Decisions that go back to the user", then 53 "`my:draft-spec`", then 54
    "Bugs and approved bounded rows in forks while the user is away".** 61 is
    two small rules in `global/methods/my.md`, the file 55 and 53 edit, so it
@@ -58,26 +54,26 @@ because they edit different files.
    54 both use the rule of 55. 55 and 53 both edit
    `global/methods/my.md`. 54 comes after 53, because both run forks while
    the user is away, and 53 is being designed now.
-5. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
+6. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
    `my:spec-review` `SKILL.md`. Side by side with 8: **60 "Project facts in
    `CLAUDE.local.md`"**, which edits `kit:setup` after 68 reshapes it; 47
    "`clean-plans` moves by script"; 49 "`dev-reports` dates and TODOs by
    script"; 50 "`clean-gone-branches` as a script".
-6. **One at a time, all in `my:handoff`: 34 "Merges read a message file",
+7. **One at a time, all in `my:handoff`: 34 "Merges read a message file",
    44 "`git-fold-fixups.py list <path>`", 43 "`handoff` start checks as a
    script", 66 "Window row lookup by script", 57 "An auto run that stops
    before the merge", then 35 "Trim `my:handoff` text".** 34 reworks the
-   command that 33 fixed in step 2. 43 does not wait for 42's parser:
+   command that 33 fixed in step 1. 43 does not wait for 42's parser:
    without a "Parallel runs" section, `<n>` is `1`. 57 is a feature, so it
    follows the scripts. The trims come last, so they trim the text the
    scripts leave.
-7. **40 "Every spec has a Files section", then 52 "`status` gates and
+8. **40 "Every spec has a Files section", then 52 "`status` gates and
    overlap by script".** Both edit `my:status` `SKILL.md`, and 40 also edits
-   `my:spec-review`, so it goes after step 5.
-8. **20 "Specs and plans name what UI tests check".** Rule text only. It
+   `my:spec-review`, so it goes after step 6.
+9. **20 "Specs and plans name what UI tests check".** Rule text only. It
    edits the spec rules in `global/methods/my.md`, as 40 and 53 do, so it
    goes after them.
-9. **Waiting rows: 72 "Workflow metrics as one `my` script", then 29
+10. **Waiting rows: 72 "Workflow metrics as one `my` script", then 29
    "Measure the auto runs", then 30 "Split `my:handoff` by mode"; and 17
    "Generalize the gates"; after 29, 39 "`kit:setup` offers a Parallel runs
    section" and 42 "Parallel runs parser".** 72 gives 29 its script, so it
@@ -259,11 +255,12 @@ Make the harness reusable in new projects without forking copies. Spec:
   becomes a plugin whose forced output style holds its rules and whose
   `dependencies` hold its plugins. A directory's settings name its method, and
   `claude-method <m>` switches one session at launch. It replaces the import
-  line, the plugin keys and `method-guard.py`. Spec approved, plan next.
-  Reframed on 2026-10-20 from a launcher named `claude`; row 48 was folded in
-  on 2026-10-18.
+  line, the plugin keys and `method-guard.py`. Spec and plan approved, code
+  next. Reframed on 2026-10-20 from a launcher named `claude`; row 48 was
+  folded in on 2026-10-18.
   [brief](docs/plans/2026-10-20-method-bundles-architecture.md),
-  [spec](docs/plans/2026-10-20-method-bundles-spec.md)
+  [spec](docs/plans/2026-10-20-method-bundles-spec.md),
+  [plan](docs/plans/2026-10-20-method-bundles.md)
 - 💭 69 **Shared skills move to `kit`** — feature, moving skills from `my` to
   `kit`; architectural with plan. `roadmap-management` and
   `changelog-management` live in `my`, so other methods cannot use them. Goal:
@@ -414,6 +411,13 @@ steps of the `my` and `kit` skills that fixed rules decide, and that a script
 in `bin/` can run instead of the model. Their order is in "Order of work"
 above.
 
+- 💭 74 **Find more prose that scripts can replace** — audit of the `my` and
+  `kit` skills, the method's rules and `global/rules/`; it writes a report,
+  so it takes no route. Skills and rules still spell out steps that fixed
+  rules decide, and the model runs them by hand. The 2026-10-14 audit read
+  only the skills, and much text was added after it. Goal: a new report in
+  `docs/reports/` applies that audit's test to all these files, and each new
+  finding becomes a row beside rows 42 to 52.
 - 💭 42 **Parallel runs parser** — feature in `handoff-state.py`, route not
   set. `my:handoff`, `my:status`, `kit:commit` and `my:architect` each read
   the Parallel runs section by hand. Goal: a `handoff-state.py` subcommand
