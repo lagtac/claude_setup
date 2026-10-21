@@ -16,6 +16,25 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-21 — The roadmap and changelog skills check links by script (row 51)
+
+`my:roadmap-management` and `my:changelog-management` no longer check links
+by eye. Before each commit they run `link-check.py`, a new script in
+`plugins/my/bin/`. It lists every bad link in `ROADMAP.md` and
+`CHANGELOG.md`: a path that leaves the repository, a `.html` link whose `.md`
+twin exists, or a path that is missing or ignored by git. Each problem is
+marked `new` when its line is in the uncommitted edit, and `old` otherwise.
+Details: [spec](docs/plans/2026-10-20-link-check-spec.md).
+
+- The skills fix each `new` problem by their rule 8 and list each `old` one
+  to the user without changing it.
+- A paired edit (a row marked ✅ with its changelog entry) runs the check
+  once on both files.
+- When the script is missing or fails, the skills check the edited links by
+  hand, as before.
+- Known limits, such as links whose text holds brackets, are in the spec's
+  Risk section.
+
 ### 2026-10-20 — `kit:design-router` chooses the design skill (row 70)
 
 Several design plugins hold skills that do the same job. A new

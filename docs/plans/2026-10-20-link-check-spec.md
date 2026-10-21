@@ -1,6 +1,6 @@
 # Spec: `link-check.py`, the link check for the roadmap and the changelog
 
-**Status:** approved, 2026-10-21. Roadmap row 51, cut to the link check; the next-number part is dropped.
+**Status:** done, 2026-10-21. Shipped in `6042aa3`; my 273 and kit 73 tests pass; row 51.
 
 ## How to read this spec
 

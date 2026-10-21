@@ -23,7 +23,8 @@ Set on 2026-10-14; the shipped steps were removed on 2026-10-16, and the
 2026-10-16 ahead of its place; rows 33, 37, 56, 45 and 61 rebase onto its
 text. Row 67 was put first on 2026-10-18. Rows 68 and 69 became step 3
 the same day, and row 48 was folded into 68. Row 51 was moved ahead of
-its place by the user on 2026-10-20, to the head of step 2's script chain.
+its place by the user on 2026-10-20, to the head of step 2's script chain,
+and shipped on 2026-10-21.
 The steps run top to bottom. Rows in one step can run side by side,
 because they edit different files.
 
@@ -32,16 +33,14 @@ because they edit different files.
    specced under the new rule instead of being reviewed again later.
 2. **33 "Parallel squash-merge uses the wrong branch" and 37 "Handoff opens
    no window from outside tmux" on one branch, then 56 "Two supervised runs
-   get the same port". Beside them, 51 "Link check for the roadmap and
-   changelog", then 45 "Review preparation as a script", then 46
-   "`git-squasher` plan and apply scripts"; and 62 "Question prompts follow
-   `plain`".** 33, 37 and 56 are bugs in `my:handoff`, so they come
+   get the same port". Beside them, 45 "Review preparation as a script",
+   then 46 "`git-squasher` plan and apply scripts"; and 62 "Question prompts
+   follow `plain`".** 33, 37 and 56 are bugs in `my:handoff`, so they come
    first. 33 is live in every project with a "Parallel runs" section. 33 and
    37 are bug fixes and may share one branch. 56 no longer waits for row 29:
    zitamu hits it now, and row 29 takes weeks. 45 is the most-used script
    row. 45 is in `my` and 46 in `kit`, but both edit `README.md`, so 46 goes
-   after 45. 51 edits `README.md` too, so it joins that chain, first. 46
-   builds on 41's fix. 62 edits only `global/output-styles/plain.md`.
+   after 45. 46 builds on 41's fix. 62 edits only `global/output-styles/plain.md`.
 3. **68 "Methods as plugins", then 69 "Shared skills move to `kit`".**
    68 comes after 67, so its spec uses the new routes, and after 33, 37 and
    56, because it changes the launch lines in `my:handoff` that they fix. It
@@ -452,12 +451,13 @@ above.
   `kit:clean-gone-branches`, route not set. The model lists, checks and
   deletes the branches by hand. Goal: a script does the list, the check and
   the delete; the command keeps the approval question. Report S11.
-- 📋 51 **Link check for the roadmap and changelog** — feature in
+- ✅ 51 **Link check for the roadmap and changelog** — feature in
   `my:roadmap-management` and `my:changelog-management`; architectural. The
-  model checks links by eye, and only in the row or entry it edited. Goal:
+  model checked links by eye, and only in the row or entry it edited. Now
   `link-check.py` lists the bad links in `ROADMAP.md` and `CHANGELOG.md` and
   marks those on lines the edit changed; the skills fix those and list the
-  rest. The next-number part was dropped on 2026-10-20. Report S12;
+  rest. The next-number part was dropped on 2026-10-20. Shipped in
+  `6042aa3`; known limits are in the spec's Risk section. Report S12;
   [spec](docs/plans/2026-10-20-link-check-spec.md)
 - 💭 52 **`status` gates and overlap by script** — feature in `my:status`,
   route not set. The model runs `my:status` steps 5 and 6 and the overlap test
