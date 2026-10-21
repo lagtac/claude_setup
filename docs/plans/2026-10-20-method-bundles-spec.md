@@ -1,6 +1,6 @@
 # Spec: methods as plugins
 
-**Status:** draft, 2026-10-21. Row 68; reviewed in `docs/plans/2026-10-20-method-bundles-spec-review.md`, waiting for the user's review.
+**Status:** approved, 2026-10-21. Row 68; reviewed in `docs/plans/2026-10-20-method-bundles-spec-review.md`, approved by the user.
 
 **Route:** architectural with plan. The change moves the rules that nine projects follow and
 retires the import line they use to load them. That is a public contract, and it is hard to
@@ -444,8 +444,8 @@ again on the text as it is when batch 1 starts, and owns the final list.
   `docs-layout.md` into a skill (candidate B). Under candidate A the file folds into the `my`
   style. That spec belongs to another session and is not edited here.
 - **Row 69 comes after.** It renames skills in files this row edits.
-- **Row 71 comes after** (D18). Its drafted spec, `docs/plans/2026-10-18-project-precedence-spec.md`
-  (not committed), rewrites the same Precedence paragraph and edits `global/methods/`. It is
+- **Row 71 comes after** (D18). Its drafted spec, `docs/plans/2026-10-18-project-precedence-spec.md`,
+  rewrites the same Precedence paragraph and edits `global/methods/`. It is
   redrafted against this row's Precedence text.
 - **Claude Code 2.1.304 or later**: `force-for-plugin`, `dependencies`, in-place loading.
 - No new packages.
