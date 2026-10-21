@@ -20,18 +20,15 @@ and the same edit raises it by one.
 
 Set on 2026-10-14; shipped steps are removed. On 2026-10-21 the user made
 rows 68, 69 and 74 the priorities, behind the three `my:handoff` bugs; every
-other row keeps its order behind them. Row 48 was folded into 68 on
-2026-10-18.
+other row keeps its order behind them. Rows 33 and 37 shipped on
+2026-10-22. Row 48 was folded into 68 on 2026-10-18.
 The steps run top to bottom. Rows in one step can run side by side,
 because they edit different files.
 
-1. **33 "Parallel squash-merge uses the wrong branch" and 37 "Handoff opens
-   no window from outside tmux" on one branch, then 56 "Two supervised runs
-   get the same port".** They are bugs in `my:handoff`, and 33 is live in
-   every project with a "Parallel runs" section. 33 and 37 are bug fixes and
-   may share one branch. 56 no longer waits for row 29: zitamu hits it now,
-   and row 29 takes weeks. They come before 68, because 68 changes the launch
-   lines in `my:handoff` that they fix (user, 2026-10-21).
+1. **56 "Two supervised runs get the same port".** It is a bug in
+   `my:handoff`. It no longer waits for row 29: zitamu hits it now, and row
+   29 takes weeks. It comes before 68, because 68 changes the launch lines in
+   `my:handoff` (user, 2026-10-21).
 2. **68 "Methods as plugins", then 69 "Shared skills move to `kit`".** 68
    replaces `kit:setup`'s two switches and `method-guard.py`, so 60 in step
    6 edits the new `kit:setup`. 69 renames skills in files 68 also edits, so
@@ -63,7 +60,7 @@ because they edit different files.
    44 "`git-fold-fixups.py list <path>`", 43 "`handoff` start checks as a
    script", 66 "Window row lookup by script", 57 "An auto run that stops
    before the merge", then 35 "Trim `my:handoff` text".** 34 reworks the
-   command that 33 fixed in step 1. 43 does not wait for 42's parser:
+   command that row 33 fixed. 43 does not wait for 42's parser:
    without a "Parallel runs" section, `<n>` is `1`. 57 is a feature, so it
    follows the scripts. The trims come last, so they trim the text the
    scripts leave.
@@ -351,13 +348,6 @@ Their order is in "Order of work" above.
   the commit's heredoc rule. Report P3. Shipped in `39000ec`; known limits are
   in the spec's Risk section.
   [spec](docs/plans/2026-10-12-locked-commit-spec.md)
-- 💭 33 **Parallel squash-merge uses the wrong branch** — bug in
-  `my:handoff`. With a "Parallel runs" section, the review stage's
-  squash-merge fails or merges the wrong branch. Fix: the merge command stops
-  using `$1` and `$2`, which Claude Code fills with the skill's arguments,
-  and kit's placeholder test also checks `my`.
-  [Report](docs/reports/2026-10-14-scriptable-skill-steps.md) B1 (the bug),
-  S1 (the fix).
 - 💭 34 **Merges read a message file** — feature in `handoff-state.py` and
   `my:handoff`, route not set. The merges take their commit message from a
   heredoc, so `my:handoff` must keep the heredoc rule. Goal: `handoff-state.py
@@ -370,11 +360,6 @@ Their order is in "Order of work" above.
   `handoff-lock.py --help`, and design explanations stay in the specs. *Locked
   commit*, *shared-doc check* and *waiting fixups* replace "as in Plan stage,
   step N". Report P4, P5. Row 36 was folded in on 2026-10-16.
-- 💭 37 **Handoff opens no window from outside tmux** — bug in `my:handoff`.
-  When Claude runs outside tmux, a handoff prints a command to paste
-  by hand, even when tmux is running. Fix: the Launch step reads only
-  `TMUX`; when it is empty, pick a session from `tmux ls` (for example the
-  one named after the repo) and open the window with `-t <session>:`.
 - 💭 56 **Two supervised runs get the same port** — bug in `my:handoff`.
   Two supervised (not auto) runs at the same time get the same
   preview port and other per-run values, so the second fails to start. Fix:
@@ -402,6 +387,20 @@ Their order is in "Order of work" above.
   window `r<row>: <stage>-<slug>`, the `kit:name-pane` prefix, with the row
   that links the doc. Small; known limits are in the squash commit and in
   row 66. Not from the audit report.
+- ✅ 33 **Parallel squash-merge uses the wrong branch** — bug in
+  `my:handoff`. With a "Parallel runs" section, the review stage's
+  squash-merge failed or merged the wrong branch, because Claude Code fills
+  `$1` and `$2` in skill text with the skill's arguments. Fix: the command
+  uses `${1}` and `${2}`, and kit's placeholder test checks every plugin.
+  Shipped. [Report](docs/reports/2026-10-14-scriptable-skill-steps.md) B1,
+  S1.
+- ✅ 37 **Auto runs refuse to start outside tmux** — bug in `my:handoff`.
+  Outside tmux, an auto run wrote its state, printed a command and held its
+  slot until it stopped at the next stage. Fix: tmux is required, since a
+  tmux session can have any name and a guess opens the window where the user
+  is not looking. A window check refuses every auto form outside tmux and
+  writes nothing; a supervised launch still prints the command, with the
+  reason. Shipped; known limits are in the squash commit.
 
 ## Scripted skill steps
 

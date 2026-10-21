@@ -16,6 +16,26 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-22 — Auto runs need tmux, and the parallel squash-merge is fixed (rows 33 and 37)
+
+Two bugs in `my:handoff`. Details are in the squash commit, with its known
+limits.
+
+- **The parallel squash-merge merges the right branch (row 33).** Claude Code
+  fills `$1` and `$2` in skill text with the skill's arguments, so with a
+  "Parallel runs" section the review stage's merge got the stage name in
+  place of the branch. The command now uses `${1}` and `${2}`. kit's
+  placeholder test checks the skills and commands of every plugin, not only
+  kit. Source: B1 and S1 of the
+  [scriptable steps audit](docs/reports/2026-10-14-scriptable-skill-steps.md).
+- **Auto runs need tmux (row 37).** Outside tmux, an auto run wrote its state,
+  printed a command and held its slot until it stopped at the next stage.
+  Now the auto launch, each `run auto` stage, `auto resume` and `auto rows`
+  first check that Claude runs inside tmux, that the tmux server answers, and
+  that the mode is `auto` or `bypassPermissions`. If not, they refuse and
+  write nothing. Start Claude inside tmux for an auto run. A supervised
+  launch outside tmux still prints the command, now with the reason.
+
 ### 2026-10-21 — Questions follow the `plain` style (row 62)
 
 The `plain` output style now covers every question a session asks,
