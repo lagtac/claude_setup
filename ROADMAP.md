@@ -417,6 +417,7 @@ above.
   only the skills, and much text was added after it. Goal: a new report in
   `docs/reports/` applies that audit's test to all these files, and each new
   finding becomes a row beside rows 42 to 52.
+  [Report](docs/reports/2026-10-22-project-direction-critique.md) D3.
 - 💭 42 **Parallel runs parser** — feature in `handoff-state.py`, route not
   set. `my:handoff`, `my:status`, `kit:commit` and `my:architect` each read
   the Parallel runs section by hand. Goal: a `handoff-state.py` subcommand
