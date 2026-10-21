@@ -470,10 +470,11 @@ above.
 
 Findings of [`docs/reports/2026-10-15-row-74-handoff-run-audit.md`](docs/reports/2026-10-15-row-74-handoff-run-audit.md), from zitamu rows 74a and 74b.
 
-- 💭 60 **Project facts in `CLAUDE.local.md`** — fix: the facts check in
-  `global/methods/my.md` and `kit:setup` also accept `CLAUDE.local.md`, as
-  the Parallel runs rule does, and `kit:setup` asks which file to use.
-  Report H4.
+- 💭 60 **Project facts in `CLAUDE.local.md`** — bug in the facts check of
+  `global/methods/my.md` and in `kit:setup`. A user who keeps the project
+  facts in `CLAUDE.local.md` does not have them found, and `kit:setup` writes
+  them into `CLAUDE.md` again. Fix: both accept `CLAUDE.local.md`, as the
+  Parallel runs rule does, and `kit:setup` asks which file to use. Report H4.
 - 💭 61 **Auto start on approval, and re-review findings as rows** — rule in
   `global/methods/my.md`, route not set. After approving a spec with a
   Delegation section, the user still answers "supervised or auto?", and a
