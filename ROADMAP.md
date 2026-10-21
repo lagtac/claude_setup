@@ -41,12 +41,15 @@ because they edit different files.
    zitamu hits it now, and row 29 takes weeks. 45 is the most-used script
    row. 45 is in `my` and 46 in `kit`, but both edit `README.md`, so 46 goes
    after 45. 46 builds on 41's fix.
-3. **68 "Methods as plugins", then 69 "Shared skills move to `kit`".**
-   68 comes after 67, so its spec uses the new routes, and after 33, 37 and
-   56, because it changes the launch lines in `my:handoff` that they fix. It
-   replaces `kit:setup`'s two switches and `method-guard.py`, so 60 in step
-   5 edits the new `kit:setup`. 69 renames skills in files 68 also edits, so
-   it comes right after, and each name changes once.
+3. **68 "Methods as plugins", then 69 "Shared skills move to `kit`"; and
+   after 68, 71 "Project rules outrank the core".** 68 comes after 67, so
+   its spec uses the new routes, and after 33, 37 and 56, because it changes
+   the launch lines in `my:handoff` that they fix. It replaces `kit:setup`'s
+   two switches and `method-guard.py`, so 60 in step 5 edits the new
+   `kit:setup`. 69 renames skills in files 68 also edits, so it comes right
+   after, and each name changes once. 71 rewrites the Precedence paragraph
+   that 68 rewrites, and its draft edits `global/methods/`, which 68 deletes,
+   so its spec is redrafted after 68 (user, 2026-10-21).
 4. **61 "Auto start on approval, and re-review findings as rows", then 55
    "Decisions that go back to the user", then 53 "`my:draft-spec`", then 54
    "Bugs and approved bounded rows in forks while the user is away".** 61 is
@@ -250,16 +253,17 @@ Make the harness reusable in new projects without forking copies. Spec:
   memory and the repo's compose, `.env` and e2e files, asks for the ports
   already in use, and fixes that line. Split out of row 9's first spec draft.
   Blocked by row 29.
-- 💭 68 **Methods as plugins** — feature across the methods, `kit` and the
+- 📋 68 **Methods as plugins** — feature across the methods, `kit` and the
   marketplace; architectural with plan. Today a directory picks its method
   through an import line, plugin keys and `method-guard.py`. Goal: each method
   becomes a plugin whose forced output style holds its rules and whose
   `dependencies` hold its plugins. A directory's settings name its method, and
   `claude-method <m>` switches one session at launch. It replaces the import
-  line, the plugin keys and `method-guard.py`. Brief approved, brainstorming
-  next. Reframed on 2026-10-20 from a launcher named `claude`; row 48 was
-  folded in on 2026-10-18.
-  [brief](docs/plans/2026-10-20-method-bundles-architecture.md)
+  line, the plugin keys and `method-guard.py`. Spec approved, plan next.
+  Reframed on 2026-10-20 from a launcher named `claude`; row 48 was folded in
+  on 2026-10-18.
+  [brief](docs/plans/2026-10-20-method-bundles-architecture.md),
+  [spec](docs/plans/2026-10-20-method-bundles-spec.md)
 - 💭 69 **Shared skills move to `kit`** — feature, moving skills from `my` to
   `kit`; architectural with plan. `roadmap-management` and
   `changelog-management` live in `my`, so other methods cannot use them. Goal:
@@ -273,7 +277,7 @@ Make the harness reusable in new projects without forking copies. Spec:
   them. Goal: the paragraph lists the order: protected rules, the user, the
   project files, the method, the core, then skills. Two protected rules: ask
   before adding dependencies, and before actions that are hard to undo or
-  leave the machine. Spec drafted, not placed in the order yet.
+  leave the machine. Spec drafted; it is redrafted after row 68.
   [spec](docs/plans/2026-10-18-project-precedence-spec.md)
 - ✅ 16 **Swappable methods** — split `global/CLAUDE.md` into a neutral core
   and per-method files, and split `my` into `my` (the method) and `kit`
