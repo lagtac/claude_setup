@@ -988,7 +988,13 @@ worktree sees only committed text.
    uses `modern-web-guidance`, which step 2 turned off: turn it on there by name when a lesson
    needs it.
 
-Result of step 1: (written after the run).
+Result of step 1: passed on 2026-10-23, with no install needed. In a fixture folder that turns
+`tutor@claude-setup` on, the init event's `plugins` list names `tutor`; in one that turns
+`sp@claude-setup` and `superpowers@synced` on, it names `sp` and `superpowers`. Neither fixture
+loads the other method's plugin. The init event's `output_style` still says `plain`, because
+step 2 has not run yet, but each session's system prompt holds `# Output Style: tutor:tutor` or
+`sp:sp`, so the forced style wins. `~/.claude/settings.json` names neither plugin, so both stay off
+elsewhere.
 
 ### Task 10: start conditions (batch 2)
 
