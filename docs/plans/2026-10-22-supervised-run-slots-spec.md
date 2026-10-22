@@ -1,6 +1,6 @@
 # Spec: every run gets its own slot
 
-**Status:** draft, 2026-10-22. Row 56; supervised `my:handoff` runs get a state file and a slot from the same pool as auto runs.
+**Status:** approved, 2026-10-22. Row 56; supervised `my:handoff` runs get a state file and a slot from the same pool as auto runs.
 
 **Route:** architectural with plan. Row 56 is a bug. `superpowers:systematic-debugging` found the
 root cause, and the fix changes the shape of the run state that `handoff-state.py` stores, which
