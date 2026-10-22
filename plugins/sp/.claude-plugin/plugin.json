@@ -1,0 +1,10 @@
+{
+  "name": "sp",
+  "description": "The sp method: the superpowers workflow as superpowers defines it, with no rules of its own.",
+  "author": {
+    "name": "Dimitris Chrysomalis"
+  },
+  "dependencies": [
+    "superpowers@synced"
+  ]
+}

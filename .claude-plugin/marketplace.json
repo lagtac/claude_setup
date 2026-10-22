@@ -8,13 +8,13 @@
   "plugins": [
     {
       "name": "my",
-      "description": "The my method: workflow skills, review agents, handoff scripts and hooks for the spec, plan, code and review cycle. Off at user scope; a project turns it on with /kit:setup my.",
+      "description": "The my method: its rules as a forced output style, workflow skills, review agents, handoff scripts and hooks for the spec, plan, code and review cycle. Depends on superpowers. A folder turns it on with /kit:setup my.",
       "source": "./plugins/my",
-      "category": "development"
+      "category": "method"
     },
     {
       "name": "kit",
-      "description": "Neutral tools that work under any method: writing, git, Laravel and prompt helpers, the tutor for learning workspaces, kit:setup, and the SessionStart hooks for the tutor and the method guard.",
+      "description": "Neutral tools that work under any method: writing, git, Laravel and prompt helpers, kit:setup, and the method start check.",
       "source": "./plugins/kit",
       "category": "development"
     },
@@ -23,6 +23,18 @@
       "description": "TypeScript language server with @vue/typescript-plugin, so LSP also covers .vue files. Replaces typescript-lsp.",
       "source": "./plugins/vue-lsp",
       "category": "development"
+    },
+    {
+      "name": "tutor",
+      "description": "The tutor method: a learning workspace where the student writes the code; its rules as a forced output style and the tutor:tutor skill.",
+      "source": "./plugins/tutor",
+      "category": "method"
+    },
+    {
+      "name": "sp",
+      "description": "The sp method: the superpowers workflow as superpowers defines it, with no rules of its own.",
+      "source": "./plugins/sp",
+      "category": "method"
     }
   ]
 }

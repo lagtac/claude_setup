@@ -9,17 +9,20 @@ My Claude Code setup. The repo is also a plugin marketplace, named
     for development workflows. Its README explains the method and how it
     builds on superpowers.
   - **`plugins/kit/`** — the `kit` plugin: neutral skills, commands, agents and
-    the tutor hook, which work under any method.
+    the method start check, which work under any method.
+  - **`plugins/tutor/`** — the `tutor` method plugin: its rules as a forced
+    output style, and the `tutor:tutor` skill for learning workspaces.
+  - **`plugins/sp/`** — the `sp` method plugin: the superpowers workflow as
+    superpowers defines it, with no rules of its own.
   - **`plugins/vue-lsp/`** — the `vue-lsp` plugin: the TypeScript language
     server with `@vue/typescript-plugin`, so LSP also covers `.vue` files. Its
     README lists the npm packages it needs.
-- **`global/`** — global instructions (`CLAUDE.md`, the rules that hold under
-  any method), method files (`methods/`), path-scoped rules (`rules/`),
-  output styles (`output-styles/`) and the git hooks of the `my` method
-  (`git-hooks/`, which a project turns on through `core.hooksPath`). `~/.claude/CLAUDE.md`, `~/.claude/methods`,
-  `~/.claude/rules` and `~/.claude/output-styles` are symlinks into this
-  folder, so edit the files here. There are two output styles: `plain`, the
-  default, and `tutor`, which a learning workspace sets (see `kit:tutor`).
+- **`global/`** — global instructions (`CLAUDE.md`, the core: the rules that
+  hold under any method), path-scoped rules (`rules/`, among them
+  `engineering.md`, which loads when Claude reads or writes code) and the git
+  hooks of the `my` method (`git-hooks/`, which a project turns on through
+  `core.hooksPath`). `~/.claude/CLAUDE.md` and `~/.claude/rules` are symlinks
+  into this folder, so edit the files here.
 - **`projects/<repo>/`** — one project's private Claude files, which its own
   repo ignores: `claude-local.md` and `rules/`. A fresh clone of that project
   links them back from its root:
@@ -80,30 +83,30 @@ plugin twice.
 
 ## Methods
 
-A method is a set of skills plus the always-on rules that go with them. Each
-project picks its own, so trying another method does not touch the global
-files.
+A method is a plugin with `"category": "method"` in
+`.claude-plugin/marketplace.json`. Its forced output style holds its rules,
+and the `dependencies` field of its `plugin.json` holds the plugins it needs.
+The methods here are `my`, `tutor` and `sp`. Each project picks its own, so
+trying another method does not touch the global files.
 
-- `~/.claude/settings.json` turns `my@claude-setup` and `superpowers@synced`
-  off, and `kit@claude-setup` on. A project with no switch of its own gets
-  only the neutral rules in `global/CLAUDE.md` and the `kit` tools.
-- A `my` project has a `## Project facts` block and the line
-  `@~/.claude/methods/my.md` in its `CLAUDE.md`, and turns
-  `my@claude-setup` and `superpowers@synced` on in its
-  `.claude/settings.json`.
-- A tutor project has the line `@~/.claude/methods/tutor.md` in its
-  `CLAUDE.md`, and no plugin switch: `my` and superpowers stay off.
+- `~/.claude/settings.json` keeps every method off, and `kit@claude-setup`
+  on. A project with no method of its own gets only the core in
+  `global/CLAUDE.md`, the rules in `global/rules/` and the `kit` tools.
+- A project's `.claude/settings.json` names its method: the method's key and
+  its dependencies' keys are `true`. A `my` project also has a
+  `## Project facts` block in its `CLAUDE.md`.
 - A trial project uses whatever the outside method's own setup writes.
 
-`/kit:setup my [<path>]` or `/kit:setup tutor [<path>]` writes these switches
-and commits them in that project. Then start a new interactive session there:
-Claude Code asks once to approve the import, and the rules load only after
-that. The `method-guard.py` hook (see Hooks) warns when the switches disagree.
+`/kit:setup <method> [<path>]` writes these keys, from
+`plugins/kit/bin/claude-method`, and commits them in that project. The method
+loads in the next session there. The `method-guard.py` hook (see Hooks) warns
+when two methods are on, when a dependency is off, or when an old import line
+is left.
 
 ## Skills
 
 Skills load when a task matches their description, or when you call them
-as `/my:<name>` or `/kit:<name>`.
+as `/my:<name>`, `/kit:<name>` or `/tutor:<name>`.
 
 ### `my` skills
 
@@ -143,14 +146,9 @@ as `/my:<name>` or `/kit:<name>`.
 
 ### `kit` skills
 
-- `kit:tutor` — A learning mode. Sets up a learning workspace (a new repo, a
-  repo made for learning, or a clone of a real project that cannot push), and
-  runs the sessions: the student writes the code, the tutor sets exercises,
-  gives hints and keeps notes in `docs/learning/`. Say "let's make a learning
-  project for …" to start.
-- `kit:setup` — Switches a project to the `my` or `tutor` method: writes the
-  import line, the facts block and the plugin switch, and commits them in that
-  project. See Methods.
+- `kit:setup` — Sets a project's method: writes the method's plugin keys
+  (and, for `my`, the facts block), removes other methods' keys and an old
+  import line, and commits them in that project. See Methods.
 - `kit:briefing` — Writes a plain-English, decision-focused briefing for
   non-technical readers, in `docs/briefings/`. Five events: a result landed,
   a decision needs sign-off, a long job started, changes since a fixed point
@@ -182,8 +180,20 @@ as `/my:<name>` or `/kit:<name>`.
   `plugins/kit/skills/design-router/plugins.json`. Tests:
   `cd plugins/kit && python3 -m unittest discover tests`.
 
+### `tutor` skills
+
+- `tutor:tutor` — A learning mode. Sets up a learning workspace (a new repo, a
+  repo made for learning, or a clone of a real project that cannot push), and
+  runs the sessions: the student writes the code, the tutor sets exercises,
+  gives hints and keeps notes in `docs/learning/`. The `tutor` plugin is off
+  outside a learning workspace, so start a session with
+  `~/projects/claude-setup/plugins/kit/bin/claude-method tutor` in the folder
+  that will hold the new workspace, then say "let's make a learning project
+  for …".
+
 `plugins/my/bin/` also holds `git-fold-fixups.py`, which is not a skill. The
-feature steps in `global/rules/docs-layout.md` and `my:handoff` call it.
+feature steps in the `my` style (`plugins/my/output-styles/my.md`) and
+`my:handoff` call it.
 `git-fold-fixups.py check <sha>` says whether a fixup of a commit is safe. With
 no argument it folds every waiting `fixup!` commit on the branch, or refuses
 with one line and changes nothing. Your shell finds it through a symlink in
@@ -252,14 +262,12 @@ Defined in `plugins/my/hooks/hooks.json`:
 
 Defined in `plugins/kit/hooks/hooks.json`:
 
-- **SessionStart** (on startup and `/clear`) — in a learning workspace, a repo
-  with `docs/learning/curriculum.md`, tells Claude to invoke `kit:tutor`
-  before its first reply.
-- **SessionStart** (on startup, resume and `/clear`) — `method-guard.py` checks
-  the project's method switch and warns when its parts disagree: a `my` import
-  with its plugins off, an import that is not approved or was declined, `my`
-  or superpowers on without the `my` import, or more than one method import.
-  It reads and never writes, and prints nothing when all is well.
+- **SessionStart** (on startup, resume and `/clear`) — `method-guard.py`
+  reads the method list from `claude-method --methods` and warns in three
+  cases: more than one method on, a method on with a dependency off, or an old
+  import line `@~/.claude/methods/<m>.md` left in `CLAUDE.md` or
+  `CLAUDE.local.md`. It reads and never writes, and prints nothing when all is
+  well.
 - **PreToolUse** (Skill) — `design-router-gate.py` refuses Claude's calls to
   skills of plugins that `kit:design-router`'s plugin list marks `routed` or
   `excluded`, and of installed plugins the list lacks, unless the router wrote

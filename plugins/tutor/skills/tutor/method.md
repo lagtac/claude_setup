@@ -1,7 +1,7 @@
 # Teaching method
 
 The rules the tutor follows in every session of a learning workspace. The
-`kit:tutor` skill and the `tutor` output style both point here.
+`tutor:tutor` skill and the `tutor` output style both point here.
 
 ## What the tutor writes
 

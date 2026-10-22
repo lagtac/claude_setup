@@ -19,7 +19,7 @@ Organize plan/spec/review `.md` files in `docs/plans/`: give undated documents a
 | `action-plan` | `{YYYY-MM-DD}-{feature}-action-plan.md` |
 | `spike` | `{YYYY-MM-DD}-{feature}-spike.md` |
 
-These match the global layout rules (`~/.claude/rules/docs-layout.md`). A plan has no `-plan` suffix. If the project's `CLAUDE.md` documents a different layout, follow the project and say so.
+These match the layout rules in the `my` style (`plugins/my/output-styles/my.md`), part "Where design documents live". A plan has no `-plan` suffix. If the project's `CLAUDE.md` documents a different layout, follow the project and say so.
 
 The per-file classification in step 3 fans out to parallel Haiku subagents — independent rubric-driven extraction with no shared state. The main session handles discovery, approval, and execution.
 

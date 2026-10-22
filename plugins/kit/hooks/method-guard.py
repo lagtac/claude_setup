@@ -1,25 +1,27 @@
 #!/usr/bin/env python3
-"""Warn at session start when a project's method switch is half set.
+"""Warn at session start when a project's method is half set.
 
-A SessionStart hook in kit. A project picks the my method with an import
-line `@~/.claude/methods/my.md` in its CLAUDE.md and two enabledPlugins keys
-in its .claude/settings.json; the tutor method with the import line only.
-This script reads, never writes, and checks that the parts agree:
+A SessionStart hook in kit. A method is a plugin whose forced output style
+holds its rules; a folder's settings turn it on with its dependencies. This
+script reads, never writes, and warns about:
 
-- the import of my with the my or superpowers plugin off;
-- an import of my or tutor that the user has not approved, or declined;
-- the my or superpowers plugin on in a project that does not import my;
-- more than one method import;
+- more than one method on, because Claude Code applies only the first style
+  it loads;
+- a method on with a dependency off;
+- an old import line @~/.claude/methods/<m>.md left in CLAUDE.md or
+  CLAUDE.local.md;
 - an input file that cannot be read.
 
-Inputs: the project root (CLAUDE_PROJECT_DIR, else the git top level of the
-current directory, else the current directory); the import lines in the
-root's CLAUDE.md and CLAUDE.local.md; enabledPlugins from
-$HOME/.claude/settings.json, <root>/.claude/settings.json and
-<root>/.claude/settings.local.json, a later file winning per key; the
-approval flags of the root in $HOME/.claude.json. A key no file names counts
-as on for superpowers@synced and as off for my@claude-setup and
-kit@claude-setup.
+Inputs: the method list and each method's dependencies, from
+`claude-method --methods` ($CLAUDE_PLUGIN_ROOT/bin/claude-method, else the
+bin folder beside this script's folder); the project root
+(CLAUDE_PROJECT_DIR, else the git top level of the current directory, else
+the current directory); the import lines in the root's CLAUDE.md and
+CLAUDE.local.md; enabledPlugins from $HOME/.claude/settings.json,
+<root>/.claude/settings.json and <root>/.claude/settings.local.json, a later
+file winning per key. A key no file names counts as on when it ends in
+@synced, as off otherwise. If claude-method fails, the script prints that
+one warning and judges nothing else.
 
 Prints nothing when all is well, else one JSON object with the warnings in
 both systemMessage and additionalContext, cut to 2,000 characters. Always
@@ -34,9 +36,6 @@ import sys
 from pathlib import Path
 
 IMPORT = re.compile(r"^@~/\.claude/methods/([a-z0-9-]+)\.md\s*$")
-MY = "my@claude-setup"
-SUPERPOWERS = "superpowers@synced"
-DEFAULTS = {SUPERPOWERS: True, MY: False, "kit@claude-setup": False}
 LIMIT = 2000
 
 
@@ -54,8 +53,31 @@ def project_root():
     return Path.cwd()
 
 
+def method_list():
+    """Return ({method key: [dependency keys]}, None), or (None, reason)."""
+    root = os.environ.get("CLAUDE_PLUGIN_ROOT")
+    script = (Path(root) if root else Path(__file__).resolve().parent.parent) \
+        / "bin" / "claude-method"
+    try:
+        run = subprocess.run([sys.executable, str(script), "--methods"],
+                             capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.SubprocessError) as err:
+        return None, str(err)
+    if run.returncode != 0:
+        lines = [l for l in run.stderr.splitlines() if l.strip()]
+        return None, lines[-1] if lines else f"exit {run.returncode}"
+    try:
+        data = json.loads(run.stdout)
+    except ValueError as err:
+        return None, str(err)
+    if not isinstance(data, dict):
+        return None, "not a JSON object"
+    return data, None
+
+
 def method_imports(root):
-    names = []
+    """Return (file name, method) for each import line."""
+    found = []
     for name in ("CLAUDE.md", "CLAUDE.local.md"):
         try:
             text = (root / name).read_text(errors="replace")
@@ -64,8 +86,8 @@ def method_imports(root):
         for line in text.splitlines():
             match = IMPORT.match(line)
             if match:
-                names.append(match.group(1))
-    return names
+                found.append((name, match.group(1)))
+    return found
 
 
 def unreadable(path, errors):
@@ -86,7 +108,7 @@ def read_json(path, errors):
 
 
 def enabled_plugins(home, root, errors):
-    plugins = dict(DEFAULTS)
+    plugins = {}
     for path in (home / ".claude" / "settings.json",
                  root / ".claude" / "settings.json",
                  root / ".claude" / "settings.local.json"):
@@ -101,68 +123,44 @@ def enabled_plugins(home, root, errors):
     return plugins
 
 
-def approval(home, root, errors):
-    """Return (approved, shown) for the root, or None when unreadable."""
-    data = read_json(home / ".claude.json", errors)
-    if data is None:
-        return None
-    projects = data.get("projects")
-    entry = projects.get(str(root)) if isinstance(projects, dict) else None
-    if not isinstance(entry, dict):
-        return (False, False)
-    return (entry.get("hasClaudeMdExternalIncludesApproved") is True,
-            entry.get("hasClaudeMdExternalIncludesWarningShown") is True)
+def is_on(key, plugins):
+    if key in plugins:
+        return plugins[key] is True
+    return key.endswith("@synced")
 
 
-def warnings(root, imports, plugins, approved, errors):
+def short(key):
+    return key.rsplit("@", 1)[0]
+
+
+def warnings(methods, imports, plugins, errors):
     out = list(errors)
-    if len(imports) > 1:
-        out.append("method guard: this project imports more than one method "
-                   f"file: {', '.join(imports)}. Keep one.")
-    if "my" in imports:
-        lines = [f'"{key}": true' for key in (MY, SUPERPOWERS)
-                 if plugins.get(key) is not True]
-        if lines:
-            out.append("method guard: this project imports the my method, but "
-                       "its plugins are off. Add to .claude/settings.json under "
-                       f"enabledPlugins: {', '.join(lines)}. Or run /kit:setup my.")
-    if approved is not None and not approved[0]:
-        for name in dict.fromkeys(n for n in imports if n in ("my", "tutor")):
-            if approved[1]:
-                out.append(
-                    f"method guard: the {name} method import was declined "
-                    "earlier, so its rules are not loaded and Claude Code will "
-                    f"not ask again. Read ~/.claude/methods/{name}.md before "
-                    "your first reply. To be asked again, set "
-                    f'projects["{root}"].hasClaudeMdExternalIncludesWarningShown '
-                    "to false in ~/.claude.json while no session runs in this "
-                    "directory, then start a new interactive session here.")
-            else:
-                out.append(
-                    f"method guard: the {name} method import is not approved, "
-                    "so its rules are not loaded. Read "
-                    f"~/.claude/methods/{name}.md before your first reply, and "
-                    "ask the user to approve the import (start a new "
-                    "interactive session in this directory).")
-    if "my" not in imports:
-        on = [key for key in (MY, SUPERPOWERS) if plugins.get(key) is True]
-        if on:
-            lines = ", ".join(f'"{key}": false' for key in on)
-            out.append("method guard: this project does not import the my "
-                       f"method, but these plugins are on: {', '.join(on)}. To "
-                       "turn them off, add to .claude/settings.json under "
-                       f"enabledPlugins: {lines}.")
+    on = sorted(key for key in methods if is_on(key, plugins))
+    if len(on) > 1:
+        out.append(f"method guard: more than one method is on: {', '.join(on)}. "
+                   "Claude Code applies only the first style it loads. Keep one "
+                   "with /kit:setup <method>.")
+    for key in on:
+        for dep in methods[key]:
+            if not is_on(dep, plugins):
+                out.append(f"method guard: the {short(key)} method is on, but its "
+                           f"dependency {dep} is off. Run /kit:setup {short(key)}.")
+    for name, method in imports:
+        out.append(f"method guard: {name} still has the line "
+                   f"@~/.claude/methods/{method}.md. Run /kit:setup {method}.")
     return out
 
 
 def main():
-    home = Path(os.environ.get("HOME") or Path.home())
-    root = project_root()
-    errors = []
-    imports = method_imports(root)
-    plugins = enabled_plugins(home, root, errors)
-    approved = approval(home, root, errors)
-    found = warnings(root, imports, plugins, approved, errors)
+    methods, reason = method_list()
+    if methods is None:
+        found = [f"method guard: claude-method --methods failed: {reason}"]
+    else:
+        home = Path(os.environ.get("HOME") or Path.home())
+        root = project_root()
+        errors = []
+        plugins = enabled_plugins(home, root, errors)
+        found = warnings(methods, method_imports(root), plugins, errors)
     if not found:
         return 0
     text = "\n".join(found)[:LIMIT]

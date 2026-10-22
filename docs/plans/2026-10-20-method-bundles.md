@@ -693,7 +693,8 @@ No code and no commit.
   - Setup step 6: the bullet "`.claude/settings.local.json` gets `"outputStyle": "tutor"` …"
     goes. The ignore-entry bullets stay. A new last bullet: "Run `/kit:setup tutor <workspace
     path>`. It writes the method's keys into `.claude/settings.json` and commits them; the
-    curriculum from step 3 is what it checks for."
+    curriculum from step 3 is what it checks for." (The batch 1 review moved this call to the end
+    of step 8; see Trade-Offs.)
   - Step 10, the hand-over: the method loads from the folder's settings, so
     `cd <workspace> && claude` is enough.
   - Session start, step 2 (the check for the style) goes; steps 3 and 4 become 2 and 3.
@@ -1086,9 +1087,10 @@ No code and no commit.
 - **`plain`'s three `##` headings become `###` in the core,** so they sit under Communication.
   The text does not change. Option: keep `##`. Rejected: "Challenge assumptions" and the later
   sections would then read as part of "What this does not change".
-- **The tutor skill calls `/kit:setup tutor` as a bullet of setup step 6,** not as a new numbered
+- **The tutor skill calls `/kit:setup tutor` at the end of setup step 8,** not as a new numbered
   step. A new number would shift steps 7 to 10, which the skill's own text and `templates.md`
-  ("setup step 6") cite.
+  ("setup step 6") cite. Task 5 placed it in step 6; the batch 1 review moved it after step 8's
+  commit, because `/kit:setup` stops on step 4's uncommitted `CLAUDE.md` edit.
 - **Tests for the styles and plugins live in `plugins/kit/tests/test_neutral_core.py`.** Option: a
   new test file. Rejected: that file already holds the method-file and "Applies only" tests that
   these replace.
@@ -1122,7 +1124,47 @@ No code and no commit.
 - **Two forced styles win silently.** Start check 1 sees it in files, and `claude-method`'s
   `--plugin-dir` rule in flags. A `--plugin-dir` that names a method other than the chosen one
   still loads that method's inline copy beside the chosen one. Known limit; nobody launches that
-  today.
+  today. Likewise `claude-method none --plugin-dir plugins/my` loads `my` with
+  `superpowers@synced` off, because the `--plugin-dir` rule turns off a key and turns on no
+  dependency (batch 1 review).
+- **The start check judges the folder's files, not `claude-method`'s flags** (spec, The start
+  check). Under `claude-method tutor` in a `my` folder it stays silent; in a folder whose files
+  turn on two methods, it warns even when `claude-method my` fixed the session (batch 1 review).
+- **`engineering.md` loads when a matching file is read, not at session start** (D2). A planning
+  or brainstorming turn that proposes changes before any code file or `docs/plans/*.md` is read
+  runs without the engineering rules until that first read (batch 1 review). Only a change to D2
+  would remove this.
+- **`/kit:setup` removes off keys instead of writing `false`** (D10). A removed `@synced`
+  dependency falls back to the user scope, where an unnamed `@synced` key counts as on. Safe
+  while `~/.claude/settings.json` names `superpowers@synced: false`, as it does today and as
+  rollout step 2 keeps it (batch 1 review).
+- **Between the merge and rollout steps 2 and 3,** `"outputStyle": "plain"` in
+  `~/.claude/settings.json` and the symlinks `~/.claude/methods` and `~/.claude/output-styles`
+  point at files the merge deletes. `plain`'s text is in the core by then. Run the rollout right
+  after the batch 1 marks (batch 1 review).
+- **`claude-method` and `/kit:setup` step 3 read `~/.claude/plugins/known_marketplaces.json`**, a
+  Claude Code internal file, as the spec says. The memory "kit stays harness-neutral" (2026-10-22,
+  after the spec) records the user turning down that same file in another `kit` tool
+  (batch 1 re-review). The user chose to merge batch 1 as it is and to add a roadmap row that
+  drops the read, for example by finding the marketplace from the script's own path
+  (2026-10-22).
+- **Known limits from the batch 1 re-review**, none of them reached by today's marketplace or
+  repos unless named:
+  - `claude-method` reads a `dependencies` string one letter at a time, and crashes with a
+    Python traceback on a method entry with no `source` or an object `source`.
+  - `claude-method --settings '{}' my` exits 1 ("no method named --settings"), not 2; only a
+    `--settings` after the method name gets exit 2. `claude-method --json` with no name prints
+    "no method named None".
+  - The start check says "Run /kit:setup `<name>`" for any old import line, also when `<name>`
+    is not a method; `/kit:setup` then refuses that name.
+  - The start check runs `claude-method --methods` as a second process at every session start,
+    with a 5 s timeout; a slow start shows as its one warning.
+  - `/kit:setup my` looks for `## Project facts` only in `CLAUDE.md`. zitamu keeps its block in
+    `CLAUDE.local.md`, so `/kit:setup my` there would add a second block. zitamu is already
+    set up, so nothing runs it today.
+  - A tutor case 3 workspace copied from a `my` project: `/kit:setup tutor` proposes removing
+    the `my` facts block, which holds the `learning` scope that setup step 4 just added. The
+    user decides; a yes drops that scope line.
 - **Dirty shared files block the merge.** `projects/real-estate-webapp/claude-local.md` (zitamu
   sessions edit it through its symlink), `ROADMAP.md` and `CHANGELOG.md` often hold other
   sessions' edits. `git merge --squash` refuses when a file it changes is dirty. The review stage

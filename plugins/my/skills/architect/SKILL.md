@@ -18,7 +18,7 @@ Turn a description of a system into an **architecture brief**: the forces, the c
 
 The candidate prompt lives in `candidate-prompt.md`. Everything else runs here, in the main conversation.
 
-**The brief is not a plan.** It lives in `docs/plans/`, where the plan-format rule loads, but it follows only the sections in step 9. Do not add Context, Files to Modify/Create, Step-by-Step Implementation, Trade-Offs, Dependencies, Risk, Testing Strategy or Open Questions sections.
+**The brief is not a plan.** It lives in `docs/plans/`, where the `my` style's plan format applies, but it follows only the sections in step 9. Do not add Context, Files to Modify/Create, Step-by-Step Implementation, Trade-Offs, Dependencies, Risk, Testing Strategy or Open Questions sections.
 
 **When a question cannot be asked.** Steps 1, 7 and 8 ask the user with `AskUserQuestion`. If that tool is not in your tool list (as in a headless `claude -p` run), or the call fails, do **not** ask in plain text and do **not** end your turn. Use the "cannot be asked" rule written in that step and continue.
 

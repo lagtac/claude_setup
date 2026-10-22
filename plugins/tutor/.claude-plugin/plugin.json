@@ -1,0 +1,7 @@
+{
+  "name": "tutor",
+  "description": "The tutor method: a learning workspace where the student writes the code; its rules as a forced output style and the tutor:tutor skill.",
+  "author": {
+    "name": "Dimitris Chrysomalis"
+  }
+}

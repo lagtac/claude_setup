@@ -18,8 +18,8 @@ student knows. The state lives in `docs/learning/`.
 
 In a learning workspace this skill and `method.md` replace the global
 workflow rules: no brainstorming, architecture brief, spec, plan, worktree,
-code review skill or roadmap step. `~/.claude/methods/tutor.md`
-lists the rules that stay in force; follow them.
+code review skill or roadmap step. The `tutor` style lists the rules that
+stay in force; follow them.
 
 Files beside this one:
 
@@ -108,10 +108,9 @@ they cannot answer questions, use what they gave.
    with the diagnosis answers under **Starting point**. Never commit it.
 6. **Local files git must ignore.**
    - If `git ls-files --error-unmatch .claude/settings.local.json` succeeds,
-     the file is tracked: an ignore entry cannot hide it, and the edit below
-     would show up in `git status`. Say so, and ask before you change it.
-   - `.claude/settings.local.json` gets `"outputStyle": "tutor"`. If the file
-     exists, add the key and keep the rest.
+     the file is tracked: an ignore entry cannot hide it, and the edit
+     `/kit:setup` may make there (step 8) would show up in `git status`. Say
+     so, and ask before you go on.
    - For each of `.claude/settings.local.json` and
      `docs/learning/progress.md`: if `git check-ignore -q <path>` fails,
      append the path to `.git/info/exclude`.
@@ -123,7 +122,11 @@ they cannot answer questions, use what they gave.
    `curriculum.md` under **Test command**.
 8. **One commit** on the learning branch with `curriculum.md` (and the
    `CLAUDE.md` scope line, if any). The message:
-   `docs(learning): set up the <topic> curriculum`.
+   `docs(learning): set up the <topic> curriculum`. Then run
+   `/kit:setup tutor <workspace path>`. It writes the method's keys into
+   `.claude/settings.json` and commits them; the curriculum is what it checks
+   for. It runs after this commit, so it finds no uncommitted `CLAUDE.md`
+   edit.
 9. **The first exercise only.** `git switch -c ex/01-<slug>`. Load the
    curriculum's **Skills**. Write the exercise file
    `docs/learning/exercises/01-<slug>.md` from the template, the support its
@@ -133,8 +136,8 @@ they cannot answer questions, use what they gave.
    `test(learning): exercise 01, <title>`. Write later exercises only when
    the student reaches them.
 10. **Hand-over.** Tell the user to start a new session in the workspace
-    folder: an output style takes effect only when a session starts. Show the
-    command, for example `cd <workspace> && claude`.
+    folder. The method loads from the folder's settings, so
+    `cd <workspace> && claude` is enough. Show that command.
 
 ### Red flags during setup
 
@@ -155,16 +158,10 @@ Before your first reply:
 
 1. Read `docs/learning/progress.md` and `docs/learning/curriculum.md` in the
    repo root (`git rev-parse --show-toplevel`), then `method.md`.
-2. If the `tutor` output style is not active, say so once, and say that the
-   next session picks it up if `.claude/settings.local.json` sets
-   `"outputStyle": "tutor"`. The style is active when your system prompt
-   holds its text, which begins "You are a tutor in a learning workspace". A
-   settings file is not proof: the setup session has the file but not the
-   style.
-3. Ask two or three recall questions on concepts from **Review**, one at a
+2. Ask two or three recall questions on concepts from **Review**, one at a
    time, from the front of the queue. Use **Mistakes** to choose them.
    Update the queue by `method.md`, "Concept status".
-4. Say in one line where the student is, for example "Exercise 03, the test
+3. Say in one line where the student is, for example "Exercise 03, the test
    is still red". Then continue the exercise, or write the next one (Setup
    step 9, with the next number, from the learning branch).
 

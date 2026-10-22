@@ -292,7 +292,7 @@ class ConfigTest(unittest.TestCase):
                          {"design", "design-skills", "frontend-design"})
         self.assertEqual({k for k, v in states.items() if v == "excluded"},
                          {"design-superpowers", "product-management", "data"})
-        for name in ("kit", "my", "superpowers", "hookify"):
+        for name in ("kit", "my", "superpowers", "hookify", "tutor", "sp"):
             self.assertEqual(states[name], "not-design")
 
 

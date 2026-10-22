@@ -18,15 +18,17 @@ overlap are in
 
 The method has two parts, and only one of them is this plugin:
 
-- **The rules** are in `global/methods/my.md`. A project loads them with the
-  line `@~/.claude/methods/my.md` in its `CLAUDE.md`. They say which skill
-  runs when, and they hold the route table and the Git Workflow.
+- **The rules** are the `my` style (`plugins/my/output-styles/my.md`), an
+  output style that this plugin forces on, so they load in every session where
+  the plugin is on. They say which skill runs when, and they hold the route
+  table and the Git Workflow.
 - **The tools** are this plugin: the skills, the review agents, the scripts in
   `bin/` and the hooks. The rules call them by name.
 
 The plugin is off at user scope, and so is superpowers. A project turns both
-on with `/kit:setup my`, which writes the import line, a `## Project facts`
-block and the plugin switches. A project never runs `my` without superpowers.
+on with `/kit:setup my`, which writes the plugin keys and a
+`## Project facts` block, with no import line. A project never runs `my`
+without superpowers.
 
 ## What superpowers gives
 
@@ -69,8 +71,8 @@ the `done` mark. Rows do not share work. The only link between two rows is
 that one is ordered before the other.
 
 A report (an audit or a critique of a whole area) never becomes work itself.
-Its findings become roadmap rows. `global/rules/docs-layout.md` has the rules
-for that.
+Its findings become roadmap rows. The `my` style
+(`plugins/my/output-styles/my.md`) has the rules for that.
 
 ### The routes
 
@@ -87,8 +89,8 @@ documents, the reviews and the commits:
 | **Architectural with plan** | The risk line | Architecture brief where the trigger table asks for one, spec, plan. | All reviews in `my.md`. |
 | **Bug** | `systematic-debugging` | None, unless it goes to brainstorming. | `/code-review high` on the branch |
 
-The full table, with the commits for each route, is in
-`global/methods/my.md`.
+The full table, with the commits for each route, is in the `my` style
+(`plugins/my/output-styles/my.md`).
 
 The old names map as follows: Small is bounded or bug, Medium is
 architectural, Large is architectural with plan. Specs, plans and reviews
@@ -131,7 +133,7 @@ An architectural change with a plan leaves four commits on `main`: the spec
 with its review, the plan with its review, the code, and the `done` mark. An
 architectural change without a plan leaves three, a bounded change or a bug
 fix one, and a spike one `docs:` commit, its file. The fourteen steps are in
-`global/rules/docs-layout.md`.
+the `my` style (`plugins/my/output-styles/my.md`).
 
 ### Where the documents go
 
@@ -150,7 +152,7 @@ All specs, plans and reviews go to `docs/plans/YYYY-MM-DD-<slug>.md`, not to
 | `using-git-worktrees` | Used, but the worktree is made with `git worktree add`, never the `EnterWorktree` tool. |
 | `subagent-driven-development`, `executing-plans` | Used, with their own reviews turned off. |
 | `requesting-code-review` | Replaced by `my:soundness-review` and `/code-review high`. |
-| `finishing-a-development-branch` | Replaced by steps 12 and 13 in `docs-layout.md`, or `/my:handoff review`. |
+| `finishing-a-development-branch` | Replaced by steps 12 and 13 in the `my` style (`plugins/my/output-styles/my.md`), or `/my:handoff review`. |
 | `verification-before-completion`, `receiving-code-review`, `dispatching-parallel-agents` | Not named by `my`. They work as superpowers ships them. |
 
 ## `/my:handoff`: the same cycle, run faster

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Rules in ~/.claude/rules/docs-layout.md, "One feature, four commits on main": doc edits are fixups squashed before each push, and a doc
+# Rules in the `my` style (`plugins/my/output-styles/my.md`), "One feature, four commits on main": doc edits are fixups squashed before each push, and a doc
 # cites only commits that are part of the pushed history.
 zero=0000000000000000000000000000000000000000
 fail=0

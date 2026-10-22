@@ -24,7 +24,9 @@
   "playwright": "not-design",
   "pyright-lsp": "not-design",
   "skill-creator": "not-design",
+  "sp": "not-design",
   "superpowers": "not-design",
+  "tutor": "not-design",
   "typescript-lsp": "not-design",
   "vue-lsp": "not-design"
 }

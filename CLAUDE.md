@@ -1,15 +1,16 @@
 # Claude Setup Plugin
 
-Two Claude Code plugins (`my` and `kit`) providing reusable slash commands, subagent definitions, and skills for development workflows.
+A marketplace of Claude Code plugins: method plugins (`my`, `tutor`, `sp`) and neutral tools (`kit`, `vue-lsp`), providing reusable slash commands, subagent definitions, and skills.
 
 ## Architecture
 
-The repo is a plugin marketplace (`.claude-plugin/marketplace.json`, which must stay at the repo root). Each plugin lives in `plugins/<name>/`: `my` holds the method, `kit` the neutral tools. The paths below are relative to a plugin folder.
+The repo is a plugin marketplace (`.claude-plugin/marketplace.json`, which must stay at the repo root). Each plugin lives in `plugins/<name>/`: `my`, `tutor` and `sp` are methods, `kit` holds the neutral tools. The paths below are relative to a plugin folder.
 
-- **`.claude-plugin/plugin.json`** — Plugin manifest (name, description, author). No `version` field: the marketplace uses the commit hash, so each commit is a new version. Commands and agents are auto-discovered.
+- **`.claude-plugin/plugin.json`** — Plugin manifest (name, description, author, and for a method `dependencies`, its plugin set). No `version` field: the marketplace uses the commit hash, so each commit is a new version. Commands and agents are auto-discovered.
 - **`commands/`** — Slash commands. Each `.md` file is a prompt template; `$ARGUMENTS` is replaced with user input.
 - **`agents/`** — Subagent definitions with frontmatter (`name`, `description`, `tools`, `model`). Commands reference agents by name.
 - **`skills/`** — Multi-file skill directories. Each contains a `SKILL.md` with frontmatter and prompt.
+- **`output-styles/`** — A method's forced output style, which holds its rules.
 
 ## Editing Plugin Files
 
@@ -24,10 +25,7 @@ This repo is on GitHub only. It is no longer on GitLab. This replaces the GitLab
 
 ## Project facts
 
-- **Method:** my
-- **Commit scopes:** `my-plugin`, `kit-plugin`, `global`, `plans`
+- **Commit scopes:** `my-plugin`, `kit-plugin`, `tutor-plugin`, `sp-plugin`, `global`, `plans`
 - **Test command:** `cd plugins/kit && python3 -m unittest discover tests` and `cd plugins/my && python3 -m unittest discover tests`
 - **Plans index:** none
 - **Remote:** origin (github.com)
-
-@~/.claude/methods/my.md

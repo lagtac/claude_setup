@@ -1,6 +1,6 @@
 {
   "name": "kit",
-  "description": "Neutral tools that work under any method: writing, git, Laravel and prompt helpers, the tutor for learning workspaces, kit:setup, the SessionStart hooks for the tutor and the method guard, and the design router with its PreToolUse gate.",
+  "description": "Neutral tools that work under any method: writing, git, Laravel and prompt helpers, kit:setup, the method start check, and the design router with its PreToolUse gate.",
   "author": {
     "name": "Dimitris Chrysomalis"
   }

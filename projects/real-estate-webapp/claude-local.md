@@ -19,13 +19,10 @@ Older documents might say "the web team cannot edit `api/`". Read those as histo
 
 ## Project facts
 
-- **Method:** my
 - **Commit scopes:** `web`, `api`, `infra`
 - **Test command:** `npm test` for `web/`, `make test-api` for `api/`
 - **Plans index:** `docs/plans/README.md`
 - **Remote:** origin (gitlab.indigital.gr)
-
-@~/.claude/methods/my.md
 
 ## What this is
 
@@ -243,7 +240,7 @@ The global rules place plans, specs, reviews and reports. Only the zitamu
 specifics are here.
 
 - `docs/plans/README.md` is the index, kept by the rules in
-  `docs-layout.md`. Reviews written by `my:spec-review` or
+  the `my` style. Reviews written by `my:spec-review` or
   `my:soundness-review` get a row too. When a change is part of the history,
   add a line to the index's "How we got here".
 - The technical roadmap is `ROADMAP.md` at the project root. It covers

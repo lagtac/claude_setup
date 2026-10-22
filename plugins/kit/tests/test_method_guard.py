@@ -2,10 +2,12 @@
 
 Run from plugins/kit: python3 -m unittest discover tests
 
-Each test builds a temporary HOME (with .claude/settings.json and
-.claude.json) and a temporary project, then runs the script as a subprocess,
-the way Claude Code runs a SessionStart hook. HOME and CLAUDE_PROJECT_DIR are
-set for each call, so the user's own settings cannot change a result.
+Each test builds a temporary HOME (with .claude/settings.json and a
+known_marketplaces.json that points at a fake marketplace) and a temporary
+project, then runs the script as a subprocess, the way Claude Code runs a
+SessionStart hook. The guard calls the real bin/claude-method beside it, which
+reads the fake marketplace. HOME and CLAUDE_PROJECT_DIR are set for each call,
+so the user's own settings cannot change a result.
 """
 
 import json
@@ -18,10 +20,14 @@ from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "hooks" / "method-guard.py"
 
-MY = "@~/.claude/methods/my.md\n"
-TUTOR = "@~/.claude/methods/tutor.md\n"
+MY_IMPORT = "@~/.claude/methods/my.md\n"
 ON = {"my@claude-setup": True, "superpowers@synced": True}
-OFF = {"my@claude-setup": False, "superpowers@synced": False}
+# The fake marketplace: name, category, dependencies.
+PLUGINS = [("my", "method", ["superpowers@synced"]),
+           ("kit", "development", None),
+           ("sp", "method", ["superpowers@synced"]),
+           ("tutor", "method", None),
+           ("x", "method", ["y@claude-setup"])]
 
 
 def write(path, content):
@@ -33,52 +39,51 @@ def write(path, content):
         path.write_text(json.dumps(content))
 
 
-def not_approved(name):
-    return (f"method guard: the {name} method import is not approved, so its "
-            f"rules are not loaded. Read ~/.claude/methods/{name}.md before "
-            "your first reply, and ask the user to approve the import (start "
-            "a new interactive session in this directory).")
+def two_methods(keys):
+    return (f"method guard: more than one method is on: {', '.join(keys)}. "
+            "Claude Code applies only the first style it loads. Keep one with "
+            "/kit:setup <method>.")
 
 
-def declined(name, root):
-    return (f"method guard: the {name} method import was declined earlier, so "
-            "its rules are not loaded and Claude Code will not ask again. Read "
-            f"~/.claude/methods/{name}.md before your first reply. To be asked "
-            f'again, set projects["{root}"].hasClaudeMdExternalIncludesWarningShown '
-            "to false in ~/.claude.json while no session runs in this "
-            "directory, then start a new interactive session here.")
+def dependency(method, key):
+    return (f"method guard: the {method} method is on, but its dependency {key} "
+            f"is off. Run /kit:setup {method}.")
 
 
-def stray(keys):
-    lines = ", ".join(f'"{k}": false' for k in keys)
-    return ("method guard: this project does not import the my method, but "
-            f"these plugins are on: {', '.join(keys)}. To turn them off, add to "
-            f".claude/settings.json under enabledPlugins: {lines}.")
-
-
-def missing(lines):
-    return ("method guard: this project imports the my method, but its plugins "
-            "are off. Add to .claude/settings.json under enabledPlugins: "
-            f"{lines}. Or run /kit:setup my.")
+def old_import(name, method):
+    return (f"method guard: {name} still has the line "
+            f"@~/.claude/methods/{method}.md. Run /kit:setup {method}.")
 
 
 class GuardTest(unittest.TestCase):
     def make_world(self, user_plugins=None, project_md="", local_md=None,
-                   project_plugins=None, local_plugins=None, approved=None,
-                   warning_shown=None, claude_json=None):
-        """Build a temporary HOME and project; return (home, project).
+                   project_plugins=None, local_plugins=None, known=True):
+        """Build a temporary HOME, marketplace and project; return (home, project).
 
         A plugins argument that is a dict becomes {"enabledPlugins": dict};
         a string is written as the file's whole content. None writes no file.
-        approved and warning_shown set the project's flags in .claude.json;
-        claude_json, a string, replaces that file's whole content.
+        known=False writes no known_marketplaces.json.
         """
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         home = Path(tmp.name) / "home"
         project = Path(tmp.name) / "project"
+        market = Path(tmp.name) / "market"
         home.mkdir()
         project.mkdir()
+        entries = []
+        for name, category, deps in PLUGINS:
+            entries.append({"name": name, "source": f"./plugins/{name}",
+                            "category": category})
+            manifest = {"name": name}
+            if deps is not None:
+                manifest["dependencies"] = deps
+            write(market / "plugins" / name / ".claude-plugin" / "plugin.json", manifest)
+        write(market / ".claude-plugin" / "marketplace.json",
+              {"name": "claude-setup", "plugins": entries})
+        if known:
+            write(home / ".claude" / "plugins" / "known_marketplaces.json",
+                  {"claude-setup": {"installLocation": str(market)}})
         for path, plugins in [
                 (home / ".claude" / "settings.json", user_plugins),
                 (project / ".claude" / "settings.json", project_plugins),
@@ -89,29 +94,21 @@ class GuardTest(unittest.TestCase):
         write(project / "CLAUDE.md", project_md)
         if local_md is not None:
             write(project / "CLAUDE.local.md", local_md)
-        if claude_json is not None:
-            write(home / ".claude.json", claude_json)
-        else:
-            entry = {}
-            if approved is not None:
-                entry["hasClaudeMdExternalIncludesApproved"] = approved
-            if warning_shown is not None:
-                entry["hasClaudeMdExternalIncludesWarningShown"] = warning_shown
-            projects = {str(project): entry} if entry else {}
-            write(home / ".claude.json", {"projects": projects})
         return home, project
 
-    def run_guard(self, home, project, project_dir=True, cwd=None):
-        env = {k: v for k, v in os.environ.items()
-               if k != "CLAUDE_PROJECT_DIR" and not k.startswith("GIT_")}
-        env["HOME"] = str(home)
+    def run_guard(self, home, project, project_dir=True, cwd=None, env=None):
+        full = {k: v for k, v in os.environ.items()
+                if k not in ("CLAUDE_PROJECT_DIR", "CLAUDE_PLUGIN_ROOT",
+                             "CLAUDE_METHOD_MARKETPLACE") and not k.startswith("GIT_")}
+        full["HOME"] = str(home)
         if project_dir is True:
-            env["CLAUDE_PROJECT_DIR"] = str(project)
+            full["CLAUDE_PROJECT_DIR"] = str(project)
         elif project_dir:
-            env["CLAUDE_PROJECT_DIR"] = project_dir
-        return subprocess.run([sys.executable, str(SCRIPT)], env=env,
+            full["CLAUDE_PROJECT_DIR"] = project_dir
+        full.update(env or {})
+        return subprocess.run([sys.executable, str(SCRIPT)], env=full,
                               cwd=cwd or project, capture_output=True,
-                              text=True, timeout=10)
+                              text=True, timeout=20)
 
     def text(self, result):
         self.assertEqual(result.returncode, 0)
@@ -121,141 +118,129 @@ class GuardTest(unittest.TestCase):
         self.assertEqual(out["hookSpecificOutput"]["additionalContext"], message)
         return message
 
-    def test_my_with_plugins_off_names_each_missing_line(self):
-        home, project = self.make_world(user_plugins=OFF, project_md=MY, approved=True)
-        self.assertEqual(self.text(self.run_guard(home, project)), missing(
-            '"my@claude-setup": true, "superpowers@synced": true'))
-
-    def test_my_with_only_superpowers_missing(self):
-        home, project = self.make_world(
-            user_plugins=OFF, project_md=MY, approved=True,
-            project_plugins={"my@claude-setup": True})
-        self.assertEqual(self.text(self.run_guard(home, project)),
-                         missing('"superpowers@synced": true'))
-
-    def test_my_not_approved(self):
-        home, project = self.make_world(project_md=MY, project_plugins=ON, approved=False)
-        self.assertEqual(self.text(self.run_guard(home, project)), not_approved("my"))
-
-    def test_tutor_missing_approval_flag(self):
-        home, project = self.make_world(user_plugins=OFF, project_md=TUTOR)
-        self.assertEqual(self.text(self.run_guard(home, project)), not_approved("tutor"))
-
-    def test_declined_import_gives_reset_advice(self):
-        home, project = self.make_world(project_md=MY, project_plugins=ON,
-                                        approved=False, warning_shown=True)
-        self.assertEqual(self.text(self.run_guard(home, project)),
-                         declined("my", str(project)))
-
-    def test_neutral_with_stray_plugins(self):
-        home, project = self.make_world(project_plugins=ON)
-        self.assertEqual(self.text(self.run_guard(home, project)),
-                         stray(["my@claude-setup", "superpowers@synced"]))
-
-    def test_neutral_with_superpowers_by_default(self):
-        home, project = self.make_world(user_plugins={"my@claude-setup": False})
-        self.assertEqual(self.text(self.run_guard(home, project)),
-                         stray(["superpowers@synced"]))
-
-    def test_tutor_with_my_on_is_stray(self):
-        home, project = self.make_world(
-            user_plugins=OFF, project_md=TUTOR, approved=True,
-            project_plugins={"my@claude-setup": True})
-        self.assertEqual(self.text(self.run_guard(home, project)),
-                         stray(["my@claude-setup"]))
-
-    def test_two_imports(self):
-        home, project = self.make_world(project_md=MY, local_md=TUTOR,
-                                        project_plugins=ON, approved=True)
-        self.assertEqual(self.text(self.run_guard(home, project)),
-                         "method guard: this project imports more than one "
-                         "method file: my, tutor. Keep one.")
-
-    def test_neutral_and_off_prints_nothing(self):
-        home, project = self.make_world(user_plugins=OFF)
-        result = self.run_guard(home, project)
+    def quiet(self, result):
         self.assertEqual((result.returncode, result.stdout), (0, ""))
 
     def test_my_set_up_prints_nothing(self):
-        home, project = self.make_world(project_md=MY, project_plugins=ON, approved=True)
-        result = self.run_guard(home, project)
-        self.assertEqual((result.returncode, result.stdout), (0, ""))
+        home, project = self.make_world(project_plugins=ON)
+        self.quiet(self.run_guard(home, project))
 
-    def test_unreadable_user_settings(self):
-        home, project = self.make_world(user_plugins="{", project_md=MY,
-                                        project_plugins=ON, approved=True)
+    def test_synced_key_missing_counts_on(self):
+        home, project = self.make_world(project_plugins={"my@claude-setup": True})
+        self.quiet(self.run_guard(home, project))
+
+    def test_two_methods_on_names_both(self):
+        home, project = self.make_world(project_plugins=ON,
+                                        local_plugins={"sp@claude-setup": True})
         self.assertEqual(self.text(self.run_guard(home, project)),
-                         f"method guard could not read {home}/.claude/settings.json")
+                         two_methods(["my@claude-setup", "sp@claude-setup"]))
 
-    def test_unreadable_claude_json_skips_approval(self):
-        home, project = self.make_world(project_md=MY, project_plugins=ON,
-                                        claude_json="{")
-        self.assertEqual(self.text(self.run_guard(home, project)),
-                         f"method guard could not read {home}/.claude.json")
-
-    def test_local_settings_override_project(self):
+    def test_missing_dependency_names_key(self):
         home, project = self.make_world(
-            project_md=MY, project_plugins=ON, approved=True,
-            local_plugins={"superpowers@synced": False})
+            project_plugins={"my@claude-setup": True, "superpowers@synced": False})
         self.assertEqual(self.text(self.run_guard(home, project)),
-                         missing('"superpowers@synced": true'))
+                         dependency("my", "superpowers@synced"))
 
-    def test_trailing_slash_in_project_dir_still_finds_approval(self):
-        home, project = self.make_world(project_md=MY, project_plugins=ON, approved=True)
-        result = self.run_guard(home, project, project_dir=f"{project}/")
-        self.assertEqual((result.returncode, result.stdout), (0, ""))
+    def test_non_synced_dependency_missing_counts_off(self):
+        home, project = self.make_world(project_plugins={"x@claude-setup": True})
+        self.assertEqual(self.text(self.run_guard(home, project)),
+                         dependency("x", "y@claude-setup"))
+
+    def test_old_import_in_claude_md(self):
+        home, project = self.make_world(project_md=MY_IMPORT, project_plugins=ON)
+        self.assertEqual(self.text(self.run_guard(home, project)),
+                         old_import("CLAUDE.md", "my"))
+
+    def test_old_import_in_claude_local_md(self):
+        home, project = self.make_world(local_md="@~/.claude/methods/tutor.md\n",
+                                        project_plugins={"tutor@claude-setup": True})
+        self.assertEqual(self.text(self.run_guard(home, project)),
+                         old_import("CLAUDE.local.md", "tutor"))
 
     def test_import_line_with_crlf_counts(self):
         home, project = self.make_world(project_md="@~/.claude/methods/my.md  \r\n",
-                                        project_plugins=ON, approved=True)
-        result = self.run_guard(home, project)
-        self.assertEqual((result.returncode, result.stdout), (0, ""))
+                                        project_plugins=ON)
+        self.assertEqual(self.text(self.run_guard(home, project)),
+                         old_import("CLAUDE.md", "my"))
+
+    def test_local_settings_override_project(self):
+        home, project = self.make_world(
+            project_plugins={"my@claude-setup": True, "sp@claude-setup": True},
+            local_plugins={"my@claude-setup": False})
+        self.quiet(self.run_guard(home, project))
 
     def test_string_true_is_not_on(self):
+        # Were "true" on, my and sp would both be on.
         home, project = self.make_world(
-            project_md=MY, approved=True,
-            project_plugins={"my@claude-setup": "true", "superpowers@synced": True})
+            project_plugins={"my@claude-setup": "true", "sp@claude-setup": True})
+        self.quiet(self.run_guard(home, project))
+
+    def test_unreadable_user_settings(self):
+        home, project = self.make_world(user_plugins="{", project_plugins=ON)
         self.assertEqual(self.text(self.run_guard(home, project)),
-                         missing('"my@claude-setup": true'))
+                         f"method guard could not read {home}/.claude/settings.json")
 
     def test_settings_not_an_object_is_unreadable(self):
         for content in ["[]", '{"enabledPlugins": []}']:
             with self.subTest(content=content):
-                home, project = self.make_world(project_md=MY, approved=True,
-                                                project_plugins=content)
+                home, project = self.make_world(project_plugins=content)
                 lines = self.text(self.run_guard(home, project)).split("\n")
                 self.assertEqual(lines[0], "method guard could not read "
                                  f"{project}/.claude/settings.json")
 
+    def test_claude_method_failure_gives_one_warning(self):
+        home, project = self.make_world(project_md=MY_IMPORT, project_plugins=ON,
+                                        known=False)
+        lines = self.text(self.run_guard(home, project)).split("\n")
+        self.assertEqual(len(lines), 1)
+        self.assertTrue(lines[0].startswith(
+            "method guard: claude-method --methods failed: "), lines[0])
+        self.assertIn("known_marketplaces.json", lines[0])
+
+    def test_missing_script_gives_one_warning(self):
+        home, project = self.make_world(project_md=MY_IMPORT, project_plugins=ON)
+        empty = home / "empty-plugin-root"
+        empty.mkdir()
+        lines = self.text(self.run_guard(home, project, env={
+            "CLAUDE_PLUGIN_ROOT": str(empty)})).split("\n")
+        self.assertEqual(len(lines), 1)
+        self.assertTrue(lines[0].startswith(
+            "method guard: claude-method --methods failed: "), lines[0])
+
     def test_root_falls_back_to_git_toplevel(self):
-        home, project = self.make_world(project_md=MY, project_plugins=ON, approved=True)
+        home, project = self.make_world(project_md=MY_IMPORT, project_plugins=ON)
         subprocess.run(["git", "init", "-q", str(project)], check=True,
                        env={**os.environ, "HOME": str(home)})
         sub = project / "src" / "deep"
         sub.mkdir(parents=True)
         result = self.run_guard(home, project, project_dir=False, cwd=sub)
-        self.assertEqual((result.returncode, result.stdout), (0, ""))
+        self.assertEqual(self.text(result), old_import("CLAUDE.md", "my"))
 
     def test_output_is_capped(self):
         names = [f"{i:02d}-" + "a" * 57 for i in range(40)]
         md = "".join(f"@~/.claude/methods/{n}.md\n" for n in names)
-        home, project = self.make_world(user_plugins=OFF, project_md=md)
+        home, project = self.make_world(project_md=md)
         message = self.text(self.run_guard(home, project))
-        self.assertTrue(message.startswith("method guard: this project imports more"))
+        self.assertTrue(message.startswith(old_import("CLAUDE.md", names[0])))
         self.assertLessEqual(len(message), 2000)
 
     def test_exit_code_is_zero_in_every_case(self):
         worlds = [
-            {}, {"user_plugins": OFF}, {"project_md": MY},
-            {"project_md": MY, "project_plugins": ON, "approved": True},
-            {"user_plugins": "{"}, {"claude_json": "{"}, {"claude_json": "[]"},
-            {"project_plugins": "[]"}, {"local_plugins": "not json"},
-            {"project_md": MY + TUTOR, "approved": False, "warning_shown": True},
+            {}, {"project_md": MY_IMPORT}, {"project_plugins": ON},
+            {"user_plugins": "{"}, {"project_plugins": "[]"},
+            {"local_plugins": "not json"}, {"known": False},
+            {"project_plugins": {"my@claude-setup": True, "sp@claude-setup": True,
+                                 "superpowers@synced": False}},
         ]
         for world in worlds:
             with self.subTest(world=world):
                 home, project = self.make_world(**world)
                 self.assertEqual(self.run_guard(home, project).returncode, 0)
+
+    def test_hooks_json_has_no_tutor_hook(self):
+        hooks = json.loads((SCRIPT.parent / "hooks.json").read_text())["hooks"]
+        commands = [h["command"] for e in hooks["SessionStart"] for h in e["hooks"]]
+        self.assertFalse([c for c in commands if "curriculum.md" in c])
 
     def test_hooks_json_runs_the_guard_at_session_start(self):
         hooks = json.loads((SCRIPT.parent / "hooks.json").read_text())["hooks"]
