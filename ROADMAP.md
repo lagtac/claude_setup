@@ -415,15 +415,9 @@ above.
   report, so it takes no route. Skills and rules still spell out steps that
   fixed rules decide, and carry text the model does not need. The 2026-10-14
   audit read only the skills, for scripts only. Goal: a new report in
-  `docs/reports/` applies that audit's test to all these files, and sorts the
-  rest of the text as cut, move (to the spec), rephrase or keep. Patterns,
-  from a chat on 2026-10-22: one rule in several places; notes for the
-  maintainer (dates, row numbers, why a rule exists); facts the model knows;
-  a summary after its list; a rule said again in negative form; hedge words
-  in rules; a frontmatter description that repeats the body. Keep "NOT for"
-  clauses, fallbacks and stop conditions; test a doubtful cut with `claude -p`
-  before and after. The patterns may join `kit:tune-claude-instructions` as
-  Patterns K onward. Each finding becomes a row.
+  `docs/reports/` applies that audit's test and the prose check of
+  `kit:tune-claude-instructions` (Patterns K–Q) to all these files, that
+  skill included; each finding becomes a row.
   [Report](docs/reports/2026-10-22-project-direction-critique.md) D3.
 - 💭 42 **Parallel runs parser** — feature in `handoff-state.py`, route not
   set. `my:handoff`, `my:status`, `kit:commit` and `my:architect` each read

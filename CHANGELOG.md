@@ -16,6 +16,23 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-22 — `kit:tune-claude-instructions` takes a path and flags text the model does not need
+
+Details are in the squash commit, with its known limits.
+
+- **BREAKING: the `--global` flag is gone.** It read only four places under
+  `~/.claude/` and missed your own plugins and the `rules`, `methods` and
+  `output-styles` folders. Pass the folder that holds the real files
+  instead, such as `~/projects/claude-setup`. For a global setup, or a
+  `~/.claude` path, the skill asks where those files live. The search also
+  finds `rules/` folders and skips `.claude/plugins/` and `.claude/projects/`.
+- **A prose check and Patterns K–Q.** A file now fails a check when it holds
+  text the model does not need: one rule in several places, notes for the
+  maintainer, facts the model knows, a recap, a rule said again in negative
+  form, hedge words, or a description that repeats the body. Each proposed
+  fix makes the file shorter. Before, such a file graded OK and the fixes
+  made files longer.
+
 ### 2026-10-22 — Auto runs need tmux, and the parallel squash-merge is fixed (rows 33 and 37)
 
 Two bugs in `my:handoff`. Details are in the squash commit, with its known
