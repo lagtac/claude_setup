@@ -424,13 +424,15 @@ above.
 
 - 💭 74 **Find skill prose to script, cut or rephrase** — audit of the `my`
   and `kit` skills, the method's rules and `global/rules/`; it writes a
-  report, so it takes no route. Skills and rules still spell out steps that
-  fixed rules decide, and carry text the model does not need. The 2026-10-14
-  audit read only the skills, for scripts only. Goal: a new report in
-  `docs/reports/` applies that audit's test and the prose check of
-  `kit:tune-claude-instructions` (Patterns K–Q) to all these files, that
-  skill included; each finding becomes a row.
-  [Report](docs/reports/2026-10-22-project-direction-critique.md) D3.
+  report, so it takes no route. Skills and rules spell out steps a script
+  could do, carry text the model does not need, and pack several conditions
+  into one long list item. Goal: a report in `docs/reports/` checks all these
+  files, `kit:tune-claude-instructions` included, for steps to script, for
+  that skill's Patterns J–Q, and for structure and tone (one condition per
+  list item, one job per section, plain words, a reason in place of
+  emphasis); each finding becomes a row. Structure and tone added on
+  2026-10-23. [Report](docs/reports/2026-10-22-project-direction-critique.md)
+  D3.
 - 💭 75 **Read, write and convert roadmaps** — feature in
   `roadmap-management`, architectural with plan. The skill only follows the
   format a roadmap already has, and it runs fixed steps from prose. Goal: it
