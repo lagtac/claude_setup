@@ -190,7 +190,7 @@ Edits are anchored by quoted text, not line numbers: rows 62 and others move lin
 | `README.md` | `global/` folder, methods section, `kit:tutor`, `docs-layout.md`, Hooks | 9, 12 |
 | `ROADMAP.md`, `CHANGELOG.md` | At the batch marks only | — |
 | `plugins/kit/skills/method/SKILL.md` | New | 11 |
-| `plugins/my/skills/handoff/SKILL.md` | The four launch lines | 12 |
+| `plugins/my/skills/handoff/SKILL.md` | The three launch lines | 12 |
 
 Not changed: `docs/plans/` and `docs/reports/` (they record what was true then), `CHANGELOG.md`
 history, `plugins/kit/skills/tune-claude-instructions/SKILL.md` (it names `~/.claude/CLAUDE.md`,
@@ -1056,16 +1056,17 @@ No code and no commit.
 
 **Files:**
 
-- Modify: `plugins/my/skills/handoff/SKILL.md` (the four launch lines), `README.md`
+- Modify: `plugins/my/skills/handoff/SKILL.md` (the three launch lines), `README.md`
 
 - [ ] **Step 1: The failing check.** `grep -c "claude -n <name>" plugins/my/skills/handoff/SKILL.md`
-  prints `4`, and `grep -c "claude-method my -n <name>"` prints `0`.
-- [ ] **Step 2: Edit the four lines** (spec, `my:handoff`): in the two fallback commands and the
+  prints `3`, and `grep -c "claude-method my -n <name>"` prints `0`. The spec counted four
+  lines before rows 33, 37 and 56 merged; `main` has three.
+- [ ] **Step 2: Edit the three lines** (spec, `my:handoff`): in the fallback command and the
   two `tmux new-window` commands, `claude -n <name> <plugin-dir flags> …` becomes
   `claude-method my -n <name> <plugin-dir flags> …`; `MY_AUTORUN=<slug>` stays in front. Add one
   sentence after step 3's plugin-dir bullet: "`claude-method my` starts the stage in the `my`
   method in any folder, and turns `my@claude-setup` off when a copied `--plugin-dir` is `my`'s."
-- [ ] **Step 3: The check passes.** The two counts are now `0` and `4`.
+- [ ] **Step 3: The check passes.** The two counts are now `0` and `3`.
 - [ ] **Step 4: Rehearse in tmux.** `tmux new-window -d -n cm-check "claude-method my --version >
   $SCRATCH/cm-version.txt 2>&1"`, then read the file: it holds the Claude Code version. This
   proves a tmux window finds `claude-method` and that it reaches `claude`.
@@ -1177,6 +1178,56 @@ No code and no commit.
   checks them before the merge and asks the user; it never stashes them.
 - **The off set turns off a plugin the user enabled on purpose** when it is another method's
   dependency (spec).
+- **`/kit:method <m>` writes no key that already has the wanted value** (Task 11). `claude plugin
+  enable|disable --scope local` exits 1 with `is already enabled at local scope` or `is already
+  disabled at local scope` and writes nothing, so the skill counts that as no change. An off key
+  that is off everywhere stays unnamed in `.claude/settings.local.json`. Known limit: if the user
+  scope later turns that method on, it loads beside the chosen one in that folder, and the start
+  check warns.
+- **`/kit:method default` asks the user to approve its edit** (Task 11). Claude Code guards
+  `.claude/settings*.json`: an Edit there asks even in `acceptEdits` mode, and an
+  `--allowedTools` rule does not allow it in `claude -p`. So `default` was checked in an
+  interactive session, not headless.
+- **`/kit:method` does not reach a session started by `claude-method`** (batch 2 review). The
+  keys that `claude-method` passes with `--settings` outrank `.claude/settings.local.json`: a
+  `claude -p --settings` run loaded `my` over local `false` keys. Every `my:handoff` stage is such
+  a session, so `/kit:method` there changes only later plain `claude` sessions in the folder. The
+  skill and `README.md` say so. Kit cannot detect the launch without reading process arguments.
+- **`/kit:method` runs its `disable` commands first, then `enable` for dependencies, then for the
+  method** (batch 2 review). `claude plugin enable my@claude-setup` refuses while
+  `superpowers@synced` is off, and `claude-method --json` sorts the keys, so `my` and `sp` come
+  before `superpowers`. A failure partway leaves no method on, not two.
+- **Known limits from the batch 2 review**, not reached today:
+  - A launch whose tmux server cannot find `~/bin/claude-method` dies in its window, and the
+    `-d` window hides it; `my:handoff` still prints `Launched`. The symlink exists, and the
+    Task 12 tmux rehearsal passed.
+  - `/kit:method default` removes a dependency key, such as `superpowers@synced`, that the user
+    set in `.claude/settings.local.json` on purpose. No folder under `~/projects` has local
+    `enabledPlugins` keys today.
+- **Known limits from the batch 2 re-review**, recorded under the one-fix-round rule:
+  - In a git worktree, `claude plugin --scope local` writes the main checkout's
+    `.claude/settings.local.json`, and a worktree session loads its plugins from that file. So
+    `/kit:method <m>` there switches the main checkout and every worktree. `/kit:method default`
+    finds the root with `git rev-parse --show-toplevel`, reads the worktree's own file, says
+    that no local keys are set, and leaves the keys on (soundness re-review, checked on a test
+    repo). The fix is to take the root from `--git-common-dir`, as `my:handoff` Launch step 3
+    does, and to say in the skill that a worktree switch reaches the main checkout.
+  - An "already disabled" key stays unnamed in the local file. If the committed
+    `.claude/settings.json` later turns that method on, through a `git pull` or `/kit:setup`, it
+    loads beside the chosen one. This widens the first Task 11 bullet above, which names only
+    the user scope.
+  - In a session started with a method's folder on `--plugin-dir`, such as
+    `claude --plugin-dir ~/projects/claude-setup/plugins/my`, `/kit:method tutor` leaves that
+    folder copy loaded, so two methods load after the reload.
+  - `claude-method` can also fail in a `my:handoff` launch for other reasons, such as no
+    `claude-setup` entry in `known_marketplaces.json`. The `-d` window then closes with no sign,
+    as in the batch 2 bullet above.
+  - When an `enable` fails after the `disable` commands ran, the folder has no method, and the
+    skill does not say how to get back (`/kit:method default`, or the old method again).
+  - Cleanups: the bare `claude-method` call in step 1 repeats the name check that
+    `claude-method --json <m>` already makes; `README.md` says the symlink is "as for
+    `git-fold-fixups.py`", which the README never documents; the kit `plugin.json` and
+    marketplace descriptions do not name `kit:method`.
 - **The strict bare scope turns off the design plugins** after rollout step 2 (D14):
   `kit:design-router` stops and names the plugin that is off.
 - **The start check depends on `claude-method`.** If the script fails, it warns once and judges

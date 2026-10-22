@@ -94,7 +94,9 @@ types a fourth, `/my:handoff run auto <stage> <doc>`, into each window. See
 3. **Copy the flags.** The new session gets the same `--plugin-dir` flags and
    the same permission mode as the current one.
 4. **Open the window.** It runs
-   `tmux new-window -d -n '<window>' … "claude -n <name> … '/my:handoff run <stage> <doc>'"`.
+   `tmux new-window -d -n '<window>' … "claude-method my -n <name> … '/my:handoff run <stage> <doc>'"`.
+   `claude-method my` starts the new session in the `my` method, whatever
+   the folder's own method is.
    `-d` means your screen stays where it is.
 
 A window opens only when you are inside tmux and the session runs in `auto` or

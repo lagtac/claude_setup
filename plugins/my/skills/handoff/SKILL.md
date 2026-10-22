@@ -303,7 +303,9 @@ Run these steps in order.
 3. **Flags.**
    - Plugin dirs: run `ps -o args= -p "$CLAUDE_PID"` and copy every
      `--plugin-dir <path>` pair from it. A tmux window runs no shell alias, so
-     without them the new session lacks this skill.
+     without them the new session lacks this skill. `claude-method my` starts
+     the stage in the `my` method in any folder, and turns `my@claude-setup`
+     off when a copied `--plugin-dir` is `my`'s.
    - Mode: read your own permission mode from your context. Only `auto` and
      `bypassPermissions` may open a window. For those, the flag is
      `--permission-mode <mode>`. In any other mode, or when your context does
@@ -319,7 +321,7 @@ Run these steps in order.
    to run in a new terminal, and stop (in a Run session, go on to "Finish"):
 
    ```bash
-   cd <repo root> && claude -n <name> <plugin-dir flags> <mode flag> '/my:handoff run <stage> <doc>'
+   cd <repo root> && claude-method my -n <name> <plugin-dir flags> <mode flag> '/my:handoff run <stage> <doc>'
    ```
 
    When the mode flag is empty, add: `Pick a permission mode in the new
@@ -339,7 +341,7 @@ Run these steps in order.
 
    ```bash
    tmux new-window -d -n '<window>' -c <repo root> \
-     "claude -n <name> <plugin-dir flags> <mode flag> '/my:handoff run <stage> <doc>'"
+     "claude-method my -n <name> <plugin-dir flags> <mode flag> '/my:handoff run <stage> <doc>'"
    ```
 
    `-d` keeps the user's view where it is.
@@ -349,7 +351,7 @@ Run these steps in order.
 
    ```bash
    tmux new-window -d -n '<window>' -c <repo root> \
-     "MY_AUTORUN=<slug> claude -n <name> <plugin-dir flags> <mode flag> '/my:handoff run auto <stage> <doc>'"
+     "MY_AUTORUN=<slug> claude-method my -n <name> <plugin-dir flags> <mode flag> '/my:handoff run auto <stage> <doc>'"
    ```
 
 6. **Report.** Print `Launched <name> in a new tmux window.` and stop (in a

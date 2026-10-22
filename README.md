@@ -103,6 +103,28 @@ loads in the next session there. The `method-guard.py` hook (see Hooks) warns
 when two methods are on, when a dependency is off, or when an old import line
 is left.
 
+Two more ways switch the method without a commit:
+
+- `claude-method <m> [claude args]` starts one session with method `<m>`, in
+  any folder. It passes the method's keys to `claude` with `--settings`, and
+  passes the other args on. `claude-method` with no args lists the methods.
+  `my:handoff` starts each stage this way, with `claude-method my`.
+- `/kit:method <m>`, typed in a session, switches the folder: it writes the
+  keys into `.claude/settings.local.json`, the folder's local settings, which
+  outrank its committed `.claude/settings.json`. The method loads after you
+  submit `/reload-plugins`, in that session and in every new one there. A
+  session started by `claude-method`, such as a `my:handoff` stage, keeps
+  its method, because `--settings` outranks the local file.
+  `/kit:method default` removes those keys again, so the folder's committed
+  method applies.
+
+Your shell finds `claude-method` through the symlink
+`~/bin/claude-method`, as for `git-fold-fixups.py`:
+
+```bash
+ln -s ~/projects/claude-setup/plugins/kit/bin/claude-method ~/bin/claude-method
+```
+
 ## Skills
 
 Skills load when a task matches their description, or when you call them
@@ -149,6 +171,9 @@ as `/my:<name>`, `/kit:<name>` or `/tutor:<name>`.
 - `kit:setup` — Sets a project's method: writes the method's plugin keys
   (and, for `my`, the facts block), removes other methods' keys and an old
   import line, and commits them in that project. See Methods.
+- `kit:method` — Switches the method of the current folder during a session,
+  in `.claude/settings.local.json`, until `/kit:method default`. Only you
+  start it. See Methods.
 - `kit:briefing` — Writes a plain-English, decision-focused briefing for
   non-technical readers, in `docs/briefings/`. Five events: a result landed,
   a decision needs sign-off, a long job started, changes since a fixed point
@@ -186,10 +211,9 @@ as `/my:<name>`, `/kit:<name>` or `/tutor:<name>`.
   repo made for learning, or a clone of a real project that cannot push), and
   runs the sessions: the student writes the code, the tutor sets exercises,
   gives hints and keeps notes in `docs/learning/`. The `tutor` plugin is off
-  outside a learning workspace, so start a session with
-  `~/projects/claude-setup/plugins/kit/bin/claude-method tutor` in the folder
-  that will hold the new workspace, then say "let's make a learning project
-  for …".
+  outside a learning workspace, so start a session with `claude-method tutor`
+  in the folder that will hold the new workspace, then say "let's make a
+  learning project for …".
 
 `plugins/my/bin/` also holds `git-fold-fixups.py`, which is not a skill. The
 feature steps in the `my` style (`plugins/my/output-styles/my.md`) and
