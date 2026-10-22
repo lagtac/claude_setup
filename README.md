@@ -4,7 +4,8 @@ My Claude Code setup. The repo is also a plugin marketplace, named
 `claude-setup`. It has two parts:
 
 - **`plugins/`** — my local plugins. Every local plugin goes here and gets a
-  row in `.claude-plugin/marketplace.json` at the repo root.
+  row in `.claude-plugin/marketplace.json` at the repo root. Three of them,
+  `my`, `tutor` and `sp`, are methods (see Methods).
   - **`plugins/my/`** — the `my` plugin: skills, commands, agents and hooks
     for development workflows. Its README explains the method and how it
     builds on superpowers.
@@ -83,11 +84,37 @@ plugin twice.
 
 ## Methods
 
-A method is a plugin with `"category": "method"` in
+A method is a way of working that Claude follows in a project: a set of
+rules, plus the tools those rules need. This repo has three:
+
+- **`my`** — how I build software: a written spec and plan before the code,
+  the code in its own git worktree, and reviews before the merge.
+- **`tutor`** — for learning: I write the code, and Claude sets exercises,
+  gives hints and keeps notes in `docs/learning/`.
+- **`sp`** — the superpowers workflow as its authors ship it, with none of
+  my rules added.
+
+Each project picks one method, or none. With none, Claude follows only the
+core rules in `global/` and has the `kit` tools. Changing one project's
+method changes nothing in other projects.
+
+You pick a method in one of three ways:
+
+| To change the method for | Run | Lasts until |
+| --- | --- | --- |
+| A project, for good | `/kit:setup <method>` | You run it again |
+| One session | `claude-method <method>` | The session ends |
+| A folder, for now | `/kit:method <method>`, then `/reload-plugins` | You run `/kit:method default` |
+
+`claude-method` with no arguments lists the methods.
+
+### How methods work
+
+Each method is a plugin with `"category": "method"` in
 `.claude-plugin/marketplace.json`. Its forced output style holds its rules,
 and the `dependencies` field of its `plugin.json` holds the plugins it needs.
-The methods here are `my`, `tutor` and `sp`. Each project picks its own, so
-trying another method does not touch the global files.
+So turning a method on loads its rules and its tools together, and turning
+it off removes both.
 
 - `~/.claude/settings.json` keeps every method off, and `kit@claude-setup`
   on. A project with no method of its own gets only the core in
@@ -103,12 +130,11 @@ loads in the next session there. The `method-guard.py` hook (see Hooks) warns
 when two methods are on, when a dependency is off, or when an old import line
 is left.
 
-Two more ways switch the method without a commit:
+The other two ways switch the method without a commit:
 
 - `claude-method <m> [claude args]` starts one session with method `<m>`, in
   any folder. It passes the method's keys to `claude` with `--settings`, and
-  passes the other args on. `claude-method` with no args lists the methods.
-  `my:handoff` starts each stage this way, with `claude-method my`.
+  passes the other args on. `my:handoff` starts each stage this way, with `claude-method my`.
 - `/kit:method <m>`, typed in a session, switches the folder: it writes the
   keys into `.claude/settings.local.json`, the folder's local settings, which
   outrank its committed `.claude/settings.json`. The method loads after you
@@ -119,7 +145,7 @@ Two more ways switch the method without a commit:
   method applies.
 
 Your shell finds `claude-method` through the symlink
-`~/bin/claude-method`, as for `git-fold-fixups.py`:
+`~/bin/claude-method`:
 
 ```bash
 ln -s ~/projects/claude-setup/plugins/kit/bin/claude-method ~/bin/claude-method
