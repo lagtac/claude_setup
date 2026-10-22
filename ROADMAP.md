@@ -26,9 +26,9 @@ The steps run top to bottom. Rows in one step can run side by side,
 because they edit different files.
 
 1. **56 "Two supervised runs get the same port".** It is a bug in
-   `my:handoff`. It no longer waits for row 29: zitamu hits it now, and row
-   29 takes weeks. It comes before 68, because 68 changes the launch lines in
-   `my:handoff` (user, 2026-10-21).
+   `my:handoff`. It does not wait for row 29, which takes weeks. It comes
+   before 68, because 68 changes the launch lines in `my:handoff` (user,
+   2026-10-21).
 2. **68 "Methods as plugins", then 69 "Shared skills move to `kit`".** 68
    replaces `kit:setup`'s two switches and `method-guard.py`, so 60 in step
    6 edits the new `kit:setup`. 69 renames skills in files 68 also edits, so
@@ -360,13 +360,15 @@ Their order is in "Order of work" above.
   `handoff-lock.py --help`, and design explanations stay in the specs. *Locked
   commit*, *shared-doc check* and *waiting fixups* replace "as in Plan stage,
   step N". Report P4, P5. Row 36 was folded in on 2026-10-16.
-- 💭 56 **Two supervised runs get the same port** — bug in `my:handoff`.
-  Two supervised (not auto) runs at the same time get the same
-  preview port and other per-run values, so the second fails to start. Fix:
-  a supervised run has no state file and always takes slot `1`, so give it
-  a slot of its own.
-  [Critique](docs/reports/2026-10-15-parallel-runs-section-critique.md) P1,
-  which names this bug as one case; shipping this row does not close P1.
+- 📋 56 **Two supervised runs get the same port** — bug in `my:handoff`
+  and `handoff-state.py`; architectural with plan. A supervised run, and the
+  first auto run beside it, both get slot `1`, so their Isolation values
+  (ports, stacks) clash. Fix: every run gets a state file and a slot from one
+  pool; only auto runs count toward the cap. Spec approved, plan next; it
+  takes effect only in projects with a "Parallel runs" section.
+  [spec](docs/plans/2026-10-22-supervised-run-slots-spec.md);
+  [critique](docs/reports/2026-10-15-parallel-runs-section-critique.md) P1,
+  which this row does not close.
 - 💭 57 **An auto run that stops before the merge** — feature in `my:handoff`,
   route not set. A test drive of the auto path, `decide` included, always ends
   in a merge. Goal: a Delegation key, or an `auto` flag, that stops at
