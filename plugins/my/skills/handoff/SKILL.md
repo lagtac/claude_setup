@@ -167,10 +167,12 @@ a project "has the section". Spec:
 | Isolation | `none needed` | What every stage sets for each command it runs in the worktree, so that worktrees do not share test stacks or ports. It may use `<slug>` and `<slot>`. |
 | Shared resources | `none` | Commands that only one run may use at a time, each with a lock name. Each runs under its lock. |
 
-Without the section, only two parts of this apply: the locked start, with
-`--max 1`, so that a second auto run refuses to start; and the fold's
-refusal to give a cited commit a new hash. Every other step reads as
-written.
+Without the section, only three parts of this apply: the locked start, with
+`--max 1`, so that a second auto run refuses to start; the fold's refusal to
+give a cited commit a new hash; and the supervised `start`, under
+`handoff-lock.py main`, which gives each supervised run its own state file
+(see "The state of a supervised run", under "Start checks"). Every other
+step reads as written.
 
 The values that the steps below use:
 
@@ -182,7 +184,6 @@ The values that the steps below use:
   `--docs-paths <path> ...`, last on the command line, only when the section
   names a list that differs from the default.
 - **`<slot>`:** the `slot` field that `handoff-state.py get <slug>` prints.
-  A supervised run has no state file and uses slot `1`.
 
 `handoff-lock.py`, on `PATH` like `handoff-state.py`, runs one command under
 a named lock that the main checkout and every worktree share:
@@ -363,14 +364,26 @@ the user's own session, which has no `MY_AUTORUN`, so it never does the
 stage's work itself: it launches the stage in a new window. First run the
 window check of "Start checks in auto mode".
 
-1. Run `handoff-state.py check <slug>`. It compares the state file with git
+1. Run `handoff-state.py get <slug>`. If it prints a state whose `mode` is
+   `supervised` and whose `next` is not `finished`, print one line and
+   stop, with `<doc>` the state's `task_doc`. When `next` is `code` and
+   `branch` is not empty, the code stage has made its branch, and a new
+   code stage would fail its start checks. The line is then
+   `<name>: the run for <slug> is supervised; finish its tasks in <worktree>, then run /my:handoff review <doc>, or end the run`,
+   with `<worktree>` the state's `worktree`. In a batch, the review gets the
+   batch's last plan as `<doc>`. Otherwise the line is
+   `<name>: the run for <slug> is supervised; run /my:handoff <stage> <doc>`,
+   with `<stage>` the state's `next`. "To end an abandoned run" says how to
+   end it. Write nothing. This step comes before `check`, because `check`
+   stops at any mismatch and would hide this answer.
+2. Run `handoff-state.py check <slug>`. It compares the state file with git
    and prints one mismatch per line. If it exits 1, signal
    `<name>: resume refused: <first mismatch>` and stop. Write nothing, and
    never guess. When it prints `merge done`, the merge happened before a
    crash, and `check` has already moved `next` on to `worktree-remove`.
-2. Read `next` with `handoff-state.py get <slug>`. If it is `finished`, print
+3. Read `next` with `handoff-state.py get <slug>`. If it is `finished`, print
    `<name>: the run for <slug> is finished; nothing to resume.` and stop.
-3. Pick the stage and its doc from the state:
+4. Pick the stage and its doc from the state:
    - `plan`: if `task_doc`, the plan, is committed on `<base>`
      (`git log -1 --format=%h <base> -- <task_doc>` prints a hash), the plan
      stage got that far: run `handoff-state.py set <slug> next=code`, and
@@ -380,7 +393,7 @@ window check of "Start checks in auto mode".
    - `review`, `merge-retry`, `merge`, `worktree-remove`, `fold` or `done`:
      the stage is `review` and the doc is `task_doc`. The steps after the merge run as
      the review stage.
-4. If the state's `stopped` field is not empty, print
+5. If the state's `stopped` field is not empty, print
    `<name>: the earlier stop was: <stopped>`. Then run
    `handoff-state.py set <slug> stopped=`. In a project with a "Parallel
    runs" section, also run `handoff-state.py set <slug> merge_retries=0`.
@@ -390,13 +403,15 @@ window check of "Start checks in auto mode".
 ### To end an abandoned run
 
 A stopped run still counts toward the cap until the user resumes it or ends
-it. `handoff-state.py live` lists the runs that count. To end one, the user
-says so in a session. That session runs `git worktree remove <worktree>` when
-the state names a worktree that `git worktree list` shows, with `--force`
-only after the user's yes to it. Then it runs
+it. `handoff-state.py live` lists the live runs of both modes; only auto runs
+count toward the cap. This section applies to supervised runs too. To end one,
+the user says so in a session. That session runs
+`git worktree remove <worktree>` when the state names a worktree that
+`git worktree list` shows, with `--force` only after the user's yes to it.
+Then it runs
 `handoff-state.py set <slug> next=finished stopped="ended by the user"`. The
 branch stays. Then it runs the refill (see "Refill", under "From roadmap
-rows"): the ended run freed its slot.
+rows"): the ended run may let waiting rows start.
 
 ### Restarted stages
 
@@ -484,7 +499,7 @@ check of "Start checks in auto mode".
    | `handoff-state.py get <slug>` prints a state whose `next` is not `finished`. | `a run for <slug> exists` |
    | The slug is already `waiting` in the `queue` block. | `already waiting` |
    | The stage could not start fresh: the anchored `ls` of the plan start check lists a plan, `git branch --list '*/<slug>'` prints a branch, or `.claude/worktrees/<slug>` exists. A run the user ended leaves its branch behind. | `<plan, branch or worktree> for <slug> exists` |
-   | It is gated behind a row that is not done and is none of: a row in this call, a live auto run (a state whose `next` is not `finished`), a `waiting` queue entry. Nothing would ever start such a blocker. A row is done when it is ✅, or when its slug's state has `next=finished` and an empty `stopped`: a `done` mark does not always set ✅. | `blocked by row <m>, which nothing will start` |
+   | It is gated behind a row that is not done and is none of: a row in this call, a live run, of either mode (a state whose `next` is not `finished`), a `waiting` queue entry. Nothing would ever start such a blocker. A row is done when it is ✅, or when its slug's state has `next=finished` and an empty `stopped`: a `done` mark does not always set ✅. | `blocked by row <m>, which nothing will start` |
    | It is gated behind a row in this call that this call skips. | `blocker row <m> was skipped` |
    | Its own text says it waits for something that is not a row ("Waits for …", `my:status` step 5). Nothing in the queue would start it. | `waits for <what the row says>` |
 
@@ -493,7 +508,7 @@ check of "Start checks in auto mode".
    - **`stage`:** `code` when the spec has a section titled Tasks, `plan`
      when not, as in start check 4 of "Start checks in auto mode".
    - **`after`:** the slugs of the rows it is gated behind (`my:status`
-     step 5) that are rows in this call, live auto runs or `waiting`
+     step 5) that are rows in this call, live runs or `waiting`
      entries. A done blocker is no gate.
    - **`exclusive`:** `true` when the row has no file list (`my:status`
      step 6), because its overlap is unknown; `false` otherwise.
@@ -556,14 +571,14 @@ check of "Start checks in auto mode".
 8. **Report.** List the rows started, the rows waiting with what the first
    one waits for (`handoff-state.py queue show`), and the rows skipped with
    their reasons. Then stop. No session stays open to watch: the runs refill
-   their own slots.
+   their own places under the cap.
 
 ### Refill
 
-A run that finishes frees its slot, and the refill starts the next waiting
-rows in it. Two places run it, right after they write `next=finished`:
-Review stage, step 8, sub-step 4 in auto mode, and "To end an abandoned
-run".
+A run that finishes frees its place under the cap, and the refill starts the
+next waiting rows in it. Two places run it, right after they write
+`next=finished`: Review stage, step 8, sub-step 4 in auto mode, and "To end
+an abandoned run".
 
 1. Run `handoff-lock.py main -- handoff-state.py pull --max <n>`. With no
    queue file it prints nothing, and the refill is done.
@@ -633,6 +648,22 @@ Before any other work, check the doc. If a check fails, signal
   - `git -C <worktree> status --porcelain` prints nothing;
   - `git log --oneline <base>..<branch>` prints at least one commit.
 
+**The state of a supervised run.** Without `auto`, the code and review
+stages write the run's state once their start checks pass:
+
+```bash
+handoff-lock.py main -- handoff-state.py start <slug> --supervised \
+  spec=<design doc> task_doc=<task doc> next=<stage>
+```
+
+`<stage>` is `code` or `review`. The review stage gets the slot that the
+code stage got. The session that does the work writes the state, so this
+also holds when Launch fell back to printing a command. A refusal or a lock
+timeout is a failed start check: signal
+`<name>: start check failed: <the script's message>`. The plan stage writes
+no state. A supervised run never writes `stopped`: its stops wait in its
+window, as before.
+
 When something already exists, do not guess whether to resume or restart. The
 user decides.
 
@@ -671,7 +702,10 @@ is none.
 4. `auto plan`: the spec has no section titled Tasks. `auto code`: it has
    one.
 5. The auto launch: `handoff-state.py get <slug>` exits 1, or its `next` is
-   `finished`. If not, the reason is `a run for <slug> exists; use resume`.
+   `finished`. If not, the reason is
+   `a supervised run for <slug> exists; finish or end it first` when the
+   state's `mode` is `supervised`, and `a run for <slug> exists; use resume`
+   otherwise.
 6. `run auto <stage>`: `handoff-state.py get <slug>` prints a state, and its
    `next` equals `<stage>`. For `run auto review`, `next` is one of
    `review`, `merge-retry`, `merge`, `worktree-remove`, `fold` and `done`:
@@ -835,6 +869,9 @@ file would count as a live run.
    When the project's rules or the plan name the worktree and branch, use
    those names instead. If that worktree already exists, work in it, and
    first rebase its branch onto `<base>` when the project's rules say so.
+   After the worktree exists, run
+   `handoff-state.py set <slug> branch=<branch> worktree=<worktree path>`,
+   with the path as given to `git worktree add`.
    Implement the plan with the one skill its header names, else
    `superpowers:executing-plans`. Where the project's review rules differ
    from that skill's own reviews, the project's rules win.
@@ -865,8 +902,16 @@ file would count as a live run.
    removed or weakened.
 4. When the project's rules or the plan end this work before the branch is
    done, for example because a batch squash-merges only after its last plan,
-   signal `<name>: done; <the stop point the plan names>` and stop.
-5. Otherwise run "Launch" with `review <plan path>`, then "Finish".
+   the stage ends here. Without `auto`, first stop every server this stage
+   started under **Isolation**. The run stays live: the batch's review
+   stage finishes it after the merge (Review stage, step 8, sub-step 4), so
+   a row gated behind it waits until its code is on `<base>`. The next plan
+   of the batch is a new run with its own slug. Then, in both modes, signal
+   `<name>: done; <the stop point the plan names>` and stop.
+5. Otherwise run `handoff-state.py set <slug> next=review`, in both modes,
+   then "Launch" with `review <plan path>`, then "Finish". So the state
+   names the review stage also when Launch falls back to printing a
+   command.
 
 **In auto mode,** the code stage changes as follows.
 
@@ -895,9 +940,6 @@ and sub-step b is skipped: nothing folds there.
 
 In the code stage's numbered steps:
 
-- Step 1: after the worktree exists, run
-  `handoff-state.py set <slug> branch=<branch> worktree=<worktree path>`,
-  with the path as given to `git worktree add`.
 - Every task commit carries the git trailer `Task: <N>`, where `<N>` is the
   task's position in the task doc's list of tasks, counted from 1. Add it
   with `git commit --trailer "Task: <N>"`. A restarted code stage uses it to
@@ -906,8 +948,7 @@ In the code stage's numbered steps:
   [Dependencies] lists the package by its exact name. A change outside the
   project's scope, a test failure that survives debugging, and a removed or
   weakened assertion are rows 7, 8 and 9: stops.
-- Step 5: just before "Launch", run `handoff-state.py set <slug> next=review`.
-  Launch then opens `run auto review <task doc>`.
+- Step 5: Launch opens `run auto review <task doc>`.
 
 ### Review stage
 
@@ -1016,6 +1057,13 @@ all land on the branch, and the main checkout stays clean.
       are signals as in Plan stage, step 8.
    4. Set the `done` marks as the project's rules say. They cite the squash
       commit's hash as it is after the fold, and the counts from step 2.
+      Then run `handoff-state.py set <slug> next=finished`. In a batch, run
+      it also for each other plan of the batch (step 1) whose slug has a
+      live state: code stage step 4 left those runs live until this merge.
+      Then the queue line. The queue line: run
+      `handoff-state.py queue show`; when its first field is `ready`, print
+      `rows wait in the queue; run /my:handoff auto rows` just before
+      Finish's last line. A supervised finish runs no refill.
 
    **With a "Parallel runs" section,** these sub-steps change:
 

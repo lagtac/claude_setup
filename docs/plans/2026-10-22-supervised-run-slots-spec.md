@@ -81,6 +81,9 @@ No two live runs in one project, of either mode, ever have the same slot.
 | D14 | The fold of `auto rows` step 4, in a project without the section, keeps waiting until no run is live, of either mode. | The fold rewrites `main` under every open branch, supervised branches included. Review finding 4. |
 | D15 | `my:status` lists a live supervised run as needing the user when the queue waits on it. | A dropped supervised run blocks exclusive rows (D6) and `after` gates (D7), and has no stop line. Review finding 5. |
 | D16 | Code stage step 4 stops the servers that the stage started under **Isolation** before it finishes a supervised run. | Otherwise a server in the shared worktree of a batch keeps the slot's port while another run takes the slot. Review finding 6. |
+| D17 | The code stage sets `next=review` before it launches the review, in both modes. `resume` tells a supervised run at `code` with a branch to finish its tasks and run the review, or end the run. | A new code stage refuses once the branch exists, so "run /my:handoff code" led nowhere. End-of-branch review, user, 2026-10-22. |
+| D18 | A supervised batch plan stays live after code stage step 4. The batch's review stage finishes every live run of the batch after the merge. | A finished run opens the `after` gate, so a gated row started before the batch's code was on `main`. Chosen over a new "merged" field. End-of-branch review, user, 2026-10-22. |
+| D19 | `my:status` names the supervised run for a `live runs` wait only when no live auto run is live. | A live auto run also holds back that entry, so ending the supervised run would not start it. End-of-branch review, user, 2026-10-22. |
 
 ## Design
 
@@ -148,16 +151,22 @@ as auto runs do. The plan stage writes nothing, as today.
 
 - Review stage, step 8: after the `done` marks, `handoff-state.py set <slug> next=finished`.
 - Code stage, step 4: when the plan ends this work before the branch is done, as in a batch,
-  first stop every server the stage started under **Isolation** (D16). Then
-  `handoff-state.py set <slug> next=finished`. The next plan of the batch is a new run with its
+  first stop every server the stage started under **Isolation** (D16). The run stays live
+  (D18). After the merge, the batch's review stage sets `next=finished` on its own state and on
+  every live state of the batch's other plans. The next plan of the batch is a new run with its
   own slug. Auto runs keep today's step 4.
+- Code stage, step 5: `handoff-state.py set <slug> next=review` before "Launch", in both modes
+  (D17), so the state names the review stage also when Launch falls back to printing a command.
 - A dropped run: "To end an abandoned run" applies to both modes.
 
 After `next=finished`, the session runs `handoff-state.py queue show`. When its first line is
 `ready`, it prints `rows wait in the queue; run /my:handoff auto rows`.
 
-**`resume`.** After step 2 of "Resume", when `mode` is `supervised`, print
-`<name>: the run for <slug> is supervised; run /my:handoff <stage> <doc>` and stop.
+**`resume`.** After step 2 of "Resume", when `mode` is `supervised`, print one line and stop
+(D17). When `next` is `code` and `branch` is set, a new code stage would fail its start checks,
+so the line is
+`<name>: the run for <slug> is supervised; finish its tasks in <worktree>, then run /my:handoff review <doc>, or end the run`.
+Otherwise it is `<name>: the run for <slug> is supervised; run /my:handoff <stage> <doc>`.
 
 **Stops** in a supervised run stay as today: the session waits in its window, and writes no
 `stopped`.
@@ -199,7 +208,8 @@ runs".
 - A supervised run shows as one in-progress line, such as "supervised run `<slug>`, at code,
   branch `fix/x`".
 - A live supervised run needs the user when the queue waits on it (D15): the `queue` block's first
-  line is `waits`, and its reason is that run's slug, or `live runs` while that run is live. The
+  line is `waits`, and its reason is that run's slug, or `live runs` while that run is live and
+  no live auto run is (D19). The
   line is "Needs you: the queue waits for supervised run `<slug>`; finish it or end it with the
   steps in "To end an abandoned run"".
 - "What is next" offers `auto resume` only for auto runs.

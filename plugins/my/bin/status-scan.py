@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Print the facts my:status judges: roadmap rows, open documents, the main
-checkout, worktrees, auto runs and branches that may hold unmerged work.
+checkout, worktrees, runs and branches that may hold unmerged work.
 
 The script reads and never writes. Run it from anywhere inside the repository
 or one of its worktrees. The base branch is the branch checked out in the main
@@ -20,7 +20,7 @@ prints one line `error`, tab, the reason, and the next block still prints.
     docs       status or no-status, date or -, path
     checkout   dirty, path; or fixup, fixup hash, target hash or ?, target subject
     worktrees  path, branch, commits ahead of the base, clean or dirty
-    runs       slug, slot, next, stop line, branch; - for an empty field
+    runs       slug, slot, next, stop line, branch, mode; - for an empty field
     queue      first the `handoff-state.py queue show` line: ready, slug; or
                waits, slug, what; or none. Then state, row, slug, after
                (comma-separated, or -), reason or - per waiting or skipped
@@ -188,11 +188,11 @@ def worktree_facts(root, base):
 
 
 def run_facts(common):
-    """Auto runs whose next is not finished: slug, slot, next, stop line, branch."""
+    """Runs whose next is not finished: slug, slot, next, stop line, branch, mode."""
     live = subprocess.run([sys.executable, os.path.join(HERE, "handoff-state.py"), "live"],
                           capture_output=True, text=True)
     if live.returncode == 0:
-        rows = [(line.split("\t") + [""] * 5)[:5] for line in live.stdout.splitlines()]
+        rows = [(line.split("\t") + [""] * 6)[:6] for line in live.stdout.splitlines()]
         broken = [row[0] for row in rows if row[2] == "unreadable"]
         if broken:
             raise ValueError(f"state file is not valid JSON: {broken[0]}.json")
@@ -210,7 +210,8 @@ def run_facts(common):
             if state.get("next") == "finished":
                 continue
             rows.append([slug] + [str(state.get(key, "")) for key in
-                                  ("slot", "next", "stopped", "branch")])
+                                  ("slot", "next", "stopped", "branch")]
+                        + [str(state.get("mode", "auto"))])
     else:
         raise ValueError(f"handoff-state.py live: {live.stderr.strip()}")
     return [tuple(field or "-" for field in row) for row in rows]

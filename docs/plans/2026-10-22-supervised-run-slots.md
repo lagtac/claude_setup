@@ -840,6 +840,59 @@ choices:
 - **How to detect a break:** the full suites, and the rehearsal table of
   Task 7. A wrong count would show as an auto start refused beside a
   supervised run, or two runs with one slot in the `runs` block.
+- **The end-of-branch review changed three decisions** with the user's
+  answers, recorded in the spec as D17 to D19. The code stage sets
+  `next=review` before Launch in both modes, and `resume` sends a
+  supervised run that has its branch to the review. A supervised batch plan
+  stays live after code stage step 4, and the batch's review stage finishes
+  it after the merge. So it keeps its slot number and holds back exclusive
+  rows until then. `my:status` names a supervised run for a `live runs`
+  wait only when no auto run is live. These are prose steps, read by the
+  review, not tested by a command.
+- **A stopped auto run cannot be finished by hand.** A supervised `start`
+  refuses beside a live auto run of the same slug (the spec's `start`
+  table), so `/my:handoff review <doc>` refuses for it. The way on is
+  `/my:handoff auto resume <spec>`, or ending the run.
+- **A supervised finish runs no refill** (D9), while ending an abandoned run
+  does. A row that waits for the supervised run starts only when the user
+  types `/my:handoff auto rows`, as the queue line says.
+- **`start --supervised` with no field pairs** writes a live state with no
+  `next`. No caller does this: the skill always passes `spec`, `task_doc`
+  and `next`.
+
+Known limits from the final re-review, left for a later row by the
+one-fix-round rule:
+
+- **Do not end an earlier batch plan's run while its batch is open.** D18
+  keeps that run live, and its state names the batch's shared worktree.
+  `my:status` and `resume` still offer "end the run". "To end an abandoned
+  run" would then remove the shared worktree (a clean one needs no
+  `--force`), and its `stopped` line makes the queue skip every row gated
+  behind the plan. Let the batch's review stage finish it.
+- **`resume` tells an earlier batch plan to "finish its tasks"**, but they
+  are done. Run the review only after the batch's last plan.
+- **"The run stays live" in code stage step 4 applies to supervised runs
+  only.** The auto review sub-steps finish only their own slug, so an
+  earlier auto batch plan never finishes. That gap was on `main` before.
+- **A supervised review that stops after the squash-merge** keeps
+  `next=review`, and the worktree is gone, so `resume`'s advice fails its
+  start check. Ending the run writes `stopped`, which skips rows gated
+  behind it. Finish it by hand with
+  `handoff-state.py set <slug> next=finished` instead.
+- **The queue line after a supervised finish ignores the cap.** It can say
+  `run /my:handoff auto rows` while the cap is full; that command then
+  starts nothing.
+- **A supervised start does not wait for a running exclusive row.** D6
+  holds one way only: an exclusive row waits for supervised runs, not the
+  other way.
+- **Stale spec wording.** D16 and the spec's "Judgement steps" Risk line
+  (and the one above) say step 4 finishes a batch run; D18 replaced that.
+  The spec's `resume` paragraph says "after step 2"; the skill runs the
+  check as step 1, before `check`. The skill text is the one that holds.
+- **Cleanup left as is:** the rule "a missing `mode` means `auto`" is
+  written in `is_auto`, `print_live` and `status-scan.py`, and `pull` reads
+  the state folder several times per queue entry. Neither fails at run
+  time.
 
 ## Testing Strategy
 

@@ -308,12 +308,13 @@ After a run, `git log origin/main` shows whether anything was pushed.
 
 ### Where the state lives
 
-A run keeps its state in `.git/my-handoff/<slug>.json`, in the main
-checkout's git folder. That is outside the work tree, so `git status` never
-shows it. `handoff-state.py`, in `plugins/my/bin/`, writes and reads it:
-`handoff-state.py get <slug>` prints it. The field `next` names the next
-step, and `stopped` holds the reason of the last stop. The script is on
-`PATH` only inside a Claude session that loads this plugin. For your own
+A run keeps its state in `.git/my-handoff/<slug>.json`, in the main checkout's
+git folder. A supervised run keeps one too, from its code stage on. The field
+`mode` says `auto` or `supervised`. That folder is outside the work tree, so
+`git status` never shows it. `handoff-state.py`, in `plugins/my/bin/`, writes
+and reads it: `handoff-state.py get <slug>` prints it. The field `next` names
+the next step, and `stopped` holds the reason of the last stop. The script is
+on `PATH` only inside a Claude session that loads this plugin. For your own
 shell, add a symlink in `~/bin`, as for `git-fold-fixups.py`:
 `ln -s <this repo>/plugins/my/bin/handoff-state.py ~/bin/`.
 
@@ -361,12 +362,13 @@ titled `Parallel runs` in its `CLAUDE.md` or `CLAUDE.local.md`:
 - **Shared resources:** `e2e`: `web/scripts/e2e-worktree.sh <path>`
 ```
 
-**Max runs** is the most runs live at once. A missing key takes the value
+**Max runs** is the most auto runs live at once. A missing key takes the value
 shown above, except **Isolation** (`none needed`) and **Shared resources**
 (`none`). **Isolation** is what each stage sets for every test and server
 command, so that two worktrees do not share a test stack or a port; `<slot>`
-is the run's place, 1 to **Max runs**. Each **Shared resources** command runs
-under its own lock, so only one run uses it at a time.
+is the run's number, from 1 up. Supervised runs take numbers too, so leave
+room above **Max runs** for them. Each **Shared resources** command runs under
+its own lock, so only one run uses it at a time.
 
 What changes in such a project:
 
@@ -458,5 +460,6 @@ Spec: `docs/plans/2026-10-13-roadmap-auto-runs-spec.md`. Plan:
   own.
 - The tool `ListAgents`. `PushNotification` is optional: without it, a stage
   skips the notification, and the `⚠` mark still shows.
-- For auto mode, `python3`: the push guard and `handoff-state.py` are Python
+- `python3`, for auto mode and for the code and review stages of a supervised
+  run: the push guard, `handoff-lock.py` and `handoff-state.py` are Python
   scripts.

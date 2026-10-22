@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Keep the state of an autonomous my:handoff run, and check it against git.
+"""Keep the state of a my:handoff run, auto or supervised, and check it against git.
 
 The state of the run for <slug> is one JSON file,
 `<git common dir>/my-handoff/<slug>.json`. It lives outside the work tree, so
@@ -13,6 +13,8 @@ Usage:
     handoff-state.py live                             list the runs not finished
     handoff-state.py start <slug> --max <n> <field>=<value> ...
                                                       start a run, if the cap allows
+    handoff-state.py start <slug> --supervised <field>=<value> ...
+                                                      start a supervised run, or take its slot again
     handoff-state.py merge <slug> -m <message> [--docs-paths <path> ...]
                                                       squash-merge the run's branch
     handoff-state.py queue add --file <path>          queue roadmap rows
@@ -21,23 +23,37 @@ Usage:
     handoff-state.py pull --max <n>                   start waiting rows, if the cap allows
 
 Fields: spec, task_doc, branch, worktree, next, squash_subject,
-head_before_fold, stopped, slot, checked_base, merge_retries. `next` is one of
-plan, code, review, merge-retry, merge, worktree-remove, fold, done, finished.
-An empty value is allowed, as in `stopped=`. `set` writes a temporary file in
+head_before_fold, stopped, slot, checked_base, merge_retries, mode. `next` is
+one of plan, code, review, merge-retry, merge, worktree-remove, fold, done,
+finished. `mode` is auto or supervised; a state without it is auto. An empty
+value is allowed, as in `stopped=`. `set` writes a temporary file in
 the same folder, then renames it over the state file, so a crash never leaves
 half a file.
 
 `live` prints one line per state file whose `next` is not finished, sorted by
-slug, with five fields separated by tabs: slug, slot, next, stopped, branch. A
-missing field prints as empty. A file that is not valid JSON prints its slug
-with `unreadable` as next and the other fields empty, and counts as live.
+slug, with six fields separated by tabs: slug, slot, next, stopped, branch,
+mode. A missing field prints as empty, and a missing mode as auto. A file that
+is not valid JSON prints its slug with `unreadable` as next and the other
+fields empty, and counts as live.
 
-`start` writes a fresh state from the given fields, plus `slot` and
-`merge_retries=0`, and prints the slot: the lowest whole number from 1 that no
-live run uses. A finished state of the same slug is replaced. It refuses, and
-writes nothing, when the slug's own run is live, or when <n> other runs are
-live. Run it under `handoff-lock.py main`, so that two starts cannot both pass
-the cap.
+`start` has two forms: `--max <n>` starts an auto run, and `--supervised`
+a supervised one. Each writes `mode` itself, so a `mode=` pair is a usage
+error. With no state of the same slug, or a finished one, it writes a fresh
+state from the given fields, plus `mode`, `slot` and `merge_retries=0`, and
+prints the slot: the lowest whole number from 1 that no live run uses, of
+either mode. When the slug's own run is live:
+
+    own run live   --max <n>                          --supervised
+    auto           refused: a run for <slug> exists;  refused: an auto run for
+                   use resume                         <slug> exists
+    supervised     refused: a supervised run for      writes the given fields,
+                   <slug> exists                      keeps the slot, prints it
+
+An unreadable state of the same slug counts as auto. The auto form also
+refuses when <n> auto runs are live; supervised runs never count toward the
+cap, and an unreadable state does. A refusal writes nothing. Run
+`start` under `handoff-lock.py main`, so that two starts cannot take the same
+slot or both pass the cap.
 
 `check` prints one mismatch per line: no rebase, merge, cherry-pick or
 uncommitted squash in progress in the main checkout, every field that `next`
@@ -94,8 +110,9 @@ skipped entry, has a finished state with a non-empty stopped, or has neither
 an entry nor a state file. Rule 3: an entry waits, and stops the walk, until
 every slug in its after has a finished state with an empty stopped. Rule 4:
 while a started exclusive entry's run is live, nothing starts; an exclusive
-entry starts only when no run is live, and the walk stops after it. Rule 5:
-the walk stops when <n> runs are live. Rule 6: a start writes the state as
+entry starts only when no run of either mode is live, and the walk stops after
+it. Rule 5: the walk stops when <n> auto runs are live; an unreadable state
+counts as auto. Rule 6: a start writes the state as
 `start` does, marks the entry started and prints
 `<slug><TAB><stage><TAB><spec><TAB><slot>`; when the slug's own run is live,
 the entry is skipped (`a run for <slug> exists`); when the slug cannot start
@@ -113,11 +130,11 @@ prints `ready<TAB><slug>` for the first entry that could start,
 
 Exit codes:
     0  done; for check, everything matches; for start, started; for merge, merged
-    1  get or check found no state file; check found a mismatch; start or merge
-       refused; queue drop refused; for queue add, queue drop, queue show and
-       pull, the queue file is not valid JSON or git failed
-    2  usage error, unknown field, unknown next, or an invalid queue entry
-       (nothing written)
+    1  get or check found no state file; check found a mismatch; start (either
+       form) or merge refused; queue drop refused; for queue add, queue drop,
+       queue show and pull, the queue file is not valid JSON or git failed
+    2  usage error, unknown field, unknown next, unknown mode, or an invalid
+       queue entry (nothing written)
     4  merge: the base gained code since checked_base (nothing changed; the
        paths are on stderr)
     5  merge: the squash or its commit failed; `git reset --merge` ran, and
@@ -133,7 +150,8 @@ import sys
 import tempfile
 
 FIELDS = ("spec", "task_doc", "branch", "worktree", "next", "squash_subject",
-          "head_before_fold", "stopped", "slot", "checked_base", "merge_retries")
+          "head_before_fold", "stopped", "slot", "checked_base", "merge_retries", "mode")
+MODES = ("auto", "supervised")
 STEPS = ("plan", "code", "review", "merge-retry", "merge", "worktree-remove",
          "fold", "done", "finished")
 NEEDS = {
@@ -216,6 +234,9 @@ def parse_pairs(pairs):
         if field == "next" and value not in STEPS:
             print(f"unknown next: {value}", file=sys.stderr)
             return None
+        if field == "mode" and value not in MODES:
+            print(f"unknown mode: {value}", file=sys.stderr)
+            return None
         updates[field] = value
     return updates
 
@@ -255,10 +276,10 @@ def live_states():
 def print_live():
     for slug, state in live_states():
         if state is None:
-            print(f"{slug}\t\tunreadable\t\t")
+            print(f"{slug}\t\tunreadable\t\t\t")
             continue
         fields = (state.get(k, "") for k in ("slot", "next", "stopped", "branch"))
-        print("\t".join((slug, *fields)))
+        print("\t".join((slug, *fields, state.get("mode", "auto"))))
     return 0
 
 
@@ -271,18 +292,36 @@ class Refused(Exception):
         self.exists = exists
 
 
-def start_run(slug, cap, updates):
-    """Write a fresh state for slug and return its slot, or raise Refused."""
+def is_auto(state):
+    """True for an auto state, a state without mode, and an unreadable one (None)."""
+    return state is None or state.get("mode", "auto") == "auto"
+
+
+def start_run(slug, mode, cap, updates):
+    """Write the state for slug and return its slot, or raise Refused.
+
+    `cap` is the cap of an auto start, and None for a supervised one. A
+    supervised start beside the slug's own live supervised run writes the
+    fields into that state and keeps its slot."""
     live = live_states()
-    if any(other == slug for other, _ in live):
-        raise Refused(f"refused: a run for {slug} exists; use resume", True)
-    if len(live) >= cap:
-        names = ", ".join(other for other, _ in live)
-        raise Refused(f"refused: {len(live)} auto runs are live ({names}); the most is {cap}",
-                      False)
+    own = next((state for other, state in live if other == slug), False)
+    if own is not False:
+        if mode == "auto":
+            if is_auto(own):
+                raise Refused(f"refused: a run for {slug} exists; use resume", True)
+            raise Refused(f"refused: a supervised run for {slug} exists", True)
+        if is_auto(own):
+            raise Refused(f"refused: an auto run for {slug} exists", True)
+        write_state(slug, {**own, **updates, "mode": "supervised"})
+        return own.get("slot", "")
+    if mode == "auto":
+        auto = [other for other, state in live if is_auto(state)]
+        if len(auto) >= cap:
+            raise Refused(f"refused: {len(auto)} auto runs are live ({', '.join(auto)}); "
+                          f"the most is {cap}", False)
     used = {state.get("slot") for _, state in live if state}
     slot = next(n for n in range(1, len(live) + 2) if str(n) not in used)
-    write_state(slug, {**updates, "slot": str(slot), "merge_retries": "0"})
+    write_state(slug, {**updates, "mode": mode, "slot": str(slot), "merge_retries": "0"})
     return str(slot)
 
 
@@ -293,18 +332,29 @@ def cap_arg(rest):
     return int(rest[1])
 
 
+def start_args(rest):
+    """(mode, cap, pairs) from start's arguments after the slug, or None."""
+    if rest[:1] == ["--supervised"]:
+        mode, cap, pairs = "supervised", None, rest[1:]
+    else:
+        mode, cap, pairs = "auto", cap_arg(rest), rest[2:]
+        if cap is None:
+            return None
+    if any("=" not in pair or pair.partition("=")[0] == "mode" for pair in pairs):
+        return None
+    return mode, cap, pairs
+
+
 def start(slug, rest):
-    cap = cap_arg(rest)
-    if cap is None:
+    parsed = start_args(rest)
+    if parsed is None:
         return usage()
-    pairs = rest[2:]
-    if any("=" not in pair for pair in pairs):
-        return usage()
+    mode, cap, pairs = parsed
     updates = parse_pairs(pairs)
     if updates is None:
         return 2
     try:
-        print(start_run(slug, cap, updates))
+        print(start_run(slug, mode, cap, updates))
     except Refused as refusal:
         print(refusal.message, file=sys.stderr)
         return 1
@@ -773,10 +823,11 @@ def pull(cap):
     started = []
 
     def ready(entry):
-        live = [slug for slug, _ in live_states()]
+        states = live_states()
+        live = [slug for slug, _ in states]
         # Rule 5 before rule 6: at the cap the walk stops without skipping the
         # entry, although start_run would refuse it too.
-        if len(live) >= cap:
+        if sum(1 for _, state in states if is_auto(state)) >= cap:
             return False
         slug, stage, spec = entry["slug"], entry["stage"], entry["spec"]
         what = None if slug in live else not_fresh(repo, slug)
@@ -787,7 +838,7 @@ def pull(cap):
                    "next": stage, "branch": "", "worktree": "", "squash_subject": "",
                    "head_before_fold": "", "stopped": "", "checked_base": ""}
         try:
-            slot = start_run(slug, cap, updates)
+            slot = start_run(slug, "auto", cap, updates)
         except Refused as refusal:
             if refusal.exists:
                 entry.update(state="skipped", reason=f"a run for {slug} exists")

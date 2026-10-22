@@ -329,6 +329,14 @@ class FieldsTest(StateTestCase):
                          {"slot": "2", "checked_base": "abc", "merge_retries": "1",
                           "next": "merge-retry"})
 
+    def test_mode_field_takes_only_auto_or_supervised(self):
+        self.state("mode=supervised")
+        self.assertEqual(self.get()["mode"], "supervised")
+        result = run(self.repo, "set", "widget", "mode=manual")
+        self.assertEqual((result.returncode, result.stderr.strip()),
+                         (2, "unknown mode: manual"))
+        self.assertEqual(self.get()["mode"], "supervised")
+
     def test_check_merge_retry_needs_checked_base(self):
         self.full("merge-retry")
         self.assertCheck(self.check(), 1, ["missing field: checked_base"])
@@ -346,7 +354,15 @@ class LiveTest(StateTestCase):
         result = run(self.repo, "live")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout.splitlines(),
-                         ["a\t1\tcode\t\tfeat/a", "c\t3\treview\ttests failed\t"])
+                         ["a\t1\tcode\t\tfeat/a\tauto", "c\t3\treview\ttests failed\t\tauto"])
+
+    def test_live_prints_mode_last(self):
+        run(self.repo, "set", "a", "slot=1", "next=code", "mode=supervised")
+        run(self.repo, "set", "b", "slot=2", "next=review", "mode=auto")
+        run(self.repo, "set", "c", "slot=3", "next=code")
+        self.assertEqual(run(self.repo, "live").stdout.splitlines(), [
+            "a\t1\tcode\t\t\tsupervised", "b\t2\treview\t\t\tauto",
+            "c\t3\tcode\t\t\tauto"])
 
     def test_live_ignores_locks_and_temporary_files_and_counts_unreadable_ones(self):
         folder = self.repo / ".git" / "my-handoff"
@@ -354,7 +370,7 @@ class LiveTest(StateTestCase):
         (folder / "locks" / "main.lock").write_text("")
         (folder / ".a.x1.tmp").write_text("{")
         (folder / "d.json").write_text("{")
-        self.assertEqual(run(self.repo, "live").stdout.splitlines(), ["d\t\tunreadable\t\t"])
+        self.assertEqual(run(self.repo, "live").stdout.splitlines(), ["d\t\tunreadable\t\t\t"])
 
     def test_live_ignores_the_queue_folder(self):
         folder = self.repo / ".git" / "my-handoff" / "queue"
@@ -399,7 +415,12 @@ class StartTest(StateTestCase):
     def test_usage_errors_write_nothing(self):
         for args in (["start", "a", "--max", "0", "next=code"], ["start", "a", "--max", "x"],
                      ["start", "a", "next=code"], ["start", "a", "--max", "2", "colour=red"],
-                     ["start", "a", "--max", "2", "next=nowhere"]):
+                     ["start", "a", "--max", "2", "next=nowhere"],
+                     ["start", "a", "--supervised", "--max", "2", "next=code"],
+                     ["start", "a", "--max", "2", "--supervised"],
+                     ["start", "a", "--supervised", "mode=auto"],
+                     ["start", "a", "--max", "2", "mode=supervised"],
+                     ["start", "a", "--supervised", "next=nowhere"]):
             with self.subTest(args=args):
                 self.assertEqual(run(self.repo, *args).returncode, 2, args)
         self.assertEqual(run(self.repo, "get", "a").returncode, 1)
@@ -409,6 +430,106 @@ class StartTest(StateTestCase):
         folder.mkdir()
         (folder / "d.json").write_text("{")
         self.assertEqual(self.start("a", 1).returncode, 1)
+
+    def test_state_without_mode_counts_as_auto(self):
+        folder = self.repo / ".git" / "my-handoff"
+        folder.mkdir()
+        (folder / "old.json").write_text(json.dumps({"next": "code", "slot": "1"}))
+        result = self.start("a", 1)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("refused: 1 auto runs are live (old); the most is 1", result.stderr)
+
+    def supervised(self, slug, *pairs):
+        return run(self.repo, "start", slug, "--supervised", *(pairs or ("next=code",)))
+
+    def state_of(self, slug):
+        return json.loads(run(self.repo, "get", slug).stdout)
+
+    def file_of(self, slug):
+        return (self.repo / ".git" / "my-handoff" / f"{slug}.json").read_text()
+
+    def test_supervised_start_takes_the_lowest_slot_no_live_run_uses(self):
+        self.start("a")
+        result = self.supervised("b")
+        self.assertEqual((result.returncode, result.stdout.strip()), (0, "2"), result.stderr)
+        state = self.state_of("b")
+        self.assertEqual((state["mode"], state["slot"], state["merge_retries"], state["next"]),
+                         ("supervised", "2", "0", "code"))
+
+    def test_auto_start_skips_a_supervised_slot(self):
+        self.supervised("a")
+        self.assertEqual(self.start("b").stdout.strip(), "2")
+        self.assertEqual(self.state_of("b")["mode"], "auto")
+
+    def test_supervised_run_does_not_count_toward_the_cap(self):
+        result = self.supervised("a")
+        self.assertEqual((result.returncode, result.stdout.strip()), (0, "1"), result.stderr)
+        self.assertEqual(self.start("b", 1).returncode, 0)
+        result = self.start("c", 1)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("refused: 1 auto runs are live (b); the most is 1", result.stderr)
+
+    def test_supervised_start_again_keeps_the_slot_and_writes_the_fields(self):
+        self.start("x")
+        self.supervised("a")
+        run(self.repo, "set", "a", "branch=fix/a")
+        run(self.repo, "set", "x", "next=finished")
+        result = self.supervised("a", "next=review")
+        self.assertEqual((result.returncode, result.stdout.strip()), (0, "2"), result.stderr)
+        state = self.state_of("a")
+        self.assertEqual((state["slot"], state["next"], state["branch"], state["mode"]),
+                         ("2", "review", "fix/a", "supervised"))
+
+    def test_supervised_start_refuses_beside_a_live_auto_run_of_its_slug(self):
+        self.start("a")
+        before = self.file_of("a")
+        result = self.supervised("a", "next=review")
+        self.assertEqual((result.returncode, result.stderr.strip()),
+                         (1, "refused: an auto run for a exists"))
+        self.assertEqual(self.file_of("a"), before)
+
+    def test_auto_start_refuses_beside_a_live_supervised_run_of_its_slug(self):
+        self.supervised("a")
+        before = self.file_of("a")
+        result = self.start("a")
+        self.assertEqual((result.returncode, result.stderr.strip()),
+                         (1, "refused: a supervised run for a exists"))
+        self.assertEqual(self.file_of("a"), before)
+
+    def test_finished_supervised_run_frees_its_slot(self):
+        self.supervised("a")
+        self.start("b")
+        run(self.repo, "set", "a", "next=finished")
+        self.assertEqual(self.supervised("c").stdout.strip(), "1")
+
+    def test_supervised_start_after_a_finished_run_writes_a_fresh_state(self):
+        self.supervised("a", "next=code", "branch=fix/a")
+        run(self.repo, "set", "a", "next=finished", "stopped=ended by the user")
+        self.assertEqual(self.supervised("a").returncode, 0)
+        state = self.state_of("a")
+        self.assertNotIn("branch", state)
+        self.assertNotIn("stopped", state)
+
+    def test_supervised_start_refuses_beside_an_unreadable_state_of_its_slug(self):
+        folder = self.repo / ".git" / "my-handoff"
+        folder.mkdir()
+        (folder / "a.json").write_text("{")
+        result = self.supervised("a")
+        self.assertEqual((result.returncode, result.stderr.strip()),
+                         (1, "refused: an auto run for a exists"))
+        self.assertEqual(self.file_of("a"), "{")
+
+    def test_concurrent_locked_supervised_starts_never_share_a_slot(self):
+        procs = [subprocess.Popen([sys.executable, str(LOCK), "main", "--", sys.executable,
+                                   str(SCRIPT), "start", f"s{i}", "--supervised", "next=code"],
+                                  cwd=self.repo, env=clean_env(), stdout=subprocess.PIPE,
+                                  stderr=subprocess.DEVNULL, text=True)
+                 for i in range(4)]
+        outs = [(p.wait(timeout=60), p.stdout.read().strip()) for p in procs]
+        for p in procs:
+            p.stdout.close()
+        self.assertEqual(sorted(code for code, _ in outs), [0, 0, 0, 0])
+        self.assertEqual(sorted(slot for _, slot in outs), ["1", "2", "3", "4"])
 
     def test_concurrent_locked_starts_never_pass_the_cap(self):
         procs = [subprocess.Popen([sys.executable, str(LOCK), "main", "--", sys.executable,
@@ -724,6 +845,13 @@ class WalkTestCase(QueueTestCase):
         slot = len(list((self.repo / ".git" / "my-handoff").glob("*.json"))) + 1
         run(self.repo, "set", slug, "next=code", f"slot={slot}")
 
+    def supervised_run(self, slug):
+        folder = self.repo / ".git" / "my-handoff"
+        folder.mkdir(exist_ok=True)
+        slot = len(list(folder.glob("*.json"))) + 1
+        (folder / f"{slug}.json").write_text(json.dumps(
+            {"next": "code", "slot": str(slot), "mode": "supervised"}))
+
     def reset(self):
         shutil.rmtree(self.repo / ".git" / "my-handoff", ignore_errors=True)
 
@@ -740,7 +868,8 @@ class PullTest(WalkTestCase):
         self.assertEqual(self.get_state("a"), {
             "spec": spec("a"), "task_doc": spec("a"), "next": "code", "branch": "",
             "worktree": "", "squash_subject": "", "head_before_fold": "",
-            "stopped": "", "checked_base": "", "slot": "1", "merge_retries": "0"})
+            "stopped": "", "checked_base": "", "slot": "1", "merge_retries": "0",
+            "mode": "auto"})
         self.assertEqual(self.queue()[0]["state"], "started")
 
     def test_plan_stage_task_doc_is_the_plan_path(self):
@@ -809,6 +938,33 @@ class PullTest(WalkTestCase):
         self.assertEqual([(l.split("\t")[0], l.split("\t")[3]) for l in lines],
                          [("a", "1"), ("b", "2")])
         self.assertEqual(self.queue()[2]["state"], "waiting")
+
+    def test_rule5_cap_ignores_supervised_runs(self):
+        self.supervised_run("x")
+        self.add(self.entry("a"))
+        self.assertEqual(self.pull(1).stdout, f"a\tcode\t{spec('a')}\t2\n")
+
+    def test_rule4_exclusive_entry_waits_for_a_live_supervised_run(self):
+        self.supervised_run("x")
+        self.add(self.entry("a", exclusive=True))
+        self.assertEqual(self.pull(2).stdout, "")
+        self.assertEqual(self.show().stdout, "waits\ta\tlive runs\n")
+
+    def test_rule3_after_waits_for_a_live_supervised_run(self):
+        self.supervised_run("x")
+        self.add(self.entry("a", after=["x"]))
+        self.assertEqual(self.pull(2).stdout, "")
+        self.assertEqual(self.show().stdout, "waits\ta\tx\n")
+        self.finish("x")
+        self.assertTrue(self.pull(2).stdout.startswith("a\t"))
+
+    def test_rule6_a_live_supervised_run_of_the_slug_is_skipped(self):
+        self.add(self.entry("a"), self.entry("b"))
+        self.supervised_run("a")
+        result = self.pull(3)
+        self.assertIn("skipped: a: a run for a exists", result.stderr)
+        self.assertTrue(result.stdout.startswith("b\t"))
+        self.assertEqual(self.get_state("a")["mode"], "supervised")
 
     def test_rule6_existing_run_is_skipped_and_the_walk_goes_on(self):
         self.add(self.entry("a"), self.entry("b"))

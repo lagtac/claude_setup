@@ -10,6 +10,7 @@ cannot change a result.
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -274,7 +275,36 @@ class RunsTest(ScanTestCase):
     def test_runs_fallback_hides_finished(self):
         self.state("a", '{"next": "code", "branch": "feat/a", "stopped": ""}')
         self.state("b", '{"next": "finished", "branch": "feat/b"}')
-        self.assertEqual(block(self.scan(), "runs"), [["a", "-", "code", "-", "feat/a"]])
+        self.assertEqual(block(self.scan(), "runs"), [["a", "-", "code", "-", "feat/a", "auto"]])
+
+    def test_runs_block_shows_mode(self):
+        self.state("a", '{"next": "code", "slot": "1", "mode": "supervised"}')
+        self.state("b", '{"next": "review", "slot": "2"}')
+        self.assertEqual(block(self.scan(), "runs"), [
+            ["a", "1", "code", "-", "-", "supervised"],
+            ["b", "2", "review", "-", "-", "auto"]])
+
+    def test_runs_fallback_reads_mode_with_auto_by_default(self):
+        # The fallback runs only when `handoff-state.py live` exits 2. The scan
+        # finds that script next to itself, so a copy runs beside a stub.
+        bin_dir = self.tmp / "bin"
+        bin_dir.mkdir()
+        shutil.copy(SCRIPT, bin_dir / "status-scan.py")
+        (bin_dir / "handoff-state.py").write_text(
+            "import sys\n"
+            "if sys.argv[1:] == ['queue', 'show']:\n"
+            "    print('none')\n"
+            "    sys.exit(0)\n"
+            "sys.exit(2)\n")
+        self.state("a", '{"next": "code", "mode": "supervised"}')
+        self.state("b", '{"next": "code", "branch": "feat/b"}')
+        result = subprocess.run([sys.executable, str(bin_dir / "status-scan.py")],
+                                cwd=self.repo, env=clean_env(), capture_output=True,
+                                text=True, timeout=120)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(block(result.stdout, "runs"), [
+            ["a", "-", "code", "-", "-", "supervised"],
+            ["b", "-", "code", "-", "feat/b", "auto"]])
 
     def test_bad_state_file_is_error_line(self):
         self.state("c", "{not json")

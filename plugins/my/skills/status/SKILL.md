@@ -4,7 +4,7 @@ description: >
   Answer "where are we", "what is next" and "what can be done in parallel" in
   one short, read-only report. Use when the user asks one of those questions,
   says "status", or types /my:status. Runs status-scan.py once for the facts
-  (roadmap, open documents, the main checkout, worktrees, auto runs, the
+  (roadmap, open documents, the main checkout, worktrees, runs, the
   queue of roadmap rows, branches that may hold unmerged work), then judges
   what needs the user, what to do next and which items can run together.
   Writes nothing. NOT for editing the roadmap (`my:roadmap-management`).
@@ -36,7 +36,7 @@ report reads it; it never proposes a new one.
    | `docs` | status or `no-status`, date or `-`, path |
    | `checkout` | `dirty`, path; or `fixup`, fixup hash, target hash or `?`, target subject |
    | `worktrees` | path, branch, commits ahead of `main`, `clean` or `dirty` |
-   | `runs` | slug, slot, `next`, stop line, branch (`-` for empty) |
+   | `runs` | slug, slot, `next`, stop line, branch, `mode` (`auto` or `supervised`) (`-` for empty) |
    | `queue` | first the `handoff-state.py queue show` line: `ready`, slug; or `waits`, slug, what it waits for; or `none`. Then per `waiting` or `skipped` entry: state, row, slug, `after` (or `-`), reason (or `-`) |
    | `branches` | `maybe-unfinished`, branch, missing line count, last subject; then `skipped`, count |
 
@@ -98,20 +98,29 @@ First the items that need the user:
 - `fixup!` commits on `main`;
 - uncommitted paths in the main checkout;
 - a branch still unfinished after step 2;
+- a live supervised run that the queue waits on: the `queue` block's first
+  line is `waits`, and its reason is that run's slug, or `live runs` while
+  that run is live and no live auto run is. A live auto run also holds back
+  an entry that waits for `live runs`, so ending the supervised run would
+  not start it. The line is "Needs you: the queue waits for supervised
+  run `<slug>`; finish it or end it with the steps in "To end an abandoned
+  run"";
 - `<k> rows wait and the first can start now: run /my:handoff auto rows`,
   where `<k>` counts the `waiting` rows of the `queue` block. Only when its
-  first line is `ready` and the live runs are fewer than the cap that
+  first line is `ready` and the live auto runs are fewer than the cap that
   `/my:handoff auto rows` uses: **Max runs** when the project has a
   "Parallel runs" section, and 1 when it has none, as section 3 says
   ("allow one auto run"). Step 3's default of `2` applies only inside a
   section with no **Max runs** key. Otherwise a rerun would start nothing.
 
-Then one line per item in progress: a run whose `next` is not `finished`, a
-worktree (for example "worktree `feat/x`, 4 commits ahead, clean"), an
-`approved` or `current` document, a 🚧 row. When the `queue` block has
-`waiting` rows: `<k> rows wait for <what>` from a `waits` line, or
-`<k> rows wait for a free slot` when the line is `ready` but the live runs fill
-that same cap. Then one line per `skipped` row, with its row number and reason.
+Then one line per item in progress: a run whose `next` is not `finished`
+(a supervised run as one line, such as "supervised run `<slug>`, at code,
+branch `fix/x`"), a worktree (for example "worktree `feat/x`, 4 commits
+ahead, clean"), an `approved` or `current` document, a 🚧 row. When the
+`queue` block has `waiting` rows: `<k> rows wait for <what>` from a `waits`
+line, or `<k> rows wait for a free place under the cap` when the line is
+`ready` but the live auto runs fill that same cap. Then one line per
+`skipped` row, with its row number and reason.
 
 Last, when the `docs` block has `no-status` files, one line with their count,
 such as "20 files in `docs/plans/` have no status line". Do not list them, and
@@ -121,7 +130,7 @@ do not count them as needing the user.
 
 At most three items, each with the exact command to run:
 
-1. What is started and stopped first: a stopped run
+1. What is started and stopped first: a stopped auto run
    (`/my:handoff auto resume <spec>`), a pending fold (`git-fold-fixups.py`).
 2. Then the first rows of `## Order of work` that nothing gates.
 3. Without an order section: 🚧 rows, then 📋 rows, in roadmap order. Say that
@@ -136,8 +145,8 @@ Two items may run together only when all three hold:
 
 - the order of work, or a row's own text, does not gate one behind the other;
 - their file lists share no path outside the docs paths;
-- the runs whose `next` is not `finished`, stopped ones included, plus the new
-  runs, stay within **Max runs**.
+- the auto runs whose `next` is not `finished`, stopped ones included, plus
+  the new auto runs, stay within **Max runs**. Supervised runs do not count.
 
 A resource under **Shared resources** does not stop two items from running
 together: each run uses it under its lock, so the runs take turns on it. When
