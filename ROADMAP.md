@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 77
+**Next number:** 80
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -30,11 +30,13 @@ because they edit different files.
    edited, so each name changes once. 76 changes `claude-method` and
    `kit:setup`, which row 68 left in place (user, 2026-10-22).
 2. **74 "Find skill prose to script, cut or rephrase". Beside it, 75 "Read,
-   write and convert roadmaps".** 74 comes after 68 and 69, so it reads the
+   write and convert roadmaps" and 77 "Find skills that clash when loaded
+   together".** 74 comes after 68 and 69, so it reads the
    files where they leave them. Each row it adds gets a place in this order
    when it is added. 75 builds its scripts in `kit`, where 69 moves
    `roadmap-management`. 74 only writes a report, so the two run side by
-   side, and 74 still audits that skill (user, 2026-10-22).
+   side, and 74 still audits that skill (user, 2026-10-22). 77 reads every
+   skill, as 74 does, and builds only a check in `kit` (user, 2026-10-23).
 3. **45 "Review preparation as a script", then 46 "`git-squasher` plan and
    apply scripts". Beside them, 71 "Project rules outrank the core".** 45 is
    the most-used script row. 45 is in `my` and 46 in `kit`, but both edit
@@ -253,6 +255,31 @@ Make the harness reusable in new projects without forking copies. Spec:
   loads in place. Found in row 68's batch 1 review (2026-10-22); detail in
   the plan's Risk section.
   [plan](docs/plans/2026-10-20-method-bundles.md)
+- 💭 77 **Find skills that clash when loaded together** — feature in `kit`,
+  route not set. Two loaded skills can do the same job, and nothing says so:
+  today `kit:de-slop` and `anthropic-skills:de-slop` load side by side, as do
+  the built-in `deep-research` and `anthropic-skills:deep-research`. Goal: a
+  fast, read-only check lists the skills in a session, or in a method's
+  plugin set, whose names or descriptions clash. First decide what counts as
+  a clash. Spec D4 of row 68 promised this row; the brief sketched
+  `kit:skill-overlap`.
+  [spec](docs/plans/2026-10-20-method-bundles-spec.md),
+  [brief](docs/plans/2026-10-20-method-bundles-architecture.md)
+- 💭 78 **What else a bare session can turn off** — question about the bare
+  user scope, route not set. A session in a folder with no method still
+  loads 38 skills that `enabledPlugins` cannot reach: 17 synced from
+  claude.ai, the built-in ones and two in `~/.claude/skills`; and the four
+  claude.ai MCP connectors. Goal: a spike finds out whether `skillOverrides`
+  or another setting can turn each kind off by name, and where the three
+  `cc-plugin-*` plugins come from. Its answer decides whether a row to load
+  and unload single skills by name can follow (2026-10-23).
+- 💭 79 **Warn when a synced plugin is on by default** — feature in the start
+  check (`method-guard.py`), route not set. A `@synced` plugin that
+  `~/.claude/settings.json` does not name counts as on, so a newly installed
+  one loads in every session, and the bare user scope erodes without a
+  warning. Goal: the start check warns about a `@synced` plugin outside the
+  bare list (row 68's spec D5) that has no key (2026-10-23).
+  [spec](docs/plans/2026-10-20-method-bundles-spec.md)
 - 💭 69 **Shared skills move to `kit`** — feature, moving skills from `my` to
   `kit`; architectural with plan. `roadmap-management` and
   `changelog-management` live in `my`, so other methods cannot use them. Goal:
