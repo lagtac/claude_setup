@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 75
+**Next number:** 76
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -33,9 +33,12 @@ because they edit different files.
    replaces `kit:setup`'s two switches and `method-guard.py`, so 60 in step
    6 edits the new `kit:setup`. 69 renames skills in files 68 also edits, so
    it comes right after, and each name changes once.
-3. **74 "Find skill prose to script, cut or rephrase".** It comes after 68 and
-   69, so it reads the files where they leave them. Each row it adds gets a
-   place in this order when it is added.
+3. **74 "Find skill prose to script, cut or rephrase". Beside it, 75 "Read,
+   write and convert roadmaps".** 74 comes after 68 and 69, so it reads the
+   files where they leave them. Each row it adds gets a place in this order
+   when it is added. 75 builds its scripts in `kit`, where 69 moves
+   `roadmap-management`. 74 only writes a report, so the two run side by
+   side, and 74 still audits that skill (user, 2026-10-22).
 4. **45 "Review preparation as a script", then 46 "`git-squasher` plan and
    apply scripts". Beside them, 71 "Project rules outrank the core".** 45 is
    the most-used script row. 45 is in `my` and 46 in `kit`, but both edit
@@ -421,6 +424,13 @@ above.
   `kit:tune-claude-instructions` (Patterns K–Q) to all these files, that
   skill included; each finding becomes a row.
   [Report](docs/reports/2026-10-22-project-direction-critique.md) D3.
+- 💭 75 **Read, write and convert roadmaps** — feature in
+  `roadmap-management`, architectural with plan. The skill only follows the
+  format a roadmap already has, and it runs fixed steps from prose. Goal: it
+  advises on another project's roadmap from its format, writes and keeps a
+  roadmap in a format of its own, and offers to convert one to it; every
+  fixed step is a script. `ROADMAP.md` at `21bee7d` is the first test input.
+  Open: a numbering script, which row 51 dropped. Not from the report.
 - 💭 42 **Parallel runs parser** — feature in `handoff-state.py`, route not
   set. `my:handoff`, `my:status`, `kit:commit` and `my:architect` each read
   the Parallel runs section by hand. Goal: a `handoff-state.py` subcommand
