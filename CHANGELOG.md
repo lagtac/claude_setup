@@ -16,6 +16,32 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-22 — Every handoff run gets its own slot (row 56)
+
+A supervised `my:handoff` run had no state file and always used slot `1`.
+So two supervised runs, or a supervised run and the first auto run, got the
+same ports from a "Parallel runs" **Isolation** line. Now every run takes
+its own slot from one pool. It matters only in a project with a "Parallel
+runs" section. Details:
+[spec](docs/plans/2026-10-22-supervised-run-slots-spec.md),
+[plan](docs/plans/2026-10-22-supervised-run-slots.md), with known limits in
+its Risk section.
+
+- **Supervised runs keep a state file.** Their code and review stages write
+  it with `handoff-state.py start <slug> --supervised`, and the review stage
+  finishes it. A new field, `mode`, says `auto` or `supervised`.
+- **Only auto runs count toward Max runs.** A supervised run takes a slot
+  but never blocks an auto start. Slots can go above **Max runs**, so leave
+  room for them in the Isolation ports.
+- **`handoff-state.py live` and the `runs` block of `my:status` show a sixth
+  column, `mode`.** `my:status` lists supervised runs, and says when the
+  queue waits on one.
+- **`/my:handoff auto resume` refuses a supervised run** and prints what to
+  run instead.
+- **A supervised batch plan stays live until its batch merges,** so a queued
+  row gated behind it waits for the merged code. Do not end such a run by
+  hand while its batch is open: that removes the batch's shared worktree.
+
 ### 2026-10-22 — `kit:tune-claude-instructions` takes a path and flags text the model does not need
 
 Details are in the squash commit, with its known limits.

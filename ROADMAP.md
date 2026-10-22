@@ -20,33 +20,29 @@ and the same edit raises it by one.
 
 Set on 2026-10-14; shipped steps are removed. On 2026-10-21 the user made
 rows 68, 69 and 74 the priorities, behind the three `my:handoff` bugs; every
-other row keeps its order behind them. Rows 33 and 37 shipped on
+other row keeps its order behind them. Rows 33, 37 and 56 shipped on
 2026-10-22. Row 48 was folded into 68 on 2026-10-18.
 The steps run top to bottom. Rows in one step can run side by side,
 because they edit different files.
 
-1. **56 "Two supervised runs get the same port".** It is a bug in
-   `my:handoff`. It does not wait for row 29, which takes weeks. It comes
-   before 68, because 68 changes the launch lines in `my:handoff` (user,
-   2026-10-21).
-2. **68 "Methods as plugins", then 69 "Shared skills move to `kit`".** 68
+1. **68 "Methods as plugins", then 69 "Shared skills move to `kit`".** 68
    replaces `kit:setup`'s two switches and `method-guard.py`, so 60 in step
-   6 edits the new `kit:setup`. 69 renames skills in files 68 also edits, so
+   5 edits the new `kit:setup`. 69 renames skills in files 68 also edits, so
    it comes right after, and each name changes once.
-3. **74 "Find skill prose to script, cut or rephrase". Beside it, 75 "Read,
+2. **74 "Find skill prose to script, cut or rephrase". Beside it, 75 "Read,
    write and convert roadmaps".** 74 comes after 68 and 69, so it reads the
    files where they leave them. Each row it adds gets a place in this order
    when it is added. 75 builds its scripts in `kit`, where 69 moves
    `roadmap-management`. 74 only writes a report, so the two run side by
    side, and 74 still audits that skill (user, 2026-10-22).
-4. **45 "Review preparation as a script", then 46 "`git-squasher` plan and
+3. **45 "Review preparation as a script", then 46 "`git-squasher` plan and
    apply scripts". Beside them, 71 "Project rules outrank the core".** 45 is
    the most-used script row. 45 is in `my` and 46 in `kit`, but both edit
    `README.md`, so 46 goes after 45. 46 builds on 41's fix. 71 rewrites the
    Precedence paragraph that 68 rewrites, and its draft edits
    `global/methods/`, which 68 deletes, so its spec is redrafted after 68
    (user, 2026-10-21).
-5. **61 "Auto start on approval, and re-review findings as rows", then 55
+4. **61 "Auto start on approval, and re-review findings as rows", then 55
    "Decisions that go back to the user", then 53 "`my:draft-spec`", then 54
    "Bugs and approved bounded rows in forks while the user is away".** 61 is
    two small rules in `global/methods/my.md`, the file 55 and 53 edit, so it
@@ -54,12 +50,12 @@ because they edit different files.
    54 both use the rule of 55. 55 and 53 both edit
    `global/methods/my.md`. 54 comes after 53, because both run forks while
    the user is away, and 53 is being designed now.
-6. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
+5. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
    `my:spec-review` `SKILL.md`. Side by side with 8: **60 "Project facts in
    `CLAUDE.local.md`"**, which edits `kit:setup` after 68 reshapes it; 47
    "`clean-plans` moves by script"; 49 "`dev-reports` dates and TODOs by
    script"; 50 "`clean-gone-branches` as a script".
-7. **One at a time, all in `my:handoff`: 34 "Merges read a message file",
+6. **One at a time, all in `my:handoff`: 34 "Merges read a message file",
    44 "`git-fold-fixups.py list <path>`", 43 "`handoff` start checks as a
    script", 66 "Window row lookup by script", 57 "An auto run that stops
    before the merge", then 35 "Trim `my:handoff` text".** 34 reworks the
@@ -67,13 +63,13 @@ because they edit different files.
    without a "Parallel runs" section, `<n>` is `1`. 57 is a feature, so it
    follows the scripts. The trims come last, so they trim the text the
    scripts leave.
-8. **40 "Every spec has a Files section", then 52 "`status` gates and
+7. **40 "Every spec has a Files section", then 52 "`status` gates and
    overlap by script".** Both edit `my:status` `SKILL.md`, and 40 also edits
-   `my:spec-review`, so it goes after step 6.
-9. **20 "Specs and plans name what UI tests check".** Rule text only. It
+   `my:spec-review`, so it goes after step 5.
+8. **20 "Specs and plans name what UI tests check".** Rule text only. It
    edits the spec rules in `global/methods/my.md`, as 40 and 53 do, so it
    goes after them.
-10. **Waiting rows: 72 "Workflow metrics as one `my` script", then 29
+9. **Waiting rows: 72 "Workflow metrics as one `my` script", then 29
    "Measure the auto runs", then 30 "Split `my:handoff` by mode"; and 17
    "Generalize the gates"; after 29, 39 "`kit:setup` offers a Parallel runs
    section" and 42 "Parallel runs parser".** 72 gives 29 its script, so it
@@ -363,15 +359,6 @@ Their order is in "Order of work" above.
   `handoff-lock.py --help`, and design explanations stay in the specs. *Locked
   commit*, *shared-doc check* and *waiting fixups* replace "as in Plan stage,
   step N". Report P4, P5. Row 36 was folded in on 2026-10-16.
-- 📋 56 **Two supervised runs get the same port** — bug in `my:handoff`
-  and `handoff-state.py`; architectural with plan. A supervised run, and the
-  first auto run beside it, both get slot `1`, so their Isolation values
-  (ports, stacks) clash. Fix: every run gets a state file and a slot from one
-  pool; only auto runs count toward the cap. Spec approved, plan next; it
-  takes effect only in projects with a "Parallel runs" section.
-  [spec](docs/plans/2026-10-22-supervised-run-slots-spec.md);
-  [critique](docs/reports/2026-10-15-parallel-runs-section-critique.md) P1,
-  which this row does not close.
 - 💭 57 **An auto run that stops before the merge** — feature in `my:handoff`,
   route not set. A test drive of the auto path, `decide` included, always ends
   in a merge. Goal: a Delegation key, or an `auto` flag, that stops at
@@ -406,6 +393,17 @@ Their order is in "Order of work" above.
   is not looking. A window check refuses every auto form outside tmux and
   writes nothing; a supervised launch still prints the command, with the
   reason. Shipped; known limits are in the squash commit.
+- ✅ 56 **Two supervised runs get the same port** — bug in `my:handoff`
+  and `handoff-state.py`; architectural with plan. A supervised run, and the
+  first auto run beside it, both got slot `1`, so their Isolation values
+  (ports, stacks) clashed. Fix: every run gets a state file and a slot from
+  one pool; only auto runs count toward the cap. Shipped; it takes effect
+  only in projects with a "Parallel runs" section, and known limits are in
+  the plan's Risk section.
+  [spec](docs/plans/2026-10-22-supervised-run-slots-spec.md),
+  [plan](docs/plans/2026-10-22-supervised-run-slots.md);
+  [critique](docs/reports/2026-10-15-parallel-runs-section-critique.md) P1,
+  which this row does not close.
 
 ## Scripted skill steps
 

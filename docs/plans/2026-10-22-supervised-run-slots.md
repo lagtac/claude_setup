@@ -1,6 +1,6 @@
 # Every run gets its own slot Implementation Plan
 
-**Status:** approved, 2026-10-22. Row 56; the plan for `docs/plans/2026-10-22-supervised-run-slots-spec.md`.
+**Status:** done, 2026-10-22. Row 56; shipped in a71c072. End-of-branch checks: 77 tests in plugins/kit and 292 in plugins/my pass; known limits are in Risk.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use
 > superpowers:executing-plans to implement this plan task-by-task. The tasks
