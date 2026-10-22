@@ -16,6 +16,25 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-23 — Methods become plugins, batch 2 (row 68)
+
+Batch 2 adds the switch during a session, and makes `my:handoff` start its
+stages in the `my` method in any folder. This finishes row 68. Details:
+[spec](docs/plans/2026-10-20-method-bundles-spec.md),
+[plan](docs/plans/2026-10-20-method-bundles.md), with known limits in its
+Risk section.
+
+- **New `/kit:method <m>`** switches the method of the current folder,
+  through `claude plugin enable` and `disable` with `--scope local`. The
+  method loads after you submit `/reload-plugins`. `/kit:method default`
+  removes those local keys, so the folder's committed method applies again.
+  A session started by `claude-method` keeps its method.
+- **`my:handoff` starts each stage with `claude-method my`,** so a stage
+  runs in the `my` method whatever the folder's own method is.
+- **Manual step:** link the script into your shell's `PATH` with
+  `ln -s ~/projects/claude-setup/plugins/kit/bin/claude-method ~/bin/claude-method`.
+  `my:handoff` launches need it.
+
 ### 2026-10-22 — Methods become plugins, batch 1 (row 68)
 
 A folder used to pick its method twice: an import line in `CLAUDE.md` and

@@ -1,6 +1,6 @@
 # Spec: methods as plugins
 
-**Status:** current, 2026-10-22. Batch 1 merged in `1a6d653`. Row 68; reviewed in `docs/plans/2026-10-20-method-bundles-spec-review.md`, approved by the user.
+**Status:** done, 2026-10-23. Batch 1 merged in `1a6d653`, batch 2 in `14f1d14`. Row 68; reviewed in `docs/plans/2026-10-20-method-bundles-spec-review.md`, approved by the user.
 
 **Route:** architectural with plan. The change moves the rules that nine projects follow and
 retires the import line they use to load them. That is a public contract, and it is hard to

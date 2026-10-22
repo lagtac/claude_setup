@@ -21,16 +21,14 @@ and the same edit raises it by one.
 Set on 2026-10-14; shipped steps are removed. On 2026-10-21 the user made
 rows 68, 69 and 74 the priorities, behind the three `my:handoff` bugs; every
 other row keeps its order behind them. Rows 33, 37 and 56 shipped on
-2026-10-22. Row 48 was folded into 68 on 2026-10-18.
+2026-10-22, and row 68 on 2026-10-23. Row 48 was folded into 68 on 2026-10-18.
 The steps run top to bottom. Rows in one step can run side by side,
 because they edit different files.
 
-1. **68 "Methods as plugins", then 69 "Shared skills move to `kit`". Beside
-   69, 76 "Method tools stop reading a Claude Code file".** 68
-   replaces `kit:setup`'s two switches and `method-guard.py`, so 60 in step
-   5 edits the new `kit:setup`. 69 renames skills in files 68 also edits, so
-   it comes right after, and each name changes once. 76 changes
-   `claude-method` and `kit:setup` after 68's batch 2 (user, 2026-10-22).
+1. **69 "Shared skills move to `kit`". Beside it, 76 "Method tools stop
+   reading a Claude Code file".** 69 renames skills in files that row 68
+   edited, so each name changes once. 76 changes `claude-method` and
+   `kit:setup`, which row 68 left in place (user, 2026-10-22).
 2. **74 "Find skill prose to script, cut or rephrase". Beside it, 75 "Read,
    write and convert roadmaps".** 74 comes after 68 and 69, so it reads the
    files where they leave them. Each row it adds gets a place in this order
@@ -247,17 +245,6 @@ Make the harness reusable in new projects without forking copies. Spec:
   memory and the repo's compose, `.env` and e2e files, asks for the ports
   already in use, and fixes that line. Split out of row 9's first spec draft.
   Blocked by row 29.
-- 🚧 68 **Methods as plugins** — feature across the methods, `kit` and the
-  marketplace; architectural with plan. A directory picked its method through
-  an import line, plugin keys and `method-guard.py`. Goal: each method becomes
-  a plugin whose forced output style holds its rules and whose `dependencies`
-  hold its plugins. A directory's settings name its method, and
-  `claude-method <m>` switches one session at launch. Batch 1 merged in
-  `1a6d653`; rollout and batch 2 next. Reframed on 2026-10-20 from a launcher
-  named `claude`; row 48 was folded in on 2026-10-18.
-  [brief](docs/plans/2026-10-20-method-bundles-architecture.md),
-  [spec](docs/plans/2026-10-20-method-bundles-spec.md),
-  [plan](docs/plans/2026-10-20-method-bundles.md)
 - 💭 76 **Method tools stop reading a Claude Code file** — feature in `kit`
   (`claude-method` and `/kit:setup` step 3), route not set. Both find the
   marketplace through `~/.claude/plugins/known_marketplaces.json`, a Claude
@@ -281,6 +268,17 @@ Make the harness reusable in new projects without forking copies. Spec:
   before adding dependencies, and before actions that are hard to undo or
   leave the machine. Spec drafted; it is redrafted after row 68.
   [spec](docs/plans/2026-10-18-project-precedence-spec.md)
+- ✅ 68 **Methods as plugins** — feature across the methods, `kit` and the
+  marketplace; architectural with plan. A directory picked its method through
+  an import line, plugin keys and `method-guard.py`. Now each method is a
+  plugin whose forced output style holds its rules and whose `dependencies`
+  hold its plugins. A directory's settings name its method, `claude-method
+  <m>` switches one session at launch, and `/kit:method <m>` switches the
+  folder during a session. Shipped in two batches; known limits in the
+  plan's Risk section. Row 48 was folded in on 2026-10-18.
+  [brief](docs/plans/2026-10-20-method-bundles-architecture.md),
+  [spec](docs/plans/2026-10-20-method-bundles-spec.md),
+  [plan](docs/plans/2026-10-20-method-bundles.md)
 - ✅ 16 **Swappable methods** — split `global/CLAUDE.md` into a neutral core
   and per-method files, and split `my` into `my` (the method) and `kit`
   (neutral tools), so one project can try another method. Shipped; 11 of 22
