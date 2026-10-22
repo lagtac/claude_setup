@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "my",
-      "description": "The my method: its rules as a forced output style, workflow skills, review agents, handoff scripts and hooks for the spec, plan, code and review cycle. Depends on superpowers. A folder turns it on with /kit:setup my.",
+      "description": "The my method for building software with Claude: one roadmap orders the work, each change gets the process its risk needs, a second reader reviews every spec, plan and branch, and each branch lands on main as one squash commit. Depends on superpowers. A folder turns it on with /kit:setup my.",
       "source": "./plugins/my",
       "category": "method"
     },

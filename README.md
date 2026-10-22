@@ -42,19 +42,20 @@ is `unknown` and an update copies uncommitted edits too.
 
 ## Installation
 
-Add the repo as a marketplace once, then install the plugins:
+Add the repo as a marketplace once, then install the plugins that are on in
+every session:
 
 ```text
 /plugin marketplace add ~/projects/claude-setup
-/plugin install my@claude-setup
 /plugin install kit@claude-setup
 /plugin install vue-lsp@claude-setup
-/plugin disable my@claude-setup
 /plugin disable typescript-lsp@claude-plugins-official
 ```
 
-`my` is a method, so it stays off at user scope, as does superpowers. A
-project turns both on with `/kit:setup my` (see Methods). `vue-lsp` replaces
+The methods, `my`, `tutor` and `sp`, need no `/plugin install`.
+`~/.claude/settings.json` turns no method on, and keeps superpowers off. A
+project turns its method on with `/kit:setup <method>` (see Methods), and
+Claude Code then loads the method from the marketplace. `vue-lsp` replaces
 `typescript-lsp`, so disable that one. Otherwise two servers both claim `.ts`
 files.
 
@@ -87,8 +88,9 @@ plugin twice.
 A method is a way of working that Claude follows in a project: a set of
 rules, plus the tools those rules need. This repo has three:
 
-- **`my`** — how I build software: a written spec and plan before the code,
-  the code in its own git worktree, and reviews before the merge.
+- **`my`** — how I build software: one roadmap orders the work, each change
+  gets the process its risk needs, a second reader reviews it, and each
+  branch lands on `main` as one squash commit.
 - **`tutor`** — for learning: I write the code, and Claude sets exercises,
   gives hints and keeps notes in `docs/learning/`.
 - **`sp`** — the superpowers workflow as its authors ship it, with none of

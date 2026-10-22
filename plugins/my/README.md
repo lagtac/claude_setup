@@ -3,9 +3,20 @@
 `my` is a development method built on top of
 [superpowers](https://github.com/obra/superpowers), a third-party plugin.
 Superpowers gives the steps of one change: brainstorm, write a spec, write a
-plan, build it test-first, review it, finish the branch. `my` adds the layer
-around those steps: the roadmap that orders the work, the route of each change,
-its own reviews, and the git rules for getting code onto `main`.
+plan, build it test-first, review it, finish the branch. `my` answers four
+questions that superpowers leaves open:
+
+- **What comes next?** The roadmap holds the one order of work.
+- **How much process does this change need?** Each change gets a route, from
+  a short design in chat for a small fix to a brief, a spec and a plan for a
+  change to stored data.
+- **Who checks the work?** A second reader reviews each spec, each plan and
+  each branch before anything lands.
+- **What does `main` look like after?** Each branch lands as one squash
+  commit, so `main` stays a short record of what shipped and why.
+
+Each stage leaves a reviewed document behind. So a stage can run in its own
+session, or without you, within the limits its spec sets.
 
 This file explains what `my` adds and where it differs from superpowers. The
 list of skills, agents, scripts and hooks is in the root
