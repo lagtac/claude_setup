@@ -7,27 +7,26 @@ description: >
   flags prompts that require tools a subagent may not receive. Trigger on requests
   like "audit my CLAUDE.md for the new model", "my agents got worse on the new model",
   "make my prompts more specific", "tune my prompts", "audit my global setup",
-  or invocation via /kit:tune-claude-instructions (optionally with --global or a path).
-argument-hint: "[--global] [path]"
+  or invocation via /kit:tune-claude-instructions (optionally with a path).
+argument-hint: "[path]"
 ---
 
 # Tune Claude Instructions
 
 Audit and tune Claude instruction files for **literal-instruction-following** models. Opus 4.7 was the first; every later model behaves the same way. These models follow prompts as written and allocate less reasoning to tasks that look simple — so vague templates that worked on older models now produce shallow output.
 
-The fix is **specificity**: enumerate scope, put reasoning before conclusions, specify output format. A literal model also cannot work around a step it has no tool for, so the audit checks that every tool a prompt requires will be present. Three more problems matter on the newest models (Fable 5.1, Opus 5): two instructions that contradict each other (the model picks one unpredictably), instructions that assume a harness feature that no longer exists, and heavy emphasis (ALL CAPS, "CRITICAL") that makes the model apply a rule too broadly. The rubric checks all three. This skill applies these fixes surgically — it grades each file, proposes targeted edits, and waits for your approval before writing.
+The fix is **specificity**: enumerate scope, put reasoning before conclusions, specify output format. A literal model also cannot work around a step it has no tool for, so the audit checks that every tool a prompt requires will be present. Three more problems matter on the newest models (Fable 5.1, Opus 5): two instructions that contradict each other (the model picks one unpredictably), instructions that assume a harness feature that no longer exists, and heavy emphasis (ALL CAPS, "CRITICAL") that makes the model apply a rule too broadly. The rubric checks all three. It also checks for text the model does not need, such as a rule repeated in three places. This skill applies these fixes surgically — it grades each file, proposes targeted edits, and waits for your approval before writing.
 
 Per-file grading is rubric-driven (see `references/grading-rubric.md` — the single source of truth, used by both grading paths) and parallelizes cleanly. With **6 or more files**, step 3 fans the work out to parallel Haiku subagents; with 1–5, the main session grades inline. Also grade inline, at any count, when the user asks for a thorough review: Haiku misses contradictions between files, because each grader sees one file. Discovery, table assembly, fix proposals, and edits (steps 1, 4, 5, 6) always run on the main model.
 
 ## Arguments
 
-`$ARGUMENTS` — parse for the `--global` flag and an optional path. Any other words describe what the user wants from the audit; keep them as its focus.
+`$ARGUMENTS` — parse for an optional path. Any other words describe what the user wants from the audit; keep them as its focus.
 
-- **No flag (default)** — audit project files: the project's `CLAUDE.md` / `AGENTS.md`, agent definitions, command templates, and skill files under the current working directory.
-- **A path** — audit the files under that directory instead of the current working directory, for example a plugin that lives in another repository (`~/projects/claude-setup/plugins/my`). If the user names a plugin or folder in words instead, find its path first (`find ~ -maxdepth 4 -type d -name "<name>"`) and confirm it in one line before auditing.
-- **`--global`** — audit the user's global setup instead: `~/.claude/CLAUDE.md`, `~/.claude/agents/`, `~/.claude/commands/`, `~/.claude/skills/`. Treat the flag as the explicit consent that satisfies the global-audit anti-pattern, but still confirm before writing each edit because the blast radius covers every project on the machine.
+- **No path (default)** — audit the instruction files under the current working directory.
+- **A path** — audit the files under that directory instead, for example a plugin or a global setup that lives in another repository (`~/projects/claude-setup`). If the user names a plugin or folder in words instead, find its path first (`find ~ -maxdepth 4 -type d -name "<name>"`) and confirm it in one line before auditing.
 
-`--global` switches scope, it does not extend it. To audit both project and global in one session, run the skill twice.
+For the user's global setup, or a path that is `~/.claude` itself, ask which folder holds the real files. When `~/.claude/CLAUDE.md` is a symbolic link, suggest the repository it points into (`git -C "$(dirname "$(readlink -f ~/.claude/CLAUDE.md)")" rev-parse --show-toplevel`): step 1's search skips symbolic links, and edits made in the repository can be committed. When the arguments hold `--global`, say that this skill takes a path instead, and ask this question.
 
 ## Scope: directive content, wherever it lives
 
@@ -44,40 +43,34 @@ Complementary skill: `claude-md-management:claude-md-improver` audits content **
 
 ### 1. Discover instruction files
 
-Branch on `$ARGUMENTS`:
-
-**Default (no `--global`)** — glob the project (or the given path, in place of `.`) for prompt-template files. Skip vendored and build directories, and `.claude/worktrees/`, which holds copies of the same files. If the path you audit is itself inside a worktree, drop that one filter.
+Search the project for instruction files. With a path, put its absolute path in place of `$(pwd -P)`: the skip filters below match only full paths. Skip vendored and build directories, and `.claude/worktrees/`, which holds copies of the same files. If the path you audit is itself inside a worktree, drop that one filter. Also skip `.claude/plugins/` (plugins installed from elsewhere) and `.claude/projects/` (session and memory state), which a search of a `.claude` folder would reach.
 
 ```bash
 # Project context
-find . -maxdepth 3 -type f \( -name "CLAUDE.md" -o -name "AGENTS.md" \) \
+find "$(pwd -P)" -maxdepth 3 -type f \( -name "CLAUDE.md" -o -name "AGENTS.md" \) \
   -not -path "*/node_modules/*" -not -path "*/vendor/*" -not -path "*/.git/*" \
-  -not -path "*/.claude/worktrees/*"
+  -not -path "*/.claude/worktrees/*" \
+  -not -path "*/.claude/plugins/*" -not -path "*/.claude/projects/*"
 
-# Agent definitions, command templates, skills and their supporting files
-# (any depth, any plugin layout)
-find . -type f \( \
+# Agent definitions, command templates, skills and their supporting files,
+# and rules folders (any depth, any plugin layout)
+find "$(pwd -P)" -type f \( \
     -path "*/agents/*.md" \
     -o -path "*/commands/*.md" \
     -o -path "*/skills/*/*.md" \
     -o -path "*/skills/*/references/*.md" \
+    -o -path "*/rules/*.md" \
   \) \
   -not -path "*/node_modules/*" -not -path "*/vendor/*" -not -path "*/.git/*" \
-  -not -path "*/.claude/worktrees/*"
+  -not -path "*/.claude/worktrees/*" \
+  -not -path "*/.claude/plugins/*" -not -path "*/.claude/projects/*"
 ```
 
 The skill's supporting files matter most. A dispatch prompt such as `code-reviewer-prompt.md` reaches its subagent whatever the agent file says (Pattern G), so grade it like an agent file.
 
-**`--global`** — audit the user's global Claude setup under `~/.claude/`.
+When the path is a single file, grade that file. When it is a folder where no file matches the search, such as a folder of output styles, grade each `.md` file directly in it. Grade a file that both searches find once.
 
-```bash
-ls ~/.claude/CLAUDE.md 2>/dev/null
-find ~/.claude/agents   -maxdepth 2 -type f -name "*.md"      2>/dev/null
-find ~/.claude/commands -maxdepth 2 -type f -name "*.md"      2>/dev/null
-find ~/.claude/skills   -maxdepth 3 -type f -name "SKILL.md"  2>/dev/null
-```
-
-Do **not** descend into `~/.claude/projects/` (per-project session/memory state) or `~/.claude/plugins/` (third-party plugins the user does not own). Audit only files the user authored.
+Audit only files the user wrote. Drop copies, caches, and files synced or installed from elsewhere, and name the folders you dropped in one line.
 
 ### 2. Read and grade each file
 
@@ -86,7 +79,7 @@ Apply the rubric in `references/grading-rubric.md` to every discovered file. The
 - **1–5 files**: grade inline. Read each file, apply the rubric, hold the results in memory keyed by path.
 - **6+ files**: fan out to parallel Haiku subagents — see step 3.
 
-Either path produces the same `{path, s, r, f, severity, why}` shape, which feeds the step 4 audit table. The rubric's tool, harness and consistency checks do not add columns. They raise the severity and are named in `why`.
+Either path produces the same `{path, s, r, f, severity, why}` shape, which feeds the step 4 audit table. The rubric's tool, harness, consistency and prose checks do not add columns. They raise the severity and are named in `why`.
 
 After grading each file on its own, compare the files with each other (main session only; a single-file grader cannot see this). Look for a rule stated two ways in two files, a copied block that has drifted from its source, and a skill that sends work to an agent whose own instructions disagree with it. Each such pair is a finding on both files.
 
@@ -190,6 +183,38 @@ Check two places. The agent file is one. The dispatch prompt that a skill or com
 
 *Why it works:* the newest models respond strongly to emphasis. A shouted rule gets applied beyond its intended scope and crowds out the rules around it.
 
+Patterns K–Q fix a failed prose check. Each one makes the file shorter.
+
+**Pattern K — One rule, one home.** When a rule appears in two or more places in a file, keep the fullest statement where the model needs it. Delete the other copies, or replace each with a pointer ("see rule 2"). Across files, the copy that is not the source becomes a pointer, except a copy that Pattern A requires: its reader cannot load the source.
+
+*Why it works:* copies drift apart. After one is edited, the model sees two versions and picks one (Pattern H).
+
+**Pattern L — Move notes for the maintainer out.** The date a rule was added, a row or ticket number, a spec link, a count of past failures, and the story behind a rule are for the person who edits the file. Test each clause: would the model act differently without it? If not, it is a note, and evidence counts are notes. Move notes to the file's spec, design doc or commit message, and ask where when the project has none. Never delete a note that exists nowhere else without asking. Keep a reason that changes how the model applies the rule.
+
+*Why it works:* the model reads a note as part of the instruction. It costs attention on every run, and the model may act on the history instead of the rule.
+
+**Pattern M — Cut what the model already knows.** Delete general facts about a tool ("git keeps the history of every commit"), a claim that the file works for any project, and lists of common values ("often `main`, but can be `master` or `develop`"). When the value matters, replace the list with the command that finds it.
+
+*Why it works:* such a sentence gives no instruction, and a literal model may read a list of examples as the complete set.
+
+**Pattern N — Cut the recap.** Delete a sentence after a list, table or template that says again what it showed ("That is three sections: …", "These coexist; pick whichever fits"). When the recap holds a new rule, keep only the rule.
+
+*Why it works:* the model has just read the list, so the recap adds words and no instruction.
+
+**Pattern O — Cut the rule said again in negative form.** In "Stop and say so. Do not overwrite the file.", the second sentence repeats the first. Keep the form that names the action. Keep a negative only when it rules out a step that the positive form allows.
+
+*Why it works:* two wordings invite the model to look for a difference between them. When the wordings differ slightly ("do not replace it without asking"), the model finds a difference that was never meant.
+
+**Pattern P — Firm up or drop hedge words.** "usually", "typically", "often", "as needed" and "where possible" make a rule optional for a literal model. State the rule firmly. When the hedge marks a real exception, name that exception. Do not add a clause that lists every case. This is also the fix for an S grade lowered by a hedge.
+
+*Why it works:* a firm rule is followed the same way every time, and naming one exception is shorter than listing every case.
+
+**Pattern Q — Trim the frontmatter description.** A skill's `description` decides when the skill loads, and it is read in every session. Keep what the skill does in one sentence, its trigger phrases and its "NOT for" clauses. Cut any summary of the steps or the output.
+
+*Why it works:* the description costs words in every session, and a model may follow a summary of the steps in place of the body, skipping its stop conditions.
+
+The prose check in `references/grading-rubric.md` lists the text to keep even when it looks like K–Q. When unsure whether a cut changes behaviour, keep the sentence, or run the file on one fixed task before and after the cut and compare the results.
+
 ### 6. Apply approved edits and re-grade
 
 Use the Edit tool for surgical changes; use Write only for full rewrites of CRITICAL files. After editing each file, re-grade it inline and confirm the severity dropped.
@@ -198,12 +223,12 @@ If the user wants a durable record, offer to write the audit table plus applied-
 
 ## Anti-patterns to avoid
 
-- **Don't pad already-strong files.** If S/R/F all pass, skip. Adding more constraints to a working prompt over-constrains and bloats tokens.
+- **Don't pad already-strong files.** If S/R/F and every check in the rubric pass, skip. Adding more constraints to a working prompt over-constrains and bloats tokens.
 - **Don't propose a shared preamble.** It's tempting to write one "specificity block" and prepend it everywhere. Don't — agents and commands have different jobs and over-shared boilerplate dilutes their actual instructions. Each file owns its standards.
 - **Don't grade dispatcher files.** A one-line command that only invokes an agent, or a `CLAUDE.md` that's only `<tag @path>` includes, has no S/R/F surface — grade the targets/included files, not the dispatcher.
 - **Don't dismiss `CLAUDE.md` / docs files by filename.** A context-heavy file with embedded directives ("Always X", "Never Y", "When X, do Y") has a real S/R/F surface in those passages even though the rest of the file is pure reference. Read for directive content before deciding `n/a`.
-- **Don't pile on MUSTs.** Capitalised commands feel forceful but read as noise. Explain *why* the model should do something — literal-following is also literal-understanding. A two-sentence rationale beats a one-word imperative.
-- **Don't audit global files (`~/.claude/...`) without explicit consent.** Either the user asks directly or `--global` is passed. Even with consent, confirm before each write — global edits affect every project on the machine.
+- **Don't pile on MUSTs.** Capitalised commands feel forceful but read as noise. Explain *why* the model should do something — literal-following is also literal-understanding. A two-sentence rationale beats a one-word imperative, when the rationale changes how the model applies the rule; history and evidence are notes (Pattern L).
+- **Don't edit shared files without a confirmation per edit.** Confirm before each write to a file outside the current repository, and to a file of a global setup or a shared plugin even from inside its own repository: it affects every project that loads it.
 - **Don't conflate "thin" with "broken".** A skill that's 30 lines but specific in all three dimensions is fine. Length is not the metric.
 
 ## Common Mistakes

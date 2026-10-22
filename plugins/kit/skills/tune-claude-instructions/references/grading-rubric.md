@@ -80,6 +80,22 @@ Does the file give two instructions that cannot both be followed? Check:
 
 A failed harness or consistency check raises the severity by one step, like the tool check. Quote the passage in `problem_passages`.
 
+## Prose check
+
+Does the file hold text the model does not need? The model reads every word on every run. For each passage, ask: would the model act differently without it? It fails when it has:
+
+- **one rule in several places** — the same rule in the intro, a table, a step or a rules list (Pattern K);
+- **a note for the maintainer** — the date a rule was added, a row or ticket number, a spec link, a count of past failures, the story of how a rule came about (Pattern L);
+- **a fact the model already knows** — what a common tool does, a claim that the file works for any project, a list of common values the model would find anyway (Pattern M);
+- **a recap** — a sentence after a list, table or template that says again what it showed (Pattern N);
+- **a rule said again in negative form** — "Stop and say so. Do not overwrite the file." (Pattern O);
+- **a hedge word in a rule** — "usually", "typically", "often", "as needed", "where possible" (Pattern P);
+- **a frontmatter `description` that summarizes the steps or the output**, beyond what the skill does, when to use it and what it is not for (Pattern Q).
+
+These pass, even when they look like the cases above: a "NOT for" clause that sends work elsewhere; a fallback for a tool that may be absent; a stop condition; a sentence that says which rule wins; a reason that changes how the model applies a rule ("because a reader follows the steps one by one" tells it to write actions).
+
+A failed prose check raises the severity by one step, like the tool check. Quote the passage in `problem_passages`. The fix for a prose finding makes the file shorter: a cut, a move, or a shorter replacement such as a pointer.
+
 ## Severity ladder
 
 | Grades | Severity | Action |
@@ -88,5 +104,7 @@ A failed harness or consistency check raises the severity by one step, like the 
 | One ⚠️ or one ❌ on a thin file | **Low** | 1–3 line addition. |
 | Two ❌, or any ❌ on a workhorse agent/command | **Medium** | Targeted section edit. |
 | Three ❌ on a workhorse file | **CRITICAL** | Full rewrite likely. |
+
+When the only failed check is the prose check, the action shortens the file, in place of the addition the table names.
 
 A "workhorse" file is one that runs on every invocation of an important workflow — code-reviewer, commit, push. A one-line dispatcher that delegates to an agent is not a workhorse; grade its target instead.
