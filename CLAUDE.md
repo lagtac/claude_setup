@@ -18,6 +18,10 @@ The repo is a plugin marketplace (`.claude-plugin/marketplace.json`, which must 
 - The plugin manifest (`.claude-plugin/plugin.json`) must accurately list the `commands` and `agents` directory paths.
 - Agents are self-contained — they do not inherit CLAUDE.md. Any standards they must follow need to be embedded directly in the agent file.
 
+## Git host
+
+This repo is on GitHub only. It is no longer on GitLab. This replaces the GitLab rules in the `my` method's Git Workflow: when a change needs one (for CI or a link to it), open a pull request with `gh pr create`, not a merge request with `glab`. The worktree and squash-merge rules still apply.
+
 ## Project facts
 
 - **Method:** my
