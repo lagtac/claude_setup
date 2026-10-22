@@ -16,6 +16,43 @@ or install something.
 
 ## 2026-10
 
+### 2026-10-22 — Methods become plugins, batch 1 (row 68)
+
+A folder used to pick its method twice: an import line in `CLAUDE.md` and
+plugin keys in `.claude/settings.json`. Now each method (`my`, `tutor`,
+`sp`) is a plugin. Its forced output style holds its rules, and its
+`dependencies` field holds the plugins it needs. The folder's
+`.claude/settings.json` alone names the method, so rules and plugins load
+together. Batch 2 (`/kit:method`, and `my:handoff` launching through
+`claude-method`) comes after the rollout. Details:
+[spec](docs/plans/2026-10-20-method-bundles-spec.md),
+[plan](docs/plans/2026-10-20-method-bundles.md), with known limits in its
+Risk section.
+
+- **BREAKING: the import line `@~/.claude/methods/<m>.md` is gone.**
+  `global/methods/`, `global/output-styles/`, `docs-layout.md` and
+  `plan-format.md` are deleted; their text is in the `my` and `tutor`
+  styles. A repo that still has the line keeps working, and the start check
+  says to run `/kit:setup <m>`.
+- **BREAKING: `kit:tutor` is now `tutor:tutor`,** in the new `tutor`
+  plugin. To start a new learning project, start the session with
+  `claude-method tutor` first.
+- **New `sp` method:** `superpowers` as its authors define it, with no
+  added rules.
+- **`claude-method`,** a new `kit` script, lists the methods and prints a
+  method's plugin keys. `/kit:setup <m>` writes those keys and removes the
+  import line; it no longer writes one.
+- **The start check (`method-guard.py`) warns in three cases:** two methods
+  on, a method's dependency off, or an old import line left.
+- **The core changed.** `~/.claude/CLAUDE.md` now holds the `plain` rules.
+  Its engineering standards moved to `global/rules/engineering.md`, which
+  loads when Claude reads or writes a code file.
+- **Manual rollout:** remove `"outputStyle": "plain"` from
+  `~/.claude/settings.json`, turn off the plugins outside the bare list,
+  remove the `~/.claude/methods` and `~/.claude/output-styles` symlinks,
+  restart sessions, and run `/kit:setup tutor` in `mv3-tab-notes`. The plan's
+  "Rollout after batch 1" has the steps.
+
 ### 2026-10-22 — Every handoff run gets its own slot (row 56)
 
 A supervised `my:handoff` run had no state file and always used slot `1`.

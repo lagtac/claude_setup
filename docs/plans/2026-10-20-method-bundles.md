@@ -1,7 +1,7 @@
 # Methods as Plugins Implementation Plan
 
-**Status:** approved, 2026-10-21. Written by the `my:handoff` plan stage from the approved spec;
-row 68. Batch 1 waits for row 62, batch 2 for rows 33, 37 and 56 (spec, Dependencies).
+**Status:** current, 2026-10-22. Batch 1 merged in `1a6d653`; rollout, then batch 2. Written by
+the `my:handoff` plan stage from the approved spec; row 68.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this
 > plan task-by-task. The tasks build on each other: the start check and `/kit:setup` call

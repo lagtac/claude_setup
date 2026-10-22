@@ -10,7 +10,7 @@ never changed or reused, also when a row ships or is deleted; a split row's
 children take suffixes (`12b`, `12c`). A new row takes the next number below,
 and the same edit raises it by one.
 
-**Next number:** 76
+**Next number:** 77
 
 **Status legend:** ✅ shipped · 🚧 in progress · 📋 planned · 💭 discussed, not scheduled
 
@@ -25,10 +25,12 @@ other row keeps its order behind them. Rows 33, 37 and 56 shipped on
 The steps run top to bottom. Rows in one step can run side by side,
 because they edit different files.
 
-1. **68 "Methods as plugins", then 69 "Shared skills move to `kit`".** 68
+1. **68 "Methods as plugins", then 69 "Shared skills move to `kit`". Beside
+   69, 76 "Method tools stop reading a Claude Code file".** 68
    replaces `kit:setup`'s two switches and `method-guard.py`, so 60 in step
    5 edits the new `kit:setup`. 69 renames skills in files 68 also edits, so
-   it comes right after, and each name changes once.
+   it comes right after, and each name changes once. 76 changes
+   `claude-method` and `kit:setup` after 68's batch 2 (user, 2026-10-22).
 2. **74 "Find skill prose to script, cut or rephrase". Beside it, 75 "Read,
    write and convert roadmaps".** 74 comes after 68 and 69, so it reads the
    files where they leave them. Each row it adds gets a place in this order
@@ -45,10 +47,10 @@ because they edit different files.
 4. **61 "Auto start on approval, and re-review findings as rows", then 55
    "Decisions that go back to the user", then 53 "`my:draft-spec`", then 54
    "Bugs and approved bounded rows in forks while the user is away".** 61 is
-   two small rules in `global/methods/my.md`, the file 55 and 53 edit, so it
+   two small rules in the `my` style, the file 55 and 53 edit, so it
    goes first. 53 and
    54 both use the rule of 55. 55 and 53 both edit
-   `global/methods/my.md`. 54 comes after 53, because both run forks while
+   the `my` style. 54 comes after 53, because both run forks while
    the user is away, and 53 is being designed now.
 5. **8 "`my:spec-review` checks Delegation content" after 45.** Both edit
    `my:spec-review` `SKILL.md`. Side by side with 8: **60 "Project facts in
@@ -67,7 +69,7 @@ because they edit different files.
    overlap by script".** Both edit `my:status` `SKILL.md`, and 40 also edits
    `my:spec-review`, so it goes after step 5.
 8. **20 "Specs and plans name what UI tests check".** Rule text only. It
-   edits the spec rules in `global/methods/my.md`, as 40 and 53 do, so it
+   edits the spec rules in the `my` style, as 40 and 53 do, so it
    goes after them.
 9. **Waiting rows: 72 "Workflow metrics as one `my` script", then 29
    "Measure the auto runs", then 30 "Split `my:handoff` by mode"; and 17
@@ -119,7 +121,7 @@ Follow-ups spawned by the planner retirement. Spec:
   [brief](docs/plans/2026-10-13-roadmap-auto-runs-architecture.md),
   [spec](docs/plans/2026-10-13-roadmap-auto-runs-spec.md),
   [plan](docs/plans/2026-10-13-roadmap-auto-runs.md)
-- 💭 40 **Every spec has a Files section** — rule in `global/methods/my.md`,
+- 💭 40 **Every spec has a Files section** — rule in the `my` style,
   with checks in `my:spec-review` and `my:status`; route not set. A spec need
   not list the files it changes, so row 9's queue cannot tell which rows may
   run side by side. Goal: a spec rule asks for a Files section, and a spec's
@@ -137,7 +139,7 @@ Follow-ups spawned by the planner retirement. Spec:
   nothing new. First framed as "Draft specs in forks"; reframed on 2026-10-14
   after the fork drafts of rows 45 and 46 and the audit, and gated on a source
   the same day. Open: how the hardening loop stops, since
-  `global/methods/my.md` allows one fix round per review; and drafting several
+  the `my` style allows one fix round per review; and drafting several
   specs from one request, which the reframe dropped and no row covers. Tried
   without this design on zitamu on 2026-10-15 (rows 76, 77 and 74): forks ran
   `my:architect` and wrote three specs with no intake call, decisions came as
@@ -167,7 +169,7 @@ Follow-ups spawned by the planner retirement. Spec:
   declined). Some of these must go back to the developer, the user, but
   which ones is not settled yet. Pairs with 53.
 - 💭 55 **Decisions that go back to the user** — rule in
-  `global/methods/my.md`, route not set. Forks, auto runs and review fixes
+  the `my` style, route not set. Forks, auto runs and review fixes
   make some choices without the user that the user should make. Goal: one rule
   for all three: a choice goes back when it changes what users see, a shared
   definition or contract, the scope of the row or finding, or the verdict on a
@@ -245,17 +247,24 @@ Make the harness reusable in new projects without forking copies. Spec:
   memory and the repo's compose, `.env` and e2e files, asks for the ports
   already in use, and fixes that line. Split out of row 9's first spec draft.
   Blocked by row 29.
-- 📋 68 **Methods as plugins** — feature across the methods, `kit` and the
-  marketplace; architectural with plan. Today a directory picks its method
-  through an import line, plugin keys and `method-guard.py`. Goal: each method
-  becomes a plugin whose forced output style holds its rules and whose
-  `dependencies` hold its plugins. A directory's settings name its method, and
-  `claude-method <m>` switches one session at launch. It replaces the import
-  line, the plugin keys and `method-guard.py`. Spec and plan approved, code
-  next. Reframed on 2026-10-20 from a launcher named `claude`; row 48 was
-  folded in on 2026-10-18.
+- 🚧 68 **Methods as plugins** — feature across the methods, `kit` and the
+  marketplace; architectural with plan. A directory picked its method through
+  an import line, plugin keys and `method-guard.py`. Goal: each method becomes
+  a plugin whose forced output style holds its rules and whose `dependencies`
+  hold its plugins. A directory's settings name its method, and
+  `claude-method <m>` switches one session at launch. Batch 1 merged in
+  `1a6d653`; rollout and batch 2 next. Reframed on 2026-10-20 from a launcher
+  named `claude`; row 48 was folded in on 2026-10-18.
   [brief](docs/plans/2026-10-20-method-bundles-architecture.md),
   [spec](docs/plans/2026-10-20-method-bundles-spec.md),
+  [plan](docs/plans/2026-10-20-method-bundles.md)
+- 💭 76 **Method tools stop reading a Claude Code file** — feature in `kit`
+  (`claude-method` and `/kit:setup` step 3), route not set. Both find the
+  marketplace through `~/.claude/plugins/known_marketplaces.json`, a Claude
+  Code internal file, which ties `kit` to one harness. Goal: they find it
+  another way, for example from the script's own path, since the marketplace
+  loads in place. Found in row 68's batch 1 review (2026-10-22); detail in
+  the plan's Risk section.
   [plan](docs/plans/2026-10-20-method-bundles.md)
 - 💭 69 **Shared skills move to `kit`** — feature, moving skills from `my` to
   `kit`; architectural with plan. `roadmap-management` and
@@ -291,13 +300,13 @@ Findings of
 Rows are unordered unless a row says what it waits for. S2, S3, M1 and M3 got
 no row; the report says why.
 
-- 💭 20 **Specs and plans name what UI tests check** — rule in `plan-format.md`
-  and `global/methods/my.md`, route not set. A plan that changes UI need not
+- 💭 20 **Specs and plans name what UI tests check** — rule in the `my` style (its plan format
+  and spec rules), route not set. A plan that changes UI need not
   say which widths, languages and texts its tests check, so a test can check
-  the markup and miss what the user gets. Goal: `plan-format.md` asks such a
+  the markup and miss what the user gets. Goal: the plan format asks such a
   plan to list the widths at its breakpoint edges, every language the project
   ships, and its longest real text, and to measure them in e2e tests. In
-  `global/methods/my.md`, "End-to-end coverage" asks the test to check what
+  the `my` style, "End-to-end coverage" asks the test to check what
   the user gets (the video plays), not only the markup, and the spec rules ask
   a spec that adds UI to decide the off-path events of row 23, next to Visual
   Language. Report M4. Rows 21 and 22 were folded in on 2026-10-16.
@@ -460,7 +469,7 @@ above.
 - 💭 47 **`clean-plans` moves by script** — feature in `my:clean-plans`, route
   not set. The model picks the files, dates them, moves them and repoints the
   links by hand. Goal: a script does the candidate list, the date, `git mv` or
-  `mv`, and repointing the links; "Moving a document" in `docs-layout.md` uses
+  `mv`, and repointing the links; "Moving a document" in the `my` style uses
   the same script. Report S8.
 - 💭 49 **`dev-reports` dates and TODOs by script** — feature in
   `kit:dev-reports`, route not set. The model works out the dates and the TODO
@@ -490,12 +499,12 @@ above.
 Findings of [`docs/reports/2026-10-15-row-74-handoff-run-audit.md`](docs/reports/2026-10-15-row-74-handoff-run-audit.md), from zitamu rows 74a and 74b.
 
 - 💭 60 **Project facts in `CLAUDE.local.md`** — bug in the facts check of
-  `global/methods/my.md` and in `kit:setup`. A user who keeps the project
+  the `my` style and in `kit:setup`. A user who keeps the project
   facts in `CLAUDE.local.md` does not have them found, and `kit:setup` writes
   them into `CLAUDE.md` again. Fix: both accept `CLAUDE.local.md`, as the
   Parallel runs rule does, and `kit:setup` asks which file to use. Report H4.
 - 💭 61 **Auto start on approval, and re-review findings as rows** — rule in
-  `global/methods/my.md`, route not set. After approving a spec with a
+  the `my` style, route not set. After approving a spec with a
   Delegation section, the user still answers "supervised or auto?", and a
   re-review finding that today's code can reach may end up only in **Risk**.
   Goal: two rules. When the approved spec has a Delegation section, approval
